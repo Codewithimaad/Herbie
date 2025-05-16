@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import ProductCard from '../components/ProductCard';
 import HeadingText from '../components/HeadingText';
+import image from '../assets/images/Herb1.webp'
 
 const allProducts = [
-    { _id: '1', name: 'Chamomile', price: 5.99, image: '/herbs/chamomile.jpg' },
-    { _id: '2', name: 'Mint Leaves', price: 3.49, image: '/herbs/mint.jpg' },
-    { _id: '3', name: 'Lavender', price: 6.99, image: '/herbs/lavender.jpg' },
-    { _id: '4', name: 'Echinacea', price: 7.99, image: '/herbs/echinacea.jpg' },
-    { _id: '5', name: 'Rosemary', price: 4.99, image: '/herbs/rosemary.jpg' },
-    { _id: '6', name: 'Thyme', price: 4.49, image: '/herbs/thyme.jpg' },
+    { _id: '1', name: 'Chamomile', price: 5.99, image: image },
+    { _id: '2', name: 'Mint Leaves', price: 3.49, image: image },
+    { _id: '3', name: 'Lavender', price: 6.99, image: image },
+    { _id: '4', name: 'Echinacea', price: 7.99, image: image },
+    { _id: '5', name: 'Rosemary', price: 4.99, image: image },
+    { _id: '6', name: 'Thyme', price: 4.49, image: image },
 ];
 
 const featuredProducts = allProducts.slice(0, 3);

@@ -1,12 +1,13 @@
 import React from 'react';
 import { FaCartPlus } from 'react-icons/fa';
 import HeadingText from './HeadingText';
+import image from '../assets/images/HeroSection.jpeg'
 
 const products = Array.from({ length: 10 }, (_, i) => ({
     id: i + 1,
     name: `Herbal Product ${i + 1}`,
     price: `$${(9.99 + i).toFixed(2)}`,
-    image: `/assets/images/product-${(i % 5) + 1}.jpg`, // Update paths as needed
+    image: image, // Update paths as needed
 }));
 
 const FeaturedProducts = () => {

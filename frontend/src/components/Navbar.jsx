@@ -146,16 +146,16 @@ const Navbar = () => {
 
                     {/* Mobile Right Section */}
                     <div className="flex justify-end lg:hidden items-center gap-4">
-                        <a
-                            href="#"
+                        <Link
+                            to="/login"
                             className="flex items-center gap-1 text-sm text-green-800 hover:text-green-600 transition-colors"
                         >
                             <FiUser size={18} />
-                        </a>
+                        </Link>
 
-                        <button className="flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white px-4 py-2 text-sm rounded-md transition-all">
+                        <Link to='/cart' className="flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white px-4 py-2 text-sm rounded-md transition-all">
                             <FiShoppingCart size={18} />
-                        </button>
+                        </Link>
                         {/* Mobile Menu Button */}
                         <button
                             className="lg:hidden text-green-800 p-2"
