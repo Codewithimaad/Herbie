@@ -53,7 +53,7 @@ export default function Checkout() {
     const total = subtotal + shipping + tax;
 
     return (
-        <div className="min-h-screen py-12 px-4 md:px-6 lg:px-8">
+        <div className="min-h-screen py-12 px-0 md:px-6 lg:px-8">
             <div className="max-w-6xl mx-auto">
                 <HeadingText
                     title="Complete Your Order"
@@ -204,14 +204,14 @@ export default function Checkout() {
                                         animate={{ opacity: 1, x: 0 }}
                                         exit={{ opacity: 0, x: 20 }}
                                         transition={{ duration: 0.2 }}
-                                        className="p-6 sm:p-8"
+                                        className="p-2 md:p-8"
                                     >
                                         <h3 className="text-xl font-semibold text-gray-800 mb-6">Payment Method</h3>
                                         <div className="space-y-4">
                                             {/* Payment Options */}
                                             <div className="space-y-4">
                                                 <div
-                                                    className={`p-4 border rounded-xl cursor-pointer transition-all ${form.paymentMethod === 'card' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'}`}
+                                                    className={`p-2 md:p-4 border rounded-xl cursor-pointer transition-all ${form.paymentMethod === 'card' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'}`}
                                                     onClick={() => setForm(prev => ({ ...prev, paymentMethod: 'card' }))}
                                                 >
                                                     <div className="flex items-center">

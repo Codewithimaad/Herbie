@@ -11,7 +11,7 @@ const BestSellers = () => {
     if (bestSellers.length === 0) return null;
 
     return (
-        <section className="py-12 bg-gradient-to-b from-green-50 to-white">
+        <section className="py-12">
             <div className="max-w-7xl mx-auto px-2 md:px-6 lg:px-8">
                 <HeadingText
                     title="Our Best Sellers"

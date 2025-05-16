@@ -28,7 +28,7 @@ export default function Cart() {
 
     if (cartItems.length === 0) {
         return (
-            <section className="flex flex-col items-center justify-center min-h-[60vh] space-y-6 text-center px-4">
+            <section className="flex flex-col items-center justify-center min-h-[60vh] space-y-6 text-center px-0 md:px-4">
                 <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -49,7 +49,7 @@ export default function Cart() {
     }
 
     return (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+        <section className="max-w-7xl mx-auto px-0 md:px-6 py-12">
             <motion.h2
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}

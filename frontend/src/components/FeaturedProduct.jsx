@@ -13,7 +13,7 @@ const FeaturedProducts = () => {
     };
 
     return (
-        <section className="py-16 bg-gray-50">
+        <section className="py-16">
             <div className="container mx-auto px-2 md:px-6 lg:px-8">
                 <HeadingText
                     title="Premium Herbal Collections"
@@ -89,20 +89,7 @@ const FeaturedProducts = () => {
                                             <span>Add</span>
                                         </button>
 
-                                        <div className="flex space-x-2">
-                                            <button
-                                                onClick={handleActionClick}
-                                                className="text-gray-400 hover:text-red-500 transition-colors"
-                                            >
-                                                <FaHeart className="text-sm" />
-                                            </button>
-                                            <button
-                                                onClick={handleActionClick}
-                                                className="text-gray-400 hover:text-blue-500 transition-colors"
-                                            >
-                                                <FiEye className="text-sm" />
-                                            </button>
-                                        </div>
+
                                     </div>
                                 </div>
                             </div>
