@@ -16,7 +16,7 @@ const NewArrivals = () => {
 
     return (
         <section className="py-16 bg-white">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="container mx-auto px-2 md:px-6 lg:px-8">
                 <HeadingText
                     title='New Arrivals'
                     description='Discover our latest herbal additions. Fresh from nature, just for you.'
@@ -93,17 +93,7 @@ const NewArrivals = () => {
                     ))}
                 </div>
 
-                <div className="text-center mt-12">
-                    <Link
-                        to="/new-arrivals"
-                        className="inline-flex items-center justify-center border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium py-2.5 px-8 rounded-md text-sm transition-colors duration-200 shadow-sm hover:shadow-md"
-                    >
-                        Browse All New Arrivals
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                    </Link>
-                </div>
+
             </div>
         </section>
     );

@@ -14,7 +14,7 @@ const FeaturedProducts = () => {
 
     return (
         <section className="py-16 bg-gray-50">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="container mx-auto px-2 md:px-6 lg:px-8">
                 <HeadingText
                     title="Premium Herbal Collections"
                     description="Discover nature's finest remedies, ethically sourced and scientifically validated for your wellness journey."
@@ -110,15 +110,7 @@ const FeaturedProducts = () => {
                     ))}
                 </div>
 
-                {/* View All Button */}
-                <div className="text-center mt-12">
-                    <Link
-                        to='/products'
-                        className="inline-block border border-green-700 text-green-700 hover:bg-green-700 hover:text-white font-medium py-2 px-6 rounded-full transition-colors duration-300 text-sm"
-                    >
-                        View All Products
-                    </Link>
-                </div>
+
             </div>
         </section>
     );
