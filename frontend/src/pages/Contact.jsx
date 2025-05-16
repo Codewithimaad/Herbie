@@ -21,7 +21,7 @@ export default function Contact() {
     };
 
     return (
-        <section className="max-w-5xl mx-auto px-6 py-12">
+        <section className="max-w-5xl mx-auto sm:px-2 md:px-6 py-12">
 
             <HeadingText
                 title='Get in Touch'

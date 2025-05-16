@@ -110,7 +110,7 @@ export default function FAQsPage() {
                                     />
                                 </button>
                                 {openCategory === `${i}-${j}` && (
-                                    <div className="p-4 text-gray-700 border-t text-base">
+                                    <div className="sm:p-2 md:p-4 text-gray-700 border-t text-base">
                                         {faq.answer}
                                     </div>
                                 )}

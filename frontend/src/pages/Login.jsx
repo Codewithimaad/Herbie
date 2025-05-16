@@ -11,8 +11,8 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center px-4 py-8">
-            <div className="w-full bg-white rounded-2xl shadow-lg overflow-hidden grid grid-cols-1 md:grid-cols-2">
+        <div className="min-h-screen flex items-center justify-center sm:px-2 md:px-4 py-8">
+            <div className="w-full overflow-hidden grid grid-cols-1 md:grid-cols-2">
                 {/* Left - Image Section */}
                 <div className="hidden md:flex items-center justify-center">
                     <img

@@ -3,8 +3,8 @@ import HeadingText from '../components/HeadingText';
 
 const ShippingHandling = () => {
     return (
-        <main className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
-            <div className="rounded-lg p-8">
+        <main className="min-h-screen py-12 sm:px-2 md:px-6 lg:px-8">
+            <div className="rounded-lg sm:p-2 md:p-8">
 
                 <HeadingText title='Shipping & Handling' />
 
@@ -37,7 +37,7 @@ const ShippingHandling = () => {
 
                 <section>
                     <h2 className="text-xl font-semibold text-gray-900 mb-3">How many delivery attempts will be made if I’m unavailable?</h2>
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 sm:text-sm md:text-lg">
                         Our courier service will make up to <strong>three delivery attempts</strong>. If you’re not available on the first attempt, the next attempt will be made the following working day—not the same day.
                     </p>
                 </section>

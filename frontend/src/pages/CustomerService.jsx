@@ -3,8 +3,8 @@ import HeadingText from '../components/HeadingText';
 
 const CustomerService = () => {
     return (
-        <main className="min-h-screen py-12 px-4 sm:px-6 lg:px-20 text-gray-800">
-            <div className="rounded-2xl p-6 sm:p-10 md:p-12 transition-all duration-300">
+        <main className="min-h-screen py-12 md:px-4 sm:px-2 lg:px-20 text-gray-800">
+            <div className="rounded-2xl sm:p-4 md:p-12 transition-all duration-300">
                 <HeadingText
                     title='Customer Services'
                 />
@@ -12,10 +12,10 @@ const CustomerService = () => {
                 {/* Section Component (Reusable Pattern) */}
                 {sections.map((section, idx) => (
                     <section key={idx} className="mb-10">
-                        <h2 className="text-2xl font-semibold text-green-700 mb-4 border-b-2 border-green-600 pb-2">
+                        <h2 className="sm:text-base md:text-2xl font-semibold text-green-700 mb-4 border-b-2 border-green-600 pb-2">
                             {section.heading}
                         </h2>
-                        <p className="text-base md:text-lg text-gray-700 leading-relaxed whitespace-pre-line">
+                        <p className="text-sm md:text-lg text-gray-700 leading-relaxed whitespace-pre-line">
                             {section.content}
                         </p>
                     </section>

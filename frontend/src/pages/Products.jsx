@@ -1,76 +1,239 @@
 import { useState } from 'react';
 import ProductCard from '../components/ProductCard';
 import HeadingText from '../components/HeadingText';
-import image from '../assets/images/Herb1.webp'
+import { FaFilter, FaSearch, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import image from '../assets/images/HeroSection.jpeg'
+
 
 const allProducts = [
-    { _id: '1', name: 'Chamomile', price: 5.99, image: image },
-    { _id: '2', name: 'Mint Leaves', price: 3.49, image: image },
-    { _id: '3', name: 'Lavender', price: 6.99, image: image },
-    { _id: '4', name: 'Echinacea', price: 7.99, image: image },
-    { _id: '5', name: 'Rosemary', price: 4.99, image: image },
-    { _id: '6', name: 'Thyme', price: 4.49, image: image },
+    {
+        _id: '1',
+        name: 'Organic Chamomile Flowers',
+        price: 5.99,
+        originalPrice: 7.99,
+        image: image,
+        rating: 4.5,
+        reviews: 128,
+        category: 'Tea Herbs',
+        isFeatured: true
+    },
+    {
+        _id: '2',
+        name: 'Peppermint Leaves',
+        price: 3.49,
+        image: image,
+        rating: 4.2,
+        reviews: 87,
+        category: 'Culinary Herbs',
+        isNew: true
+    },
+    {
+        _id: '3',
+        name: 'Premium Lavender Buds',
+        price: 6.99,
+        originalPrice: 8.99,
+        image: image,
+        rating: 4.8,
+        reviews: 215,
+        category: 'Aromatherapy',
+        isFeatured: true,
+        isBestSeller: true
+    },
+    {
+        _id: '4',
+        name: 'Echinacea Root',
+        price: 7.99,
+        image: image,
+        rating: 4.3,
+        reviews: 64,
+        category: 'Medicinal Herbs'
+    },
+    {
+        _id: '5',
+        name: 'Rosemary Leaves',
+        price: 4.99,
+        image: image,
+        rating: 4.6,
+        reviews: 176,
+        category: 'Culinary Herbs'
+    },
+    {
+        _id: '6',
+        name: 'Lemon Thyme',
+        price: 4.49,
+        originalPrice: 5.99,
+        image: image,
+        rating: 4.4,
+        reviews: 92,
+        category: 'Culinary Herbs',
+        isNew: true
+    },
+    {
+        _id: '7',
+        name: 'Holy Basil (Tulsi)',
+        price: 5.49,
+        image: image,
+        rating: 4.7,
+        reviews: 203,
+        category: 'Medicinal Herbs',
+        isBestSeller: true
+    },
+    {
+        _id: '8',
+        name: 'Dandelion Root',
+        price: 6.49,
+        originalPrice: 7.99,
+        image: image,
+        rating: 4.1,
+        reviews: 53,
+        category: 'Medicinal Herbs'
+    }
 ];
 
-const featuredProducts = allProducts.slice(0, 3);
+const featuredProducts = allProducts.filter(product => product.isFeatured);
 const relatedProducts = allProducts.slice(-3);
 
 export default function Products() {
     const [showMore, setShowMore] = useState(false);
-    const visibleProducts = showMore ? allProducts : allProducts.slice(0, 4);
+    const [showFilters, setShowFilters] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('All');
+
+    const categories = ['All', ...new Set(allProducts.map(product => product.category))];
+
+    const filteredProducts = allProducts.filter(product => {
+        const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
+        return matchesSearch && matchesCategory;
+    });
+
+    const visibleProducts = showMore ? filteredProducts : filteredProducts.slice(0, 8);
 
     return (
-        <section className="max-w-7xl mx-auto px-4 py-12">
-            {/* Page Title & Description */}
-            <HeadingText
-                title='Our Herbal Collection'
-                description='Discover the finest quality herbs sourced naturally to enhance your health and wellness.'
-            />
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
-            {/* All Products Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-6">
-                {visibleProducts.map((product) => (
-                    <ProductCard
-                        key={product._id}
-                        product={product}
-                        className="transform hover:scale-105 transition-transform shadow-md hover:shadow-lg rounded-lg"
-                    />
-                ))}
+
+            <HeadingText title='Our Herbal Collection'
+                description='Discover premium quality herbs sourced from organic farms to enhance your health and wellness naturally.' />
+
+            {/* Search and Filter Bar */}
+            <div className="mb-12">
+                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                    <div className="relative flex-grow">
+                        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Search herbs..."
+                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <button
+                        onClick={() => setShowFilters(!showFilters)}
+                        className="flex items-center justify-center gap-2 px-6 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                        <FaFilter />
+                        Filters
+                        {showFilters ? <FaChevronUp /> : <FaChevronDown />}
+                    </button>
+                </div>
+
+                {/* Expanded Filters */}
+                {showFilters && (
+                    <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+                        <h3 className="font-medium text-lg mb-4">Filter by Category</h3>
+                        <div className="flex flex-wrap gap-3">
+                            {categories.map(category => (
+                                <button
+                                    key={category}
+                                    onClick={() => setSelectedCategory(category)}
+                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedCategory === category
+                                        ? 'bg-green-600 text-white'
+                                        : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                                        }`}
+                                >
+                                    {category}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
 
-            {/* Show More / Less Button */}
-            {allProducts.length > 4 && (
-                <div className="text-center mb-16">
-                    <button
-                        onClick={() => setShowMore((prev) => !prev)}
-                        className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition duration-300"
-                    >
-                        {showMore ? 'Show Less' : 'Show More'}
-                    </button>
+            {/* Products Grid */}
+            {filteredProducts.length > 0 ? (
+                <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-12">
+                        {visibleProducts.map((product) => (
+                            <ProductCard
+                                key={product._id}
+                                product={product}
+                                className="transform hover:-translate-y-2 transition-all duration-300"
+                            />
+                        ))}
+                    </div>
+
+                    {/* Show More/Less Button */}
+                    {filteredProducts.length > 8 && (
+                        <div className="text-center mb-16">
+                            <button
+                                onClick={() => setShowMore((prev) => !prev)}
+                                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-medium transition duration-300 shadow-md hover:shadow-lg"
+                            >
+                                {showMore ? 'Show Less' : 'View All Products'}
+                            </button>
+                        </div>
+                    )}
+                </>
+            ) : (
+                <div className="text-center py-12">
+                    <h3 className="text-xl font-medium text-gray-700 mb-2">No products found</h3>
+                    <p className="text-gray-500">Try adjusting your search or filter criteria</p>
                 </div>
             )}
 
-            {/* Featured Products */}
-            <section className="mb-16">
-                <HeadingText title='Featured Herbs' />
-                <div className="flex gap-6 overflow-x-auto scrollbar-thin scrollbar-thumb-green-400 scrollbar-track-green-100 px-1">
-                    {featuredProducts.map((product) => (
-                        <div key={product._id} className="min-w-[200px] flex-shrink-0">
-                            <ProductCard product={product} />
+            {/* Featured Products Carousel */}
+            {featuredProducts.length > 0 && (
+                <section className="mb-16">
+                    <HeadingText
+                        title="Featured Herbs"
+                        description="Our most popular and premium quality herbal selections"
+                    />
+                    <div className="relative">
+                        <div className="flex gap-6 overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-green-200 scrollbar-track-green-50 px-1">
+                            {featuredProducts.map((product) => (
+                                <div key={product._id} className="min-w-[280px] flex-shrink-0">
+                                    <ProductCard
+                                        product={product}
+                                        className="h-full"
+                                        showBadges
+                                    />
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
-            </section>
+                    </div>
+                </section>
+            )}
 
             {/* Related Products */}
-            <section>
-                <HeadingText title='You might also like this' />
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    {relatedProducts.map((product) => (
-                        <ProductCard key={product._id} product={product} />
-                    ))}
-                </div>
-            </section>
+            {relatedProducts.length > 0 && (
+                <section>
+                    <HeadingText
+                        title="Complete Your Herbal Journey"
+                        description="These herbs pair well with your selections"
+                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {relatedProducts.map((product) => (
+                            <ProductCard
+                                key={product._id}
+                                product={product}
+                                variant="horizontal"
+                            />
+                        ))}
+                    </div>
+                </section>
+            )}
         </section>
     );
 }

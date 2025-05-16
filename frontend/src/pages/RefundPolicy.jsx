@@ -3,12 +3,12 @@ import HeadingText from '../components/HeadingText';
 
 const RefundPolicy = () => {
     return (
-        <section className="min-h-screen  py-16 px-6">
-            <div className="p-8 rounded-2xl">
+        <section className="min-h-screen  py-16 sm:px-4 md:px-6">
+            <div className="sm:p-4 md:p-8 rounded-2xl">
 
                 <HeadingText title='Refund & Exchange Policy' />
 
-                <div className="space-y-6 text-gray-700 text-lg leading-relaxed">
+                <div className="space-y-6 text-gray-700 sm:text-sm md:text-lg leading-relaxed">
                     <p className="font-semibold text-xl text-green-700">
                         What is your Return/Exchange Policy?
                     </p>
