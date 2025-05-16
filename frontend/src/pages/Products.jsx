@@ -195,21 +195,19 @@ export default function Products() {
 
             {/* Featured Products Carousel */}
             {featuredProducts.length > 0 && (
-                <section className="mb-16">
+                <section className="mb-12">
                     <HeadingText
                         title="Featured Herbs"
                         description="Our most popular and premium quality herbal selections"
                     />
                     <div className="relative">
-                        <div className="flex gap-6 overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-green-200 scrollbar-track-green-50 px-1">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                             {featuredProducts.map((product) => (
-                                <div key={product._id} className="min-w-[280px] flex-shrink-0">
-                                    <ProductCard
-                                        product={product}
-                                        className="h-full"
-                                        showBadges
-                                    />
-                                </div>
+                                <ProductCard
+                                    key={product._id}
+                                    product={product}
+                                    className="h-full"
+                                />
                             ))}
                         </div>
                     </div>

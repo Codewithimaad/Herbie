@@ -40,7 +40,7 @@ export default function Register() {
                 </div>
 
                 {/* Right - Form Section */}
-                <div className="p-8 sm:p-12 flex flex-col justify-center">
+                <div className="p-4 md:p-12 flex flex-col justify-center">
                     <h2 className="text-3xl font-bold text-green-800 mb-6">Create Account</h2>
                     <p className="text-gray-600 mb-8">
                         Sign up to get started with <span className="font-semibold text-green-700">Herbie</span>

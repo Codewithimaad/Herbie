@@ -166,98 +166,130 @@ const Navbar = () => {
                         </button>
                     </div>
                 </div>
-
                 {/* Mobile Navigation */}
                 <AnimatePresence>
                     {isMenuOpen && (
                         <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="lg:hidden mt-3 border-t border-gray-200 pt-4"
+                            initial={{ x: '-100%', opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            exit={{ x: '-100%', opacity: 0 }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 120 }}
+                            className="fixed inset-0 z-50 bg-white shadow-xl lg:hidden"
                         >
-                            <ul className="flex flex-col space-y-4">
-                                {navLinks.map(({ name, path }) =>
-                                    name === 'MORE' ? (
-                                        <li key="more-mobile">
-                                            <button
-                                                onClick={() => setIsMoreOpen(!isMoreOpen)}
-                                                className="w-full text-left text-gray-800 font-semibold flex justify-between items-center"
-                                            >
-                                                MORE
-                                                <svg
-                                                    className={`w-4 h-4 transition-transform duration-300 ${isMoreOpen ? 'rotate-180' : 'rotate-0'}`}
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth={2}
-                                                    viewBox="0 0 24 24"
+                            {/* Close Button */}
+                            <button
+                                onClick={() => setIsMenuOpen(false)}
+                                className="absolute top-6 right-6 p-2 text-gray-500 hover:text-green-600 transition-colors"
+                                aria-label="Close menu"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-6 w-6"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+
+                            {/* Navigation Content */}
+                            <div className="h-full flex flex-col pt-20 px-6 overflow-y-auto">
+                                <ul className="space-y-6">
+                                    {navLinks.map(({ name, path }) =>
+                                        name === 'MORE' ? (
+                                            <li key="more-mobile" className="border-b border-gray-100 pb-4">
+                                                <button
+                                                    onClick={() => setIsMoreOpen(!isMoreOpen)}
+                                                    className="w-full flex justify-between items-center text-lg font-medium text-gray-900 py-2"
                                                 >
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"></path>
-                                                </svg>
-                                            </button>
-                                            <AnimatePresence>
-                                                {isMoreOpen && (
-                                                    <motion.ul
-                                                        initial={{ opacity: 0, height: 0 }}
-                                                        animate={{ opacity: 1, height: 'auto' }}
-                                                        exit={{ opacity: 0, height: 0 }}
+                                                    <span>MORE</span>
+                                                    <motion.span
+                                                        animate={{ rotate: isMoreOpen ? 180 : 0 }}
                                                         transition={{ duration: 0.2 }}
-                                                        className="pl-4 mt-2 space-y-2"
                                                     >
-                                                        <li>
-                                                            <Link
-                                                                to="/refund-policy"
-                                                                onClick={() => {
-                                                                    setIsMenuOpen(false);
-                                                                    setIsMoreOpen(false);
-                                                                }}
-                                                                className="text-gray-700 hover:text-green-600"
+                                                        <svg
+                                                            className="w-5 h-5 text-gray-500"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </motion.span>
+                                                </button>
+
+                                                <AnimatePresence>
+                                                    {isMoreOpen && (
+                                                        <motion.ul
+                                                            initial={{ opacity: 0, height: 0 }}
+                                                            animate={{ opacity: 1, height: 'auto' }}
+                                                            exit={{ opacity: 0, height: 0 }}
+                                                            transition={{ duration: 0.2 }}
+                                                            className="pl-4 space-y-3 mt-2"
+                                                        >
+                                                            <motion.li
+                                                                initial={{ x: -10 }}
+                                                                animate={{ x: 0 }}
+                                                                transition={{ delay: 0.1 }}
                                                             >
-                                                                Refund Policy
-                                                            </Link>
-                                                        </li>
-                                                        <li>
-                                                            <Link
-                                                                to="/shipping"
-                                                                onClick={() => {
-                                                                    setIsMenuOpen(false);
-                                                                    setIsMoreOpen(false);
-                                                                }}
-                                                                className="text-gray-700 hover:text-green-600"
+                                                                <Link
+                                                                    to="/refund-policy"
+                                                                    onClick={() => setIsMenuOpen(false)}
+                                                                    className="block py-2 text-gray-600 hover:text-green-600 transition-colors"
+                                                                >
+                                                                    Refund Policy
+                                                                </Link>
+                                                            </motion.li>
+                                                            <motion.li
+                                                                initial={{ x: -10 }}
+                                                                animate={{ x: 0 }}
+                                                                transition={{ delay: 0.15 }}
                                                             >
-                                                                Shipping & Handling
-                                                            </Link>
-                                                        </li>
-                                                        <li>
-                                                            <Link
-                                                                to="/faqs"
-                                                                onClick={() => {
-                                                                    setIsMenuOpen(false);
-                                                                    setIsMoreOpen(false);
-                                                                }}
-                                                                className="text-gray-700 hover:text-green-600"
+                                                                <Link
+                                                                    to="/shipping"
+                                                                    onClick={() => setIsMenuOpen(false)}
+                                                                    className="block py-2 text-gray-600 hover:text-green-600 transition-colors"
+                                                                >
+                                                                    Shipping & Handling
+                                                                </Link>
+                                                            </motion.li>
+                                                            <motion.li
+                                                                initial={{ x: -10 }}
+                                                                animate={{ x: 0 }}
+                                                                transition={{ delay: 0.2 }}
                                                             >
-                                                                FAQs
-                                                            </Link>
-                                                        </li>
-                                                    </motion.ul>
-                                                )}
-                                            </AnimatePresence>
-                                        </li>
-                                    ) : (
-                                        <li key={name}>
-                                            <Link
-                                                to={path}
-                                                onClick={() => setIsMenuOpen(false)}
-                                                className="block text-gray-800 hover:text-green-600 font-medium transition-colors"
+                                                                <Link
+                                                                    to="/faqs"
+                                                                    onClick={() => setIsMenuOpen(false)}
+                                                                    className="block py-2 text-gray-600 hover:text-green-600 transition-colors"
+                                                                >
+                                                                    FAQs
+                                                                </Link>
+                                                            </motion.li>
+                                                        </motion.ul>
+                                                    )}
+                                                </AnimatePresence>
+                                            </li>
+                                        ) : (
+                                            <motion.li
+                                                key={name}
+                                                initial={{ x: -20 }}
+                                                animate={{ x: 0 }}
+                                                transition={{ delay: 0.05 * navLinks.indexOf({ name, path }) }}
                                             >
-                                                {name}
-                                            </Link>
-                                        </li>
-                                    )
-                                )}
-                            </ul>
+                                                <Link
+                                                    to={path}
+                                                    onClick={() => setIsMenuOpen(false)}
+                                                    className="block text-lg font-medium text-gray-900 py-3 border-b border-gray-100 hover:text-green-600 transition-colors"
+                                                >
+                                                    {name}
+                                                </Link>
+                                            </motion.li>
+                                        )
+                                    )}
+                                </ul>
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>

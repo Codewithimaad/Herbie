@@ -11,7 +11,7 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center sm:px-2 md:px-4 py-8">
+        <div className="min-h-screen flex items-center justify-center md:px-4 py-8">
             <div className="w-full overflow-hidden grid grid-cols-1 md:grid-cols-2">
                 {/* Left - Image Section */}
                 <div className="hidden md:flex items-center justify-center">
@@ -23,7 +23,7 @@ const Login = () => {
                 </div>
 
                 {/* Right - Form Section */}
-                <div className="p-8 sm:p-12 flex flex-col justify-center">
+                <div className="p-4 md:p-12 flex flex-col justify-center">
                     <h2 className="text-3xl font-bold text-green-800 mb-6">Welcome Back</h2>
                     <p className="text-gray-600 mb-8">
                         Please sign in to continue to <span className="font-semibold text-green-700">Herbie</span>

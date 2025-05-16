@@ -1,22 +1,159 @@
-// src/components/ProductCard.jsx
 import { Link } from 'react-router-dom';
+import { FiHeart, FiEye, FiShare2 } from 'react-icons/fi';
+import { FaShoppingBag, FaStar, FaRegStar } from 'react-icons/fa';
+import { useState } from 'react';
 
-export default function ProductCard({ product }) {
-    return (
-        <div className="border rounded-lg shadow-sm hover:shadow-md transition p-4 bg-white flex flex-col">
-            <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-48 object-cover rounded mb-4"
-            />
-            <h3 className="text-lg font-semibold">{product.name}</h3>
-            <p className="text-green-700 font-bold mt-auto">${product.price.toFixed(2)}</p>
+export default function ProductCard({ product, variant = 'vertical', compact = false }) {
+    const [isHovered, setIsHovered] = useState(false);
+    const [isWishlisted, setIsWishlisted] = useState(false);
+
+    // Render product rating stars
+    const renderRating = () => !compact && (
+        <div className="flex items-center mb-1">
+            <div className="flex mr-1">
+                {[...Array(5)].map((_, i) => (
+                    i < Math.floor(product.rating || 0) ?
+                        <FaStar key={i} className="text-amber-400 text-xs" /> :
+                        <FaRegStar key={i} className="text-amber-400 text-xs" />
+                ))}
+            </div>
+            <span className="text-xs text-gray-500">({product.reviews || 0})</span>
+        </div>
+    );
+
+    // Render quick action buttons (visible on hover)
+    const renderQuickActions = () => !compact && (
+        <div className={`absolute top-2 right-2 flex flex-col gap-2 transition-all ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+            <button
+                onClick={(e) => {
+                    e.preventDefault();
+                    setIsWishlisted(!isWishlisted);
+                }}
+                className="p-1.5 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
+            >
+                {isWishlisted ? (
+                    <FiHeart className="text-red-500 fill-current" size={14} />
+                ) : (
+                    <FiHeart size={14} />
+                )}
+            </button>
+        </div>
+    );
+
+    // Render price with discount if available
+    const renderPrice = () => (
+        <div className={compact ? "mt-1" : "mt-2"}>
+            <span className={`${compact ? "text-base" : "text-lg"} font-bold text-gray-900`}>${product.price.toFixed(2)}</span>
+            {product.originalPrice && !compact && (
+                <span className="text-xs text-gray-400 line-through ml-1">
+                    ${product.originalPrice.toFixed(2)}
+                </span>
+            )}
+        </div>
+    );
+
+    // Horizontal card variant (for related products)
+    if (variant === 'horizontal') {
+        return (
             <Link
                 to={`/product/${product._id}`}
-                className="mt-3 inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-center"
+                className={`flex flex-col sm:flex-row bg-white rounded-lg shadow-sm hover:shadow-md transition-all overflow-hidden h-full ${compact ? "p-2" : "p-3"}`}
             >
-                View Details
+                <div className={`relative ${compact ? "w-20 h-20" : "sm:w-1/3 aspect-square"}`}>
+                    <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-full object-cover rounded"
+                    />
+                </div>
+                <div className={`flex flex-col ${compact ? "pl-2 flex-grow" : "sm:w-2/3 p-2"}`}>
+                    <h3 className={`${compact ? "text-sm" : "font-medium"} text-gray-900 line-clamp-2`}>{product.name}</h3>
+                    {!compact && renderRating()}
+                    {renderPrice()}
+                    {!compact && (
+                        <button
+                            className="mt-2 flex items-center justify-center gap-1 bg-gray-900 text-white py-1.5 px-3 rounded-md text-xs font-medium hover:bg-gray-800 transition-colors"
+                            onClick={(e) => e.preventDefault()}
+                        >
+                            <FaShoppingBag size={12} />
+                            <span>Add to Bag</span>
+                        </button>
+                    )}
+                </div>
             </Link>
-        </div>
+        );
+    }
+
+    // Compact vertical card
+    if (compact) {
+        return (
+            <Link
+                to={`/product/${product._id}`}
+                className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow transition-all relative h-full flex flex-col p-3"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+            >
+                <div className="relative aspect-square mb-2">
+                    <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-full object-cover rounded"
+                    />
+                    {renderQuickActions()}
+                </div>
+
+                <div className="flex flex-col flex-grow">
+                    <h3 className="text-sm text-gray-900 line-clamp-2">{product.name}</h3>
+                    {renderPrice()}
+                </div>
+            </Link>
+        );
+    }
+
+    // Default vertical card
+    return (
+        <Link
+            to={`/product/${product._id}`}
+            className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all relative h-full flex flex-col"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
+            <div className="relative aspect-square">
+                <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                />
+                {renderQuickActions()}
+                {/* Quick view overlay */}
+                <div className={`absolute inset-0 bg-black/10 flex items-center justify-center transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+                    <button
+                        className="bg-white text-gray-900 py-2 px-6 rounded-full text-sm font-medium shadow-lg hover:bg-gray-100 transition-colors"
+                        onClick={(e) => e.preventDefault()}
+                    >
+                        Quick View
+                    </button>
+                </div>
+            </div>
+
+            <div className="p-4 flex flex-col flex-grow">
+                <h3 className="font-medium text-gray-900 line-clamp-2">{product.name}</h3>
+                {product.category && (
+                    <p className="text-xs text-gray-500 mt-1">{product.category}</p>
+                )}
+                {renderRating()}
+                {renderPrice()}
+
+                <div className="mt-auto pt-4">
+                    <button
+                        className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-2 px-4 rounded-lg text-sm font-medium hover:from-green-700 hover:to-green-800 transition-all flex items-center justify-center gap-2"
+                        onClick={(e) => e.preventDefault()}
+                    >
+                        <FaShoppingBag size={14} />
+                        <span>Add to Cart</span>
+                    </button>
+                </div>
+            </div>
+        </Link>
     );
 }
