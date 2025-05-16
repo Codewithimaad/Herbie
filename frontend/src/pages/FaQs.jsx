@@ -1,5 +1,9 @@
-import { useState } from "react";
-import { Accordion, AccordionItem } from "@radix-ui/react-accordion";
+import {
+    Accordion,
+    AccordionItem,
+    AccordionTrigger,
+    AccordionContent,
+} from "@radix-ui/react-accordion";
 import { ChevronDown } from "lucide-react";
 import HeadingText from "../components/HeadingText";
 
@@ -10,27 +14,26 @@ const categories = [
             {
                 question: "Do I need to have an account to shop with you?",
                 answer:
-                    "No, but setting up an account will allow you to order without having to enter your details every time you shop with us, making your shopping experience seamless.",
+                    "No, but creating an account makes checkout faster and allows order tracking.",
             },
             {
-                question: "How do I create an account with Saeed Ghani?",
+                question: "How do I create an account?",
                 answer:
-                    "Click on the ‘User’ sign > Click on the ‘Create an Account’ tab > Fill in your personal details > Click ‘Create an Account’.",
+                    "Click on the user icon > 'Create an Account' > Fill in your details > Submit.",
             },
             {
-                question: "What if I forget my password, how will I retrieve it?",
+                question: "What if I forget my password?",
                 answer:
-                    "Select 'FORGOT PASSWORD' on the login page, enter your email and follow the reset link. If you don't receive the email, check junk mail or contact us.",
+                    "Use 'Forgot Password' on the login page and follow the email instructions.",
             },
             {
-                question: "How can I update/edit my shipping or billing address details?",
+                question: "How can I update my address?",
                 answer:
-                    "Sign in, go to ‘My Account’, and update your address. For confirmed orders, contact customer service to request changes.",
+                    "Go to 'My Account' after signing in to manage your shipping/billing info.",
             },
             {
-                question: "How will I view my order details and history?",
-                answer:
-                    "Sign into ‘My Account’ and click on the order ID you wish to view. A confirmation email/SMS will also be sent after placing an order.",
+                question: "How can I view my order history?",
+                answer: "Log into your account and go to 'Order History'.",
             },
         ],
     },
@@ -38,88 +41,79 @@ const categories = [
         title: "Order Issues",
         faqs: [
             {
-                question: "I have not received a confirmation email/SMS?",
+                question: "I haven't received a confirmation email/SMS?",
                 answer:
-                    "Check your email address and contact number. Also, check junk mail. If not received within 4 hours, contact us with your order name.",
+                    "Check your spam folder. If still missing, contact our support team.",
             },
             {
-                question: "I received an email to say my order was unsuccessful",
+                question: "Why was my order unsuccessful?",
                 answer:
-                    "There may be various reasons. Check billing info and try again or contact our customer service.",
+                    "Please verify your billing information or try using a different payment method.",
             },
             {
-                question: "I can't checkout with some of the items in my basket",
+                question: "Why can't I checkout certain items?",
                 answer:
-                    "This may mean the item is out of stock. Also check if there’s a quantity limit per item.",
+                    "They may be out of stock or restricted by quantity limits.",
             },
             {
                 question: "How can I place an order?",
                 answer:
-                    "Sign in or create an account, add products to cart, proceed to checkout, enter billing/shipping info, select payment mode, and submit.",
+                    "Sign in, add items to your cart, proceed to checkout, and submit.",
             },
             {
-                question: "How will I know that you have received my order?",
+                question: "How do I know you received my order?",
                 answer:
-                    "You will receive an email/SMS with order ID, items, price, and estimated delivery after verification.",
+                    "You'll receive a confirmation email/SMS after successful order placement.",
             },
             {
-                question: "How can I check the status of my order?",
+                question: "How can I track my order?",
                 answer:
-                    "Log into your account and check order history for updates.",
+                    "Log into your account and check your order status in the dashboard.",
             },
             {
-                question: "What happens if the product ordered is out of stock?",
+                question: "What if the product is out of stock?",
                 answer:
-                    "We will contact you if we cannot deliver. You may get a replacement recommendation or visit our store.",
+                    "We'll contact you to offer alternatives or provide further assistance.",
             },
         ],
     },
-    // Add other categories similarly like "Order Amends & Cancellation", "Issue with Items Received", etc.
 ];
 
 export default function FAQsPage() {
-    const [openCategory, setOpenCategory] = useState(null);
-
     return (
-        <div className="p-6">
-            < HeadingText title='FAQS' />
+        <div className="px-0 py-8 md:px-8 mx-auto">
+            <HeadingText
+                title="Frequently Asked Questions"
+                description="Find answers to common questions about your shopping experience."
+            />
+
             {categories.map((category, i) => (
-                <div key={i} className="mb-8">
-                    <h2 className="text-xl font-semibold mb-4 text-purple-700 border-b pb-2">
+                <section key={i} className="mb-10">
+                    <h2 className="text-xl font-semibold text-green-700 mb-4 border-b pb-2">
                         {category.title}
                     </h2>
+
                     <Accordion type="single" collapsible className="space-y-3">
                         {category.faqs.map((faq, j) => (
                             <AccordionItem
-                                value={`${i}-${j}`}
                                 key={`${i}-${j}`}
-                                className="bg-white shadow-sm rounded-xl border border-gray-200"
+                                value={`${i}-${j}`}
+                                className="border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 hover:border-gray-300"
                             >
-                                <button
-                                    className="flex justify-between items-center w-full p-4 text-left text-lg font-medium hover:bg-gray-50 rounded-t-xl"
-                                    onClick={() =>
-                                        setOpenCategory((prev) =>
-                                            prev === `${i}-${j}` ? null : `${i}-${j}`
-                                        )
-                                    }
-                                >
+                                <AccordionTrigger className="flex items-center justify-between w-full bg-white px-4 py-3 text-left text-base font-medium text-gray-800 hover:bg-gray-50 transition-colors duration-200">
                                     {faq.question}
-                                    <ChevronDown
-                                        className={`transition-transform duration-200 ${openCategory === `${i}-${j}` ? "rotate-180" : ""
-                                            }`}
-                                    />
-                                </button>
-                                {openCategory === `${i}-${j}` && (
-                                    <div className="sm:p-2 md:p-4 text-gray-700 border-t text-base">
+                                    <ChevronDown className="h-5 w-5 shrink-0 transition-transform duration-300 ease-[cubic-bezier(0.87,_0,_0.13,_1)] group-data-[state=open]:rotate-180" />
+                                </AccordionTrigger>
+                                <AccordionContent className="overflow-hidden text-sm text-gray-700 transition-all duration-300 ease-[cubic-bezier(0.87,_0,_0.13,_1)] data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+                                    <div className="px-4 py-3 bg-gray-50 border-t">
                                         {faq.answer}
                                     </div>
-                                )}
+                                </AccordionContent>
                             </AccordionItem>
                         ))}
                     </Accordion>
-                </div>
+                </section>
             ))}
         </div>
     );
 }
-

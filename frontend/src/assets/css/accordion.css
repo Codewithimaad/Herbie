@@ -1,0 +1,34 @@
+.accordion-content {
+  overflow: hidden;
+  transition: all 300ms ease;
+}
+
+[data-state='open'] {
+  animation: accordion-down 300ms ease-out;
+}
+
+[data-state='closed'] {
+  animation: accordion-up 300ms ease-out;
+}
+
+@keyframes accordion-down {
+  from {
+    opacity: 0;
+    height: 0;
+  }
+  to {
+    opacity: 1;
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    opacity: 1;
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    opacity: 0;
+    height: 0;
+  }
+}
