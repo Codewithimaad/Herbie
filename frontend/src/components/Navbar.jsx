@@ -4,7 +4,7 @@ import { IoClose } from 'react-icons/io5';
 import { FiUser, FiLogIn, FiShoppingCart } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import navbarLogo from '../assets/images/logo.png'
+import navbarLogo from '../assets/images/Logo.png'
 
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
