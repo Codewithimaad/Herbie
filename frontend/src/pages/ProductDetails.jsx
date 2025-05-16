@@ -5,6 +5,7 @@ import image2 from '../assets/images/Herb1.webp';
 import image3 from '../assets/images/HeroSection.jpeg';
 import image4 from '../assets/images/HeroSection.jpeg';
 import { Star, Heart, ShieldCheck, Truck, ChevronRight } from 'lucide-react';
+import ReviewSection from '../components/ReviewSection';
 
 export default function ProductDetails() {
     const { id } = useParams();
@@ -187,6 +188,7 @@ export default function ProductDetails() {
                     </div>
                 </div>
             </div>
+            <ReviewSection />
         </section>
     );
 }
