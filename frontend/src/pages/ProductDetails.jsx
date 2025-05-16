@@ -21,12 +21,7 @@ export default function ProductDetails() {
 
     return (
         <section className="max-w-7xl mx-auto px-2 md:px-6 lg:px-8 py-12">
-            {/* Breadcrumbs */}
-            <div className="flex items-center text-sm text-gray-500 mb-6">
-                <span className="hover:text-green-600 cursor-pointer">Home</span>
-                <ChevronRight size={16} className="mx-2" />
-                <span className="text-green-700 font-medium">Product Details</span>
-            </div>
+
 
             <div className="flex flex-col lg:flex-row gap-12">
                 {/* Product Image Gallery - Modified for full-width image */}
