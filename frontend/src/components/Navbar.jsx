@@ -200,8 +200,10 @@ const Navbar = () => {
                                         name === 'MORE' ? (
                                             <li key="more-mobile" className="border-b border-gray-100 pb-4">
                                                 <button
-                                                    onClick={() => setIsMoreOpen(!isMoreOpen)}
+                                                    onClick={() => setIsMoreOpen(prev => !prev)}
                                                     className="w-full flex justify-between items-center text-lg font-medium text-gray-900 py-2"
+                                                    aria-expanded={isMoreOpen}
+                                                    aria-controls="more-dropdown"
                                                 >
                                                     <span>MORE</span>
                                                     <motion.span
