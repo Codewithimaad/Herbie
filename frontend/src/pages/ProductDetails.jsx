@@ -20,7 +20,7 @@ export default function ProductDetails() {
     ];
 
     return (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <section className="max-w-7xl mx-auto px-2 md:px-6 lg:px-8 py-12">
             {/* Breadcrumbs */}
             <div className="flex items-center text-sm text-gray-500 mb-6">
                 <span className="hover:text-green-600 cursor-pointer">Home</span>
@@ -29,14 +29,14 @@ export default function ProductDetails() {
             </div>
 
             <div className="flex flex-col lg:flex-row gap-12">
-                {/* Product Image Gallery */}
+                {/* Product Image Gallery - Modified for full-width image */}
                 <div className="lg:w-1/2">
-                    {/* Main Image */}
-                    <div className="relative rounded-2xl overflow-hidden bg-gray-50 aspect-square flex items-center justify-center mb-4 shadow-sm border border-gray-100">
+                    {/* Main Image - Removed padding and changed object-contain to object-cover */}
+                    <div className="relative rounded-2xl overflow-hidden bg-gray-50 aspect-square mb-4 shadow-sm border border-gray-100">
                         <img
                             src={mainImage}
                             alt={`Herb ${id}`}
-                            className="w-full h-full object-contain transition-opacity duration-300 hover:opacity-90 p-8"
+                            className="w-full h-full object-cover transition-opacity duration-300 hover:opacity-90"
                             onError={(e) => (e.target.src = '/herbs/placeholder.jpg')}
                         />
                         <button
@@ -50,13 +50,13 @@ export default function ProductDetails() {
                         </button>
                     </div>
 
-                    {/* Thumbnails */}
+                    {/* Thumbnails - Updated to match new full-width style */}
                     <div className="grid grid-cols-4 gap-3">
                         {images.map((img, index) => (
                             <button
                                 key={index}
                                 onClick={() => setMainImage(img)}
-                                className={`aspect-square rounded-xl overflow-hidden border-2 transition-all duration-200 flex items-center justify-center bg-gray-50 ${mainImage === img
+                                className={`aspect-square rounded-xl overflow-hidden border-2 transition-all duration-200 ${mainImage === img
                                     ? 'border-green-600 ring-2 ring-green-200'
                                     : 'border-gray-200 hover:border-green-400'
                                     }`}
@@ -64,14 +64,14 @@ export default function ProductDetails() {
                                 <img
                                     src={img}
                                     alt={`Thumbnail ${index + 1}`}
-                                    className="w-full h-full object-contain p-2"
+                                    className="w-full h-full object-cover"
                                 />
                             </button>
                         ))}
                     </div>
                 </div>
 
-                {/* Product Info */}
+                {/* Product Info (unchanged) */}
                 <div className="lg:w-1/2">
                     <div className="sticky top-24">
                         {/* Badges */}
