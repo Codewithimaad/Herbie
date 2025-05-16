@@ -15,7 +15,7 @@ const NewArrivals = () => {
 
     return (
         <section className="py-16">
-            <div className="container mx-auto px-4">
+            <div className="container mx-auto px-2 md:px-4">
                 <HeadingText
                     title="New Arrivals"
                     description="Discover our latest herbal additions. Fresh from nature, just for you."
