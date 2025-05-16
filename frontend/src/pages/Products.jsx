@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import ProductCard from '../components/ProductCard';
 import HeadingText from '../components/HeadingText';
-import { FaFilter, FaSearch, FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import image from '../assets/images/HeroSection.jpeg'
-
+import { FaFilter, FaSearch, FaChevronDown, FaChevronUp, FaFire, FaLeaf } from 'react-icons/fa';
+import image from '../assets/images/HeroSection.jpeg';
 
 const allProducts = [
     {
@@ -15,7 +14,8 @@ const allProducts = [
         rating: 4.5,
         reviews: 128,
         category: 'Tea Herbs',
-        isFeatured: true
+        isFeatured: true,
+        isBestSeller: true
     },
     {
         _id: '2',
@@ -55,7 +55,8 @@ const allProducts = [
         image: image,
         rating: 4.6,
         reviews: 176,
-        category: 'Culinary Herbs'
+        category: 'Culinary Herbs',
+        isNew: true
     },
     {
         _id: '6',
@@ -86,12 +87,12 @@ const allProducts = [
         image: image,
         rating: 4.1,
         reviews: 53,
-        category: 'Medicinal Herbs'
+        category: 'Medicinal Herbs',
+        isNew: true
     }
 ];
 
-const featuredProducts = allProducts.filter(product => product.isFeatured);
-const relatedProducts = allProducts.slice(-3);
+
 
 export default function Products() {
     const [showMore, setShowMore] = useState(false);
@@ -99,11 +100,20 @@ export default function Products() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
 
-    const categories = ['All', ...new Set(allProducts.map(product => product.category))];
+    const categories = ['All', 'New Arrivals', 'Best Sellers', ...new Set(allProducts.map(product => product.category))];
 
     const filteredProducts = allProducts.filter(product => {
         const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
+        let matchesCategory = true;
+
+        if (selectedCategory === 'Best Sellers') {
+            matchesCategory = product.isBestSeller;
+        } else if (selectedCategory === 'New Arrivals') {
+            matchesCategory = product.isNew;
+        } else if (selectedCategory !== 'All') {
+            matchesCategory = product.category === selectedCategory;
+        }
+
         return matchesSearch && matchesCategory;
     });
 
@@ -111,10 +121,10 @@ export default function Products() {
 
     return (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-
-
-            <HeadingText title='Our Herbal Collection'
-                description='Discover premium quality herbs sourced from organic farms to enhance your health and wellness naturally.' />
+            <HeadingText
+                title="Our Herbal Collection"
+                description="Discover premium quality herbs sourced from organic farms to enhance your health and wellness naturally."
+            />
 
             {/* Search and Filter Bar */}
             <div className="mb-12">
@@ -148,11 +158,13 @@ export default function Products() {
                                 <button
                                     key={category}
                                     onClick={() => setSelectedCategory(category)}
-                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedCategory === category
+                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${selectedCategory === category
                                         ? 'bg-green-600 text-white'
                                         : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                                         }`}
                                 >
+                                    {category === 'Best Sellers' && <FaFire className="text-amber-500" />}
+                                    {category === 'New Arrivals' && <FaLeaf className="text-green-500" />}
                                     {category}
                                 </button>
                             ))}
@@ -193,45 +205,7 @@ export default function Products() {
                 </div>
             )}
 
-            {/* Featured Products Carousel */}
-            {featuredProducts.length > 0 && (
-                <section className="mb-12">
-                    <HeadingText
-                        title="Featured Herbs"
-                        description="Our most popular and premium quality herbal selections"
-                    />
-                    <div className="relative">
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                            {featuredProducts.map((product) => (
-                                <ProductCard
-                                    key={product._id}
-                                    product={product}
-                                    className="h-full"
-                                />
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            )}
 
-            {/* Related Products */}
-            {relatedProducts.length > 0 && (
-                <section>
-                    <HeadingText
-                        title="Complete Your Herbal Journey"
-                        description="These herbs pair well with your selections"
-                    />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {relatedProducts.map((product) => (
-                            <ProductCard
-                                key={product._id}
-                                product={product}
-                                variant="horizontal"
-                            />
-                        ))}
-                    </div>
-                </section>
-            )}
         </section>
     );
 }
