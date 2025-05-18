@@ -1,19 +1,45 @@
 import { useParams } from 'react-router-dom';
-import { useState } from 'react';
-import image1 from '../assets/images/HeroSection.jpeg';
-import image2 from '../assets/images/Herb1.webp';
-import image3 from '../assets/images/HeroSection.jpeg';
-import image4 from '../assets/images/HeroSection.jpeg';
-import { Star, Heart, ShieldCheck, Truck, ChevronRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Star, Heart, ShieldCheck, Truck } from 'lucide-react';
 import ReviewSection from '../components/ReviewSection';
+import { useAuth } from '../context/authContext';
+import { useCart } from '../context/cartContext'; // Add this import
+
+
 
 export default function ProductDetails() {
     const { id } = useParams();
+    const [product, setProduct] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const [isWishlisted, setIsWishlisted] = useState(false);
+    const [mainImage, setMainImage] = useState('');
+    const { backendUrl } = useAuth();
+    const { addToCart } = useCart(); // Get addToCart from cart context
 
-    const images = [image1, image2, image3, image4];
-    const [mainImage, setMainImage] = useState(images[0]);
+
+
+    useEffect(() => {
+        // Fetch product details by id from backend API
+        async function fetchProduct() {
+            try {
+                const res = await fetch(`${backendUrl}/api/products/${id}`); // adjust URL to your backend route
+                if (!res.ok) throw new Error('Failed to fetch product');
+                const data = await res.json();
+                setProduct(data);
+                if (data.images && data.images.length > 0) {
+                    setMainImage(data.images[0]);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        fetchProduct();
+    }, [id]);
+
+    if (!product) {
+        return <div className="text-center py-20">Loading product details...</div>;
+    }
 
     const features = [
         { icon: <Truck size={18} />, text: "Free shipping on orders over $50" },
@@ -22,16 +48,13 @@ export default function ProductDetails() {
 
     return (
         <section className="max-w-7xl mx-auto px-2 md:px-6 lg:px-8 py-12">
-
-
             <div className="flex flex-col lg:flex-row gap-12">
-                {/* Product Image Gallery - Modified for full-width image */}
+                {/* Product Image Gallery */}
                 <div className="lg:w-1/2">
-                    {/* Main Image - Removed padding and changed object-contain to object-cover */}
                     <div className="relative rounded-2xl overflow-hidden bg-gray-50 aspect-square mb-4 shadow-sm border border-gray-100">
                         <img
                             src={mainImage}
-                            alt={`Herb ${id}`}
+                            alt={product.name}
                             className="w-full h-full object-cover transition-opacity duration-300 hover:opacity-90"
                             onError={(e) => (e.target.src = '/herbs/placeholder.jpg')}
                         />
@@ -46,9 +69,8 @@ export default function ProductDetails() {
                         </button>
                     </div>
 
-                    {/* Thumbnails - Updated to match new full-width style */}
                     <div className="grid grid-cols-4 gap-3">
-                        {images.map((img, index) => (
+                        {product.images.map((img, index) => (
                             <button
                                 key={index}
                                 onClick={() => setMainImage(img)}
@@ -61,27 +83,31 @@ export default function ProductDetails() {
                                     src={img}
                                     alt={`Thumbnail ${index + 1}`}
                                     className="w-full h-full object-cover"
+                                    onError={(e) => (e.target.src = '/herbs/placeholder.jpg')}
                                 />
                             </button>
                         ))}
                     </div>
                 </div>
 
-                {/* Product Info (unchanged) */}
+                {/* Product Info */}
                 <div className="lg:w-1/2">
                     <div className="sticky top-24">
-                        {/* Badges */}
                         <div className="flex gap-2 mb-4">
-                            <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                                Organic Certified
-                            </span>
-                            <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                                Best Seller
-                            </span>
+                            {product.isOrganic && (
+                                <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                    Organic Certified
+                                </span>
+                            )}
+                            {product.isBestSeller && (
+                                <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                    Best Seller
+                                </span>
+                            )}
                         </div>
 
                         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 tracking-tight">
-                            Premium Organic Herb Name
+                            {product.name}
                         </h1>
 
                         <div className="flex items-center mb-4">
@@ -90,28 +116,26 @@ export default function ProductDetails() {
                                     <Star
                                         key={i}
                                         size={18}
-                                        className={`${i < 4 ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                                        className={`${i < Math.floor(product.rating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
                                     />
                                 ))}
                             </div>
-                            <span className="text-sm text-gray-500 ml-2">(142 reviews)</span>
+                            <span className="text-sm text-gray-500 ml-2">({product.reviewCount} reviews)</span>
                         </div>
 
                         <div className="mb-6">
-                            <span className="text-3xl font-bold text-gray-900">$9.99</span>
-                            {false && ( // Example of showing original price
-                                <span className="text-lg text-gray-400 line-through ml-2">$12.99</span>
+                            <span className="text-3xl font-bold text-gray-900">${product.price.toFixed(2)}</span>
+                            {product.originalPrice && (
+                                <span className="text-lg text-gray-400 line-through ml-2">${product.originalPrice.toFixed(2)}</span>
                             )}
-                            <p className="text-green-700 text-sm mt-1">In stock & ready to ship</p>
+                            <p className={`text-sm mt-1 ${product.inStock ? 'text-green-700' : 'text-red-600'}`}>
+                                {product.inStock ? 'In stock & ready to ship' : 'Out of stock'}
+                            </p>
                         </div>
 
                         <div className="mb-8">
                             <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
-                            <p className="text-gray-600 leading-relaxed">
-                                This premium organic herb is carefully cultivated without synthetic pesticides or fertilizers.
-                                Our herbs are hand-picked at peak freshness to ensure maximum flavor and nutritional value.
-                                Perfect for culinary use, teas, and natural remedies.
-                            </p>
+                            <p className="text-gray-600 leading-relaxed">{product.description}</p>
                         </div>
 
                         <div className="space-y-3 mb-8">
@@ -149,9 +173,11 @@ export default function ProductDetails() {
                             <button
                                 className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-6 py-4 rounded-lg font-semibold text-lg shadow-md hover:shadow-lg transition-all transform hover:scale-[1.01] flex items-center justify-center gap-2"
                                 aria-label="Add to cart"
+                                onClick={() => addToCart(id, quantity)}
                             >
                                 Add to Cart
                             </button>
+
                             <button
                                 className="flex-1 bg-white border-2 border-green-600 text-green-700 hover:bg-green-50 px-6 py-4 rounded-lg font-semibold text-lg shadow-sm transition-colors flex items-center justify-center gap-2"
                             >
@@ -188,7 +214,9 @@ export default function ProductDetails() {
                     </div>
                 </div>
             </div>
-            <ReviewSection />
+
+            {/* Optional: Include Review Section if you have */}
+            <ReviewSection productId={id} />
         </section>
     );
 }

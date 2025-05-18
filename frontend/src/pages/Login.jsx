@@ -1,53 +1,93 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { FiLogIn } from 'react-icons/fi';
-import { FcGoogle } from 'react-icons/fc'; // Google icon
+import { FcGoogle } from 'react-icons/fc';
 import image from '../assets/images/HeroSection.jpeg';
+import { useAuth } from '../context/authContext';
 
 const Login = () => {
-    // Handler for Google login (you can connect it to your OAuth logic)
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const navigate = useNavigate();
+    const { login } = useAuth();
+
     const handleGoogleLogin = () => {
-        window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/auth/google`; // Adjust as per your backend route
+        window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/auth/google`;
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                setError(data.message || 'Login failed');
+                return;
+            }
+
+            // Call context login with user and token from response
+            login(data.user, data.token);
+
+            // Redirect or do whatever after login
+            navigate('/'); // example redirect after login
+
+        } catch (err) {
+            setError('Something went wrong, please try again.');
+        }
     };
 
     return (
         <div className="min-h-screen flex items-center justify-center md:px-4 py-8">
             <div className="w-full overflow-hidden grid grid-cols-1 md:grid-cols-2">
-                {/* Left - Image Section */}
                 <div className="hidden md:flex items-center justify-center">
-                    <img
-                        src={image}
-                        alt="Login Visual"
-                        className="w-full object-cover"
-                    />
+                    <img src={image} alt="Login Visual" className="w-full object-cover" />
                 </div>
 
-                {/* Right - Form Section */}
                 <div className="p-4 md:p-12 flex flex-col justify-center">
                     <h2 className="text-3xl font-bold text-green-800 mb-6">Welcome Back</h2>
                     <p className="text-gray-600 mb-8">
                         Please sign in to continue to <span className="font-semibold text-green-700">Herbie</span>
                     </p>
 
-                    <form className="space-y-6">
+                    <form className="space-y-6" onSubmit={handleSubmit}>
+                        {error && <p className="text-red-600 mb-2">{error}</p>}
+
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                                Email
+                            </label>
                             <input
                                 type="email"
                                 id="email"
                                 placeholder="you@example.com"
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 required
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                                Password
+                            </label>
                             <input
                                 type="password"
                                 id="password"
                                 placeholder="••••••••"
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 required
                             />
                         </div>
@@ -71,7 +111,6 @@ const Login = () => {
                         </button>
                     </form>
 
-                    {/* Google Login Button */}
                     <div className="mt-6">
                         <button
                             type="button"

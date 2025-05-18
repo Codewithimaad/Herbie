@@ -1,11 +1,9 @@
 import { Link } from 'react-router-dom';
-import { FiHeart, FiEye, FiShare2 } from 'react-icons/fi';
 import { FaShoppingBag, FaStar, FaRegStar } from 'react-icons/fa';
 import { useState } from 'react';
 
 export default function ProductCard({ product, variant = 'vertical', compact = false }) {
     const [isHovered, setIsHovered] = useState(false);
-    const [isWishlisted, setIsWishlisted] = useState(false);
 
     // Render product rating stars
     const renderRating = () => !compact && (
@@ -21,29 +19,12 @@ export default function ProductCard({ product, variant = 'vertical', compact = f
         </div>
     );
 
-    // Render quick action buttons (visible on hover)
-    const renderQuickActions = () => !compact && (
-        <div className={`absolute top-2 right-2 flex flex-col gap-2 transition-all ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
-            <button
-                onClick={(e) => {
-                    e.preventDefault();
-                    setIsWishlisted(!isWishlisted);
-                }}
-                className="p-1.5 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
-            >
-                {isWishlisted ? (
-                    <FiHeart className="text-red-500 fill-current" size={14} />
-                ) : (
-                    <FiHeart size={14} />
-                )}
-            </button>
-        </div>
-    );
-
     // Render price with discount if available
     const renderPrice = () => (
         <div className={compact ? "mt-1" : "mt-2"}>
-            <span className={`${compact ? "text-base" : "text-lg"} font-bold text-gray-900`}>${product.price.toFixed(2)}</span>
+            <span className={`${compact ? "text-base" : "text-lg"} font-bold text-gray-900`}>
+                ${product.price.toFixed(2)}
+            </span>
             {product.originalPrice && !compact && (
                 <span className="text-xs text-gray-400 line-through ml-1">
                     ${product.originalPrice.toFixed(2)}
@@ -52,7 +33,7 @@ export default function ProductCard({ product, variant = 'vertical', compact = f
         </div>
     );
 
-    // Horizontal card variant (for related products)
+    // Horizontal card variant
     if (variant === 'horizontal') {
         return (
             <Link
@@ -61,13 +42,15 @@ export default function ProductCard({ product, variant = 'vertical', compact = f
             >
                 <div className={`relative ${compact ? "w-20 h-20" : "sm:w-1/3 aspect-square"}`}>
                     <img
-                        src={product.image}
+                        src={product.images?.[0] || '/fallback.jpg'}
                         alt={product.name}
-                        className="w-full h-full object-cover rounded"
+                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                     />
                 </div>
                 <div className={`flex flex-col ${compact ? "pl-2 flex-grow" : "sm:w-2/3 p-2"}`}>
-                    <h3 className={`${compact ? "text-sm" : "font-medium"} text-gray-900 line-clamp-2`}>{product.name}</h3>
+                    <h3 className={`${compact ? "text-sm" : "font-medium"} text-gray-900 line-clamp-2`}>
+                        {product.name}
+                    </h3>
                     {!compact && renderRating()}
                     {renderPrice()}
                     {!compact && (
@@ -95,13 +78,11 @@ export default function ProductCard({ product, variant = 'vertical', compact = f
             >
                 <div className="relative aspect-square mb-2">
                     <img
-                        src={product.image}
+                        src={product.images?.[0] || '/fallback.jpg'}
                         alt={product.name}
                         className="w-full h-full object-cover rounded"
                     />
-                    {renderQuickActions()}
                 </div>
-
                 <div className="flex flex-col flex-grow">
                     <h3 className="text-sm text-gray-900 line-clamp-2">{product.name}</h3>
                     {renderPrice()}
@@ -120,20 +101,11 @@ export default function ProductCard({ product, variant = 'vertical', compact = f
         >
             <div className="relative aspect-square">
                 <img
-                    src={product.image}
+                    src={product.images?.[0] || '/fallback.jpg'}
                     alt={product.name}
                     className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                 />
-                {renderQuickActions()}
-                {/* Quick view overlay */}
-                <div className={`absolute inset-0 bg-black/10 flex items-center justify-center transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
-                    <button
-                        className="bg-white text-gray-900 py-2 px-6 rounded-full text-sm font-medium shadow-lg hover:bg-gray-100 transition-colors"
-                        onClick={(e) => e.preventDefault()}
-                    >
-                        Quick View
-                    </button>
-                </div>
+
             </div>
 
             <div className="p-4 flex flex-col flex-grow">
@@ -143,7 +115,6 @@ export default function ProductCard({ product, variant = 'vertical', compact = f
                 )}
                 {renderRating()}
                 {renderPrice()}
-
                 <div className="mt-auto pt-4">
                     <button
                         className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-2 px-4 rounded-lg text-sm font-medium hover:from-green-700 hover:to-green-800 transition-all flex items-center justify-center gap-2"

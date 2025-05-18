@@ -1,109 +1,55 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 import ProductCard from '../components/ProductCard';
 import HeadingText from '../components/HeadingText';
-import { FaFilter, FaSearch, FaChevronDown, FaChevronUp, FaFire, FaLeaf } from 'react-icons/fa';
-import image from '../assets/images/HeroSection.jpeg';
-
-const allProducts = [
-    {
-        _id: '1',
-        name: 'Organic Chamomile Flowers',
-        price: 5.99,
-        originalPrice: 7.99,
-        image: image,
-        rating: 4.5,
-        reviews: 128,
-        category: 'Tea Herbs',
-        isFeatured: true,
-        isBestSeller: true
-    },
-    {
-        _id: '2',
-        name: 'Peppermint Leaves',
-        price: 3.49,
-        image: image,
-        rating: 4.2,
-        reviews: 87,
-        category: 'Culinary Herbs',
-        isNew: true
-    },
-    {
-        _id: '3',
-        name: 'Premium Lavender Buds',
-        price: 6.99,
-        originalPrice: 8.99,
-        image: image,
-        rating: 4.8,
-        reviews: 215,
-        category: 'Aromatherapy',
-        isFeatured: true,
-        isBestSeller: true
-    },
-    {
-        _id: '4',
-        name: 'Echinacea Root',
-        price: 7.99,
-        image: image,
-        rating: 4.3,
-        reviews: 64,
-        category: 'Medicinal Herbs'
-    },
-    {
-        _id: '5',
-        name: 'Rosemary Leaves',
-        price: 4.99,
-        image: image,
-        rating: 4.6,
-        reviews: 176,
-        category: 'Culinary Herbs',
-        isNew: true
-    },
-    {
-        _id: '6',
-        name: 'Lemon Thyme',
-        price: 4.49,
-        originalPrice: 5.99,
-        image: image,
-        rating: 4.4,
-        reviews: 92,
-        category: 'Culinary Herbs',
-        isNew: true
-    },
-    {
-        _id: '7',
-        name: 'Holy Basil (Tulsi)',
-        price: 5.49,
-        image: image,
-        rating: 4.7,
-        reviews: 203,
-        category: 'Medicinal Herbs',
-        isBestSeller: true
-    },
-    {
-        _id: '8',
-        name: 'Dandelion Root',
-        price: 6.49,
-        originalPrice: 7.99,
-        image: image,
-        rating: 4.1,
-        reviews: 53,
-        category: 'Medicinal Herbs',
-        isNew: true
-    }
-];
-
-
+import {
+    FaFilter, FaSearch, FaChevronDown,
+    FaChevronUp, FaFire, FaLeaf
+} from 'react-icons/fa';
+import { useAuth } from '../context/authContext';
 
 export default function Products() {
+    const [products, setProducts] = useState([]);
     const [showMore, setShowMore] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const { backendUrl } = useAuth();
 
-    const categories = ['All', 'New Arrivals', 'Best Sellers', ...new Set(allProducts.map(product => product.category))];
+    // Fetch products from backend
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const res = await axios.get(`${backendUrl}/api/products`);
+                console.log('Raw product response:', res.data);
 
-    const filteredProducts = allProducts.filter(product => {
-        const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+                let fetchedProducts = [];
+
+                // Handle two common response formats
+                if (Array.isArray(res.data)) {
+                    fetchedProducts = res.data;
+                } else if (Array.isArray(res.data.products)) {
+                    fetchedProducts = res.data.products;
+                } else {
+                    console.warn('Expected "products" to be an array.');
+                }
+
+                setProducts(fetchedProducts);
+            } catch (err) {
+                console.error('Failed to load products:', err);
+                setProducts([]);
+            }
+        };
+        fetchProducts();
+    }, [backendUrl]);
+
+
+    // Extract categories from existing products
+    const categories = ['All', 'New Arrivals', 'Best Sellers', ...new Set(products.map(p => p.category || 'Other'))];
+
+    // Filter products
+    const filteredProducts = products.filter(product => {
+        const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase());
         let matchesCategory = true;
 
         if (selectedCategory === 'Best Sellers') {
@@ -126,7 +72,7 @@ export default function Products() {
                 description="Discover premium quality herbs sourced from organic farms to enhance your health and wellness naturally."
             />
 
-            {/* Search and Filter Bar */}
+            {/* Search and Filters */}
             <div className="mb-12">
                 <div className="flex flex-col md:flex-row gap-4 mb-6">
                     <div className="relative flex-grow">
@@ -149,7 +95,7 @@ export default function Products() {
                     </button>
                 </div>
 
-                {/* Expanded Filters */}
+                {/* Filter Categories */}
                 {showFilters && (
                     <div className="bg-white p-6 rounded-lg shadow-md mb-6">
                         <h3 className="font-medium text-lg mb-4">Filter by Category</h3>
@@ -173,7 +119,7 @@ export default function Products() {
                 )}
             </div>
 
-            {/* Products Grid */}
+            {/* Product Grid */}
             {filteredProducts.length > 0 ? (
                 <>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-12">
@@ -186,11 +132,10 @@ export default function Products() {
                         ))}
                     </div>
 
-                    {/* Show More/Less Button */}
                     {filteredProducts.length > 8 && (
                         <div className="text-center mb-16">
                             <button
-                                onClick={() => setShowMore((prev) => !prev)}
+                                onClick={() => setShowMore(prev => !prev)}
                                 className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-medium transition duration-300 shadow-md hover:shadow-lg"
                             >
                                 {showMore ? 'Show Less' : 'View All Products'}
@@ -204,8 +149,6 @@ export default function Products() {
                     <p className="text-gray-500">Try adjusting your search or filter criteria</p>
                 </div>
             )}
-
-
         </section>
     );
 }
