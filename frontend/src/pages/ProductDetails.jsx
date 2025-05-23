@@ -8,14 +8,18 @@ import AddToCartButton from '../components/addToCart';
 
 
 
-export default function ProductDetails() {
+export default function ProductDetails({ productId }) {
     const { id } = useParams();
     const [product, setProduct] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const [isWishlisted, setIsWishlisted] = useState(false);
     const [mainImage, setMainImage] = useState('');
     const { backendUrl } = useAuth();
+
+
     const { addToCart, currency } = useCart(); // Get addToCart from cart context
+
+
 
 
 
@@ -37,6 +41,22 @@ export default function ProductDetails() {
 
         fetchProduct();
     }, [id]);
+
+    // Fetch reviews on mount and when productId changes
+    useEffect(() => {
+        const loadReviews = async () => {
+            try {
+                await fetchReviews(productId);
+                // Since we removed pagination, we'll assume all reviews are loaded at once
+                setHasMoreReviews(false);
+            } catch (err) {
+                console.error('Error loading reviews:', err);
+                toast.error('Failed to load reviews');
+            }
+        };
+        loadReviews();
+    }, [productId]);
+
 
     if (!product) {
         return <div className="text-center py-20">Loading product details...</div>;
