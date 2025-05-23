@@ -157,7 +157,7 @@ export default function Cart() {
     }
 
     return (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+        <section className="max-w-7xl mx-auto px-0 sm:px-6 py-12">
             <motion.h2
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -295,7 +295,7 @@ export default function Cart() {
 
                     <Link
                         to="/checkout"
-                        className="block w-full text-center py-3.5 rounded-xl bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold text-lg hover:from-green-700 hover:to-green-800 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="flex w-full text-center py-2 sm:py-3.5 rounded-xl bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold text-sm sm:text-lg hover:from-green-700 hover:to-green-800 transition-all shadow-md hover:shadow-lg items-center justify-center gap-2 disabled:opacity-50"
                         disabled={localLoading}
                     >
                         {localLoading ? 'Processing...' : 'Proceed to Checkout'} {!localLoading && <FiArrowRight />}

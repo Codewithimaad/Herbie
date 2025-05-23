@@ -21,16 +21,12 @@ export default function Checkout() {
         city: '',
         country: 'Pakistan',
         zip: '',
-        cardNumber: '',
-        expiry: '',
-        cvv: '',
-        easypaisaNumber: '',
-        paymentMethod: 'card',
+        paymentMethod: 'cod', // Default to COD since others are disabled
     });
     const [formErrors, setFormErrors] = useState({});
     const [activeSection, setActiveSection] = useState('shipping');
     const [isProcessing, setIsProcessing] = useState(false);
-    const [isOrderPlaced, setIsOrderPlaced] = useState(false); // New state to track order placement
+    const [isOrderPlaced, setIsOrderPlaced] = useState(false);
 
     // Redirect to login if not authenticated
     useEffect(() => {
@@ -55,7 +51,7 @@ export default function Checkout() {
         }
     }, [cartItems, isLoading, error, navigate, isOrderPlaced]);
 
-    // Calculate totals (same as Cart)
+    // Calculate totals
     const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const shippingFee = subtotal > 50 ? 0 : 4.99;
     const taxRate = 0.08;
@@ -83,30 +79,6 @@ export default function Checkout() {
             errors.zip = 'ZIP code must be 5 digits';
         }
 
-        if (form.paymentMethod === 'card') {
-            if (!form.cardNumber.trim()) {
-                errors.cardNumber = 'Card number is required';
-            } else if (!/^\d{4}\s\d{4}\s\d{4}\s\d{4}$/.test(form.cardNumber)) {
-                errors.cardNumber = 'Card number must be 16 digits (XXXX XXXX XXXX XXXX)';
-            }
-            if (!form.expiry.trim()) {
-                errors.expiry = 'Expiry date is required';
-            } else if (!/^(0[1-9]|1[0-2])\/[0-9]{2}$/.test(form.expiry)) {
-                errors.expiry = 'Expiry format: MM/YY';
-            }
-            if (!form.cvv.trim()) {
-                errors.cvv = 'CVV is required';
-            } else if (!/^\d{3,4}$/.test(form.cvv)) {
-                errors.cvv = 'CVV must be 3 or 4 digits';
-            }
-        } else if (form.paymentMethod === 'easypaisa') {
-            if (!form.easypaisaNumber.trim()) {
-                errors.easypaisaNumber = 'Easypaisa number is required';
-            } else if (!/^03[0-4][0-9][0-9]{7}$/.test(form.easypaisaNumber)) {
-                errors.easypaisaNumber = 'Easypaisa format: 03XXXXXXXXX';
-            }
-        }
-
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
     };
@@ -115,23 +87,11 @@ export default function Checkout() {
         const { name, value } = e.target;
         let formattedValue = value;
 
-        if (name === 'cardNumber') {
-            formattedValue = value
-                .replace(/\D/g, '')
-                .slice(0, 16)
-                .replace(/(\d{4})(?=\d)/g, '$1 ');
-        } else if (name === 'expiry') {
-            formattedValue = value
-                .replace(/\D/g, '')
-                .slice(0, 4)
-                .replace(/(\d{2})(?=\d)/g, '$1/');
-        } else if (name === 'phone' || name === 'easypaisaNumber') {
+        if (name === 'phone') {
             formattedValue = value
                 .replace(/\D/g, '')
                 .slice(0, 11)
                 .replace(/^(03\d{2})(\d{0,7})/, '$1-$2');
-        } else if (name === 'cvv') {
-            formattedValue = value.replace(/\D/g, '').slice(0, 4);
         } else if (name === 'zip') {
             formattedValue = value.replace(/\D/g, '').slice(0, 5);
         }
@@ -166,15 +126,7 @@ export default function Checkout() {
                     zip: form.zip,
                 },
                 paymentMethod: form.paymentMethod,
-                paymentDetails:
-                    form.paymentMethod === 'card'
-                        ? {
-                            cardNumber: form.cardNumber.slice(-4),
-                            expiry: form.expiry,
-                        }
-                        : form.paymentMethod === 'easypaisa'
-                            ? { easypaisaNumber: form.easypaisaNumber }
-                            : {},
+                paymentDetails: {},
                 totals: {
                     subtotal,
                     shipping: shippingFee,
@@ -192,7 +144,7 @@ export default function Checkout() {
                 }
             );
 
-            setIsOrderPlaced(true); // Set flag before clearing cart
+            setIsOrderPlaced(true);
             await clearCart();
             toast.success('Order placed successfully!');
             navigate('/orders', { state: { order: response.data.order } });
@@ -245,7 +197,7 @@ export default function Checkout() {
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Left Column - Checkout Steps */}
                     <div className="lg:w-2/3">
-                        <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+                        <div className="bg-white md:rounded-xl md:shadow-lg overflow-hidden mb-6">
                             {/* Checkout Steps Header */}
                             <div className="flex border-b border-gray-200">
                                 <button
@@ -292,7 +244,7 @@ export default function Checkout() {
                                                         name="name"
                                                         value={form.name}
                                                         onChange={handleChange}
-                                                        className={`w-full px-4 py-2.5 border ${formErrors.name ? 'border-red-500' : 'border-gray-300'
+                                                        className={`w-full px-4 py-2.5 bg-gray-50  ${formErrors.name ? 'border-red-500' : 'border-gray-300'
                                                             } rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500`}
                                                     />
                                                     {formErrors.name && (
@@ -308,7 +260,7 @@ export default function Checkout() {
                                                         name="email"
                                                         value={form.email}
                                                         onChange={handleChange}
-                                                        className={`w-full px-4 py-2.5 border ${formErrors.email ? 'border-red-500' : 'border-gray-300'
+                                                        className={`w-full px-4 py-2.5 bg-gray-50 ${formErrors.email ? 'border-red-500' : 'border-gray-300'
                                                             } rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500`}
                                                     />
                                                     {formErrors.email && (
@@ -327,7 +279,7 @@ export default function Checkout() {
                                                     value={form.phone}
                                                     onChange={handleChange}
                                                     placeholder="03XX-XXXXXXX"
-                                                    className={`w-full px-4 py-2.5 border ${formErrors.phone ? 'border-red-500' : 'border-gray-300'
+                                                    className={`w-full px-4 py-2.5 bg-gray-50  ${formErrors.phone ? 'border-red-500' : 'border-gray-300'
                                                         } rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500`}
                                                 />
                                                 {formErrors.phone && (
@@ -344,7 +296,7 @@ export default function Checkout() {
                                                     value={form.address}
                                                     onChange={handleChange}
                                                     rows={3}
-                                                    className={`w-full px-4 py-2.5 border ${formErrors.address ? 'border-red-500' : 'border-gray-300'
+                                                    className={`w-full px-4 py-2.5 bg-gray-50  ${formErrors.address ? 'border-red-500' : 'border-gray-300'
                                                         } rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none`}
                                                 />
                                                 {formErrors.address && (
@@ -362,7 +314,7 @@ export default function Checkout() {
                                                         name="city"
                                                         value={form.city}
                                                         onChange={handleChange}
-                                                        className={`w-full px-4 py-2.5 border ${formErrors.city ? 'border-red-500' : 'border-gray-300'
+                                                        className={`w-full px-4 py-2.5 bg-gray-50  ${formErrors.city ? 'border-red-500' : 'border-gray-300'
                                                             } rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500`}
                                                     />
                                                     {formErrors.city && (
@@ -378,7 +330,7 @@ export default function Checkout() {
                                                             name="country"
                                                             value={form.country}
                                                             onChange={handleChange}
-                                                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 appearance-none"
+                                                            className="w-full px-4 py-2.5 bg-gray-50  border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 appearance-none"
                                                         >
                                                             {countries.map((country) => (
                                                                 <option key={country} value={country}>
@@ -398,7 +350,7 @@ export default function Checkout() {
                                                         name="zip"
                                                         value={form.zip}
                                                         onChange={handleChange}
-                                                        className={`w-full px-4 py-2.5 border ${formErrors.zip ? 'border-red-500' : 'border-gray-300'
+                                                        className={`w-full px-4 py-2.5 bg-gray-50  ${formErrors.zip ? 'border-red-500' : 'border-gray-300'
                                                             } rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500`}
                                                     />
                                                     {formErrors.zip && (
@@ -434,120 +386,27 @@ export default function Checkout() {
                                         <div className="space-y-4">
                                             {/* Payment Options */}
                                             <div className="space-y-4">
+                                                {/* Disabled Card Payment */}
                                                 <div
-                                                    className={`p-4 border rounded-xl cursor-pointer transition-all ${form.paymentMethod === 'card'
-                                                        ? 'border-green-500 bg-green-50'
-                                                        : 'border-gray-200 hover:border-gray-300'
-                                                        }`}
-                                                    onClick={() => setForm((prev) => ({ ...prev, paymentMethod: 'card' }))}
+                                                    className={`p-4 border rounded-xl cursor-not-allowed bg-gray-100 opacity-75`}
                                                 >
                                                     <div className="flex items-center">
-                                                        <FiCreditCard className="text-xl mr-3 text-gray-700" />
-                                                        <span className="font-medium">Credit/Debit Card</span>
+                                                        <FiCreditCard className="text-xl mr-3 text-gray-500" />
+                                                        <span className="font-medium text-gray-500">Credit/Debit Card (Temporarily Unavailable)</span>
                                                     </div>
-                                                    {form.paymentMethod === 'card' && (
-                                                        <div className="mt-4 space-y-3">
-                                                            <div className="relative">
-                                                                <input
-                                                                    type="text"
-                                                                    name="cardNumber"
-                                                                    value={form.cardNumber}
-                                                                    onChange={handleChange}
-                                                                    placeholder="XXXX XXXX XXXX XXXX"
-                                                                    className={`w-full px-4 py-2.5 border ${formErrors.cardNumber
-                                                                        ? 'border-red-500'
-                                                                        : 'border-gray-300'
-                                                                        } rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500`}
-                                                                />
-                                                                <div className="absolute right-3 top-3 flex space-x-2">
-                                                                    <div className="w-8 h-5 bg-blue-500 rounded-sm"></div>
-                                                                    <div className="w-8 h-5 bg-yellow-400 rounded-sm"></div>
-                                                                    <div className="w-8 h-5 bg-red-500 rounded-sm"></div>
-                                                                </div>
-                                                                {formErrors.cardNumber && (
-                                                                    <p className="text-red-500 text-xs mt-1">
-                                                                        {formErrors.cardNumber}
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                            <div className="grid grid-cols-2 gap-4">
-                                                                <div>
-                                                                    <input
-                                                                        type="text"
-                                                                        name="expiry"
-                                                                        value={form.expiry}
-                                                                        onChange={handleChange}
-                                                                        placeholder="MM/YY"
-                                                                        className={`w-full px-4 py-2.5 border ${formErrors.expiry
-                                                                            ? 'border-red-500'
-                                                                            : 'border-gray-300'
-                                                                            } rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500`}
-                                                                    />
-                                                                    {formErrors.expiry && (
-                                                                        <p className="text-red-500 text-xs mt-1">
-                                                                            {formErrors.expiry}
-                                                                        </p>
-                                                                    )}
-                                                                </div>
-                                                                <div className="relative">
-                                                                    <input
-                                                                        type="password"
-                                                                        name="cvv"
-                                                                        value={form.cvv}
-                                                                        onChange={handleChange}
-                                                                        placeholder="CVV"
-                                                                        className={`w-full px-4 py-2.5 border ${formErrors.cvv
-                                                                            ? 'border-red-500'
-                                                                            : 'border-gray-300'
-                                                                            } rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500`}
-                                                                    />
-                                                                    <FiLock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                                                                    {formErrors.cvv && (
-                                                                        <p className="text-red-500 text-xs mt-1">
-                                                                            {formErrors.cvv}
-                                                                        </p>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    )}
                                                 </div>
 
+                                                {/* Disabled Easypaisa Payment */}
                                                 <div
-                                                    className={`p-4 border rounded-xl cursor-pointer transition-all ${form.paymentMethod === 'easypaisa'
-                                                        ? 'border-green-500 bg-green-50'
-                                                        : 'border-gray-200 hover:border-gray-300'
-                                                        }`}
-                                                    onClick={() =>
-                                                        setForm((prev) => ({ ...prev, paymentMethod: 'easypaisa' }))
-                                                    }
+                                                    className={`p-4 border rounded-xl cursor-not-allowed bg-gray-100 opacity-75`}
                                                 >
                                                     <div className="flex items-center">
-                                                        <FiSmartphone className="text-xl mr-3 text-gray-700" />
-                                                        <span className="font-medium">Easypaisa</span>
+                                                        <FiSmartphone className="text-xl mr-3 text-gray-500" />
+                                                        <span className="font-medium text-gray-500">Easypaisa (Temporarily Unavailable)</span>
                                                     </div>
-                                                    {form.paymentMethod === 'easypaisa' && (
-                                                        <div className="mt-4">
-                                                            <input
-                                                                type="text"
-                                                                name="easypaisaNumber"
-                                                                value={form.easypaisaNumber}
-                                                                onChange={handleChange}
-                                                                placeholder="03XX-XXXXXXX"
-                                                                className={`w-full px-4 py-2.5 border ${formErrors.easypaisaNumber
-                                                                    ? 'border-red-500'
-                                                                    : 'border-gray-300'
-                                                                    } rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500`}
-                                                            />
-                                                            {formErrors.easypaisaNumber && (
-                                                                <p className="text-red-500 text-xs mt-1">
-                                                                    {formErrors.easypaisaNumber}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    )}
                                                 </div>
 
+                                                {/* Only COD enabled */}
                                                 <div
                                                     className={`p-4 border rounded-xl cursor-pointer transition-all ${form.paymentMethod === 'cod'
                                                         ? 'border-green-500 bg-green-50'
@@ -609,12 +468,12 @@ export default function Checkout() {
 
                     {/* Right Column - Order Summary */}
                     <div className="lg:w-1/3">
-                        <div className="bg-white rounded-xl shadow-sm overflow-hidden sticky top-6">
+                        <div className="bg-white rounded-xl shadow-lg overflow-hidden sticky top-6">
                             <h3 className="text-xl font-semibold text-gray-800 p-6 border-b border-gray-200">
                                 Order Summary
                             </h3>
 
-                            <div className="p-6 space-y-4">
+                            <div className="p-6 space-y-4 text-sm md:text-base">
                                 <div className="flex justify-between">
                                     <span className="text-gray-600">
                                         Subtotal ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} items)

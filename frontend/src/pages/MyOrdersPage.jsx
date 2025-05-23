@@ -135,7 +135,7 @@ const MyOrdersPage = () => {
     // Error state
     if (error) {
         return (
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-8">
                 <section className="flex flex-col items-center justify-center min-h-[60vh] space-y-4 text-center px-4">
                     <div className="text-red-500 bg-red-50 p-4 rounded-lg max-w-md">
                         Error loading orders: {error}
@@ -152,7 +152,7 @@ const MyOrdersPage = () => {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-8">
             {/* Cancel Order Modal */}
             <Transition appear show={showCancelModal} as={Fragment}>
                 <Dialog as="div" className="relative z-50" onClose={() => setShowCancelModal(false)}>
@@ -219,9 +219,10 @@ const MyOrdersPage = () => {
             <div className="mb-8">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Order History</h1>
-                        <p className="text-gray-600 mt-1">View and manage your recent purchases</p>
+                        <h1 className="text-2xl text-center md:text-start md:text-3xl font-bold text-gray-900">Order History</h1>
+                        <p className="text-gray-600 text-center md:text-start mt-1">View and manage your recent purchases</p>
                     </div>
+
                     <div className="relative w-full md:w-80">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <Search className="h-5 w-5 text-gray-400" />
@@ -470,7 +471,7 @@ const MyOrdersPage = () => {
                                                 </button>
                                             )}
                                             <button
-                                                onClick={() => navigate(`/products/${order.itemsDetails[0]?.productId}#reviews`)}
+                                                onClick={() => navigate(`/product/${order.itemsDetails[0]?.productId}#reviews`)}
                                                 className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
                                             >
                                                 Leave review
@@ -582,7 +583,7 @@ const MyOrdersPage = () => {
                         </div>
                     ))}
                 </div>
-            )}
+            )}ss
 
             {/* Pagination - Desktop */}
             {filteredOrders.length > 0 && (
