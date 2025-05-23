@@ -29,7 +29,12 @@ const Navbar = () => {
     const { user, token, logout } = useAuth();
     const { cartItems } = useCart();
 
-    const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+    const toggleMenu = () => {
+        setIsMenuOpen(!isMenuOpen);
+        // Close other dropdowns when menu is toggled
+        setIsMoreOpen(false);
+        setIsUserDropdownOpen(false);
+    };
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -53,11 +58,12 @@ const Navbar = () => {
         { name: 'CONTACT', path: '/contact' },
     ];
 
-    const cartProductCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+    const cartProductCount = cartItems.length;
+
 
     return (
         <header className="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-100">
-            <div className="container mx-auto px-4 py-3">
+            <div className="container mx-auto px-4 sm:px-8 py-4 sm:py-5">
                 <div className="flex items-center justify-between">
                     {/* Logo */}
                     <div className="flex items-center gap-3">
@@ -222,10 +228,6 @@ const Navbar = () => {
                                                         <FiChevronRight className="text-gray-400" size={14} />
                                                     </Link>
                                                 </motion.div>
-
-
-
-
                                             </div>
 
                                             {/* Logout Section */}
@@ -351,15 +353,15 @@ const Navbar = () => {
                             </div>
                         ) : (
                             <Link to="/login" className="flex items-center gap-1 text-sm text-green-800 hover:text-green-600 transition-colors">
-                                <FiUser size={20} />
+                                <FiUser size={25} />
                             </Link>
                         )}
 
                         <Link
                             to='/cart'
-                            className="relative flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition-all"
+                            className="relative flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white p-2 px-4 py-3 rounded-lg transition-all"
                         >
-                            <FiShoppingCart size={20} />
+                            <FiShoppingCart size={15} />
                             {cartProductCount > 0 && (
                                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                                     {cartProductCount}
@@ -375,7 +377,7 @@ const Navbar = () => {
                             {isMenuOpen ? (
                                 <IoClose size={24} className="text-gray-700" />
                             ) : (
-                                <GiHamburgerMenu size={24} />
+                                <GiHamburgerMenu size={30} />
                             )}
                         </button>
                     </div>
@@ -388,10 +390,23 @@ const Navbar = () => {
                             initial={{ x: '-100%', opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
                             exit={{ x: '-100%', opacity: 0 }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 120 }}
+                            transition={{
+                                type: 'spring',
+                                damping: 30,
+                                stiffness: 300,
+                                mass: 0.5
+                            }}
                             className="fixed inset-0 z-40 bg-white shadow-xl lg:hidden pt-20 overflow-y-auto"
                         >
                             <div className="container px-4 py-6">
+                                <button
+                                    onClick={toggleMenu}
+                                    className="absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-700"
+                                    aria-label="Close menu"
+                                >
+                                    <IoClose size={30} />
+                                </button>
+
                                 <ul className="space-y-4">
                                     {navLinks.map(({ name, path }) =>
                                         name === 'MORE' ? (
@@ -465,42 +480,7 @@ const Navbar = () => {
                                     )}
                                 </ul>
 
-                                <div className="mt-8 pt-4 border-t border-gray-100">
-                                    {token && user ? (
-                                        <div className="flex items-center gap-3 mb-6">
-                                            <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-green-500 to-blue-500 flex items-center justify-center text-white font-medium">
-                                                {user.name.charAt(0).toUpperCase()}
-                                            </div>
-                                            <div>
-                                                <p className="font-medium text-gray-900">{user.name}</p>
-                                                <p className="text-sm text-gray-500">{user.email}</p>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <Link
-                                            to="/login"
-                                            onClick={() => setIsMenuOpen(false)}
-                                            className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg text-lg font-medium mb-6"
-                                        >
-                                            <FiLogIn size={20} />
-                                            Login / Register
-                                        </Link>
-                                    )}
 
-                                    <Link
-                                        to='/cart'
-                                        onClick={() => setIsMenuOpen(false)}
-                                        className="w-full flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-800 px-6 py-3 rounded-lg text-lg font-medium relative"
-                                    >
-                                        <FiShoppingCart size={20} />
-                                        Cart
-                                        {cartProductCount > 0 && (
-                                            <span className="absolute top-2 right-6 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                                                {cartProductCount}
-                                            </span>
-                                        )}
-                                    </Link>
-                                </div>
                             </div>
                         </motion.div>
                     )}

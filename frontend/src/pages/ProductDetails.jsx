@@ -43,7 +43,7 @@ export default function ProductDetails() {
     }
 
     const features = [
-        { icon: <Truck size={18} />, text: "Free shipping on orders over $50" },
+        { icon: <Truck size={18} />, text: "Free shipping on orders over PKR 1,399" },
         { icon: <ShieldCheck size={18} />, text: "100% organic & natural guarantee" },
     ];
 
