@@ -1,105 +1,97 @@
-const mongoose = require('mongoose');
+// backend/models/Order.js
+import mongoose from 'mongoose';
 
 const orderSchema = new mongoose.Schema({
-    shippingInfo: {
-        address: {
-            type: String,
-            required: true
-        },
-        city: {
-            type: String,
-            required: true
-        },
-        phoneNo: {
-            type: String,
-            required: true
-        },
-        postalCode: {
-            type: String,
-            required: true
-        },
-        state: {
-            type: String,
-            required: true
-        },
-        country: {
-            type: String,
-            required: true
-        }
-    },
     user: {
-        type: mongoose.Schema.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: [true, 'User ID is required'],
     },
-    orderItems: [
+    items: [
         {
+            product: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Product',
+                required: [true, 'Product ID is required'],
+            },
             name: {
                 type: String,
-                required: true
+                required: [true, 'Product name is required'],
+                trim: true,
             },
             quantity: {
                 type: Number,
-                required: true
-            },
-            image: {
-                type: String,
-                required: true
+                required: [true, 'Quantity is required'],
+                min: [1, 'Quantity must be at least 1'],
             },
             price: {
                 type: Number,
-                required: true
+                required: [true, 'Price is required'],
+                min: [0, 'Price cannot be negative'],
             },
-            product: {
-                type: mongoose.Schema.ObjectId,
-                ref: 'Product',
-                required: true
-            }
-        }
-    ],
-    paymentInfo: {
-        id: {
-            type: String
         },
-        status: {
-            type: String
-        }
+    ],
+    shippingAddress: {
+        name: { type: String, required: [true, 'Name is required'], trim: true },
+        email: { type: String, required: [true, 'Email is required'], trim: true },
+        phone: { type: String, required: [true, 'Phone is required'], trim: true },
+        address: { type: String, required: [true, 'Address is required'], trim: true },
+        city: { type: String, required: [true, 'City is required'], trim: true },
+        country: { type: String, required: [true, 'Country is required'], trim: true },
+        zip: { type: String, required: [true, 'ZIP code is required'], trim: true },
     },
-    paidAt: {
-        type: Date
-    },
-    itemsPrice: {
-        type: Number,
-        required: true,
-        default: 0.0
-    },
-    taxPrice: {
-        type: Number,
-        required: true,
-        default: 0.0
-    },
-    shippingPrice: {
-        type: Number,
-        required: true,
-        default: 0.0
-    },
-    totalPrice: {
-        type: Number,
-        required: true,
-        default: 0.0
-    },
-    orderStatus: {
+    paymentMethod: {
         type: String,
-        required: true,
-        default: 'Processing'
+        enum: ['card', 'easypaisa', 'cod'],
+        required: [true, 'Payment method is required'],
     },
-    deliveredAt: {
-        type: Date
+    paymentDetails: {
+        cardNumber: { type: String, trim: true }, // Last 4 digits
+        expiry: { type: String, trim: true },
+        easypaisaNumber: { type: String, trim: true },
+    },
+    totals: {
+        subtotal: {
+            type: Number,
+            required: [true, 'Subtotal is required'],
+            min: [0, 'Subtotal cannot be negative'],
+        },
+        shipping: {
+            type: Number,
+            required: [true, 'Shipping is required'],
+            min: [0, 'Shipping cannot be negative'],
+        },
+        tax: {
+            type: Number,
+            required: [true, 'Tax is required'],
+            min: [0, 'Tax cannot be negative'],
+        },
+        grandTotal: {
+            type: Number,
+            required: [true, 'Total is required'],
+            min: [0, 'Total cannot be negative'],
+        },
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
+        default: 'pending',
     },
     createdAt: {
         type: Date,
-        default: Date.now
-    }
+        default: Date.now,
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now,
+    },
 });
 
-module.exports = mongoose.model('Order', orderSchema);
+orderSchema.pre('save', function (next) {
+    this.updatedAt = Date.now();
+    next();
+});
+
+orderSchema.index({ user: 1, createdAt: -1 });
+
+export default mongoose.model('Order', orderSchema);

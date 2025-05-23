@@ -1,6 +1,7 @@
-// src/App.jsx
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Navbar from './components/Navbar';
 import HeaderText from './components/HeaderText';
 import Footer from './components/Footer';
@@ -18,11 +19,12 @@ import Disclaimer from './pages/Disclaimer';
 import RefundPolicy from './pages/RefundPolicy';
 import CustomerService from './pages/CustomerService';
 import ShippingHandling from './pages/ShippingHandling';
-import FAQsPage from './pages/FaQs';
+import FAQsPage from './pages/FAQs';
 import Contact from './pages/Contact';
 import MyOrdersPage from './pages/MyOrdersPage';
 import { useAuth } from './context/authContext';
 import axios from 'axios';
+import UserProfile from './pages/UserProfile';
 
 function App() {
   const { login } = useAuth();
@@ -43,12 +45,30 @@ function App() {
             },
           });
           login(res.data.user, token);
+          toast.success('Successfully logged in with Google!', {
+            position: 'top-right',
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: 'light',
+          });
           // Clean URL
           urlParams.delete('token');
           const cleanUrl = `${window.location.pathname}${urlParams.toString() ? '?' + urlParams.toString() : ''}`;
           navigate(cleanUrl, { replace: true });
         } catch (err) {
           console.error('OAuth login failed', err);
+          toast.error('Failed to log in with Google. Please try again.', {
+            position: 'top-right',
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: 'light',
+          });
         }
       };
 
@@ -73,6 +93,7 @@ function App() {
             <Route path="/shipping" element={<ShippingHandling />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/faqs" element={<FAQsPage />} />
+            <Route path="/profile" element={<UserProfile />} />
             <Route path="/orders" element={<MyOrdersPage />} />
             <Route path="/customer-service" element={<CustomerService />} />
             <Route path="/refund-policy" element={<RefundPolicy />} />
@@ -81,6 +102,18 @@ function App() {
           </Routes>
         </main>
         <Footer />
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       </div>
     </ErrorBoundary>
   );

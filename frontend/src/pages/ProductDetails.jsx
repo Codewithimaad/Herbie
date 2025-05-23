@@ -4,6 +4,7 @@ import { Star, Heart, ShieldCheck, Truck } from 'lucide-react';
 import ReviewSection from '../components/ReviewSection';
 import { useAuth } from '../context/authContext';
 import { useCart } from '../context/cartContext'; // Add this import
+import AddToCartButton from '../components/addToCart';
 
 
 
@@ -14,7 +15,7 @@ export default function ProductDetails() {
     const [isWishlisted, setIsWishlisted] = useState(false);
     const [mainImage, setMainImage] = useState('');
     const { backendUrl } = useAuth();
-    const { addToCart } = useCart(); // Get addToCart from cart context
+    const { addToCart, currency } = useCart(); // Get addToCart from cart context
 
 
 
@@ -124,9 +125,9 @@ export default function ProductDetails() {
                         </div>
 
                         <div className="mb-6">
-                            <span className="text-3xl font-bold text-gray-900">${product.price.toFixed(2)}</span>
+                            <span className="text-3xl font-bold text-gray-900">{currency}{product.price.toFixed(2)}</span>
                             {product.originalPrice && (
-                                <span className="text-lg text-gray-400 line-through ml-2">${product.originalPrice.toFixed(2)}</span>
+                                <span className="text-lg text-gray-400 line-through ml-2">{currency}{product.originalPrice.toFixed(2)}</span>
                             )}
                             <p className={`text-sm mt-1 ${product.inStock ? 'text-green-700' : 'text-red-600'}`}>
                                 {product.inStock ? 'In stock & ready to ship' : 'Out of stock'}
@@ -170,13 +171,8 @@ export default function ProductDetails() {
                         </div>
 
                         <div className="flex flex-col sm:flex-row gap-4">
-                            <button
-                                className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-6 py-4 rounded-lg font-semibold text-lg shadow-md hover:shadow-lg transition-all transform hover:scale-[1.01] flex items-center justify-center gap-2"
-                                aria-label="Add to cart"
-                                onClick={() => addToCart(id, quantity)}
-                            >
-                                Add to Cart
-                            </button>
+                            <AddToCartButton id={id} quantity={quantity} size='medium' />
+
 
                             <button
                                 className="flex-1 bg-white border-2 border-green-600 text-green-700 hover:bg-green-50 px-6 py-4 rounded-lg font-semibold text-lg shadow-sm transition-colors flex items-center justify-center gap-2"

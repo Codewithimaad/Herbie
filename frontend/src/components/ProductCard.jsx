@@ -1,14 +1,19 @@
 import { Link } from 'react-router-dom';
-import { FaShoppingBag, FaStar, FaRegStar } from 'react-icons/fa';
-import { useState } from 'react';
+import { FaStar, FaRegStar, FaFire, FaLeaf } from 'react-icons/fa';
+import AddToCartButton from './addToCart';
+import { useCart } from '../context/cartContext';
+
 
 export default function ProductCard({ product, variant = 'vertical', compact = false }) {
-    const [isHovered, setIsHovered] = useState(false);
+
+    const { currency } = useCart();
+
+
 
     // Render product rating stars
     const renderRating = () => !compact && (
-        <div className="flex items-center mb-1">
-            <div className="flex mr-1">
+        <div className="flex items-center gap-1">
+            <div className="flex">
                 {[...Array(5)].map((_, i) => (
                     i < Math.floor(product.rating || 0) ?
                         <FaStar key={i} className="text-amber-400 text-xs" /> :
@@ -21,13 +26,29 @@ export default function ProductCard({ product, variant = 'vertical', compact = f
 
     // Render price with discount if available
     const renderPrice = () => (
-        <div className={compact ? "mt-1" : "mt-2"}>
-            <span className={`${compact ? "text-base" : "text-lg"} font-bold text-gray-900`}>
-                ${product.price.toFixed(2)}
+        <div className={compact ? "mt-2" : "mt-3"}>
+            <span className={`${compact ? "text-base" : "text-lg"} font-semibold text-gray-900`}>
+                {currency} {product.price.toFixed(2)}
             </span>
             {product.originalPrice && !compact && (
-                <span className="text-xs text-gray-400 line-through ml-1">
-                    ${product.originalPrice.toFixed(2)}
+                <span className="text-sm text-gray-400 line-through ml-2">
+                    {currency} {product.originalPrice.toFixed(2)}
+                </span>
+            )}
+        </div>
+    );
+
+    // Render badges for special attributes
+    const renderBadges = () => !compact && (
+        <div className="absolute top-3 left-3 flex flex-col gap-1">
+            {product.isBestSeller && (
+                <span className="flex items-center gap-1 bg-amber-100 text-amber-800 text-xs font-medium px-2 py-1 rounded-full">
+                    <FaFire size={12} /> Best Seller
+                </span>
+            )}
+            {product.isNew && (
+                <span className="flex items-center gap-1 bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+                    <FaLeaf size={12} /> New Arrival
                 </span>
             )}
         </div>
@@ -36,95 +57,99 @@ export default function ProductCard({ product, variant = 'vertical', compact = f
     // Horizontal card variant
     if (variant === 'horizontal') {
         return (
-            <Link
-                to={`/product/${product._id}`}
-                className={`flex flex-col sm:flex-row bg-white rounded-lg shadow-sm hover:shadow-md transition-all overflow-hidden h-full ${compact ? "p-2" : "p-3"}`}
-            >
-                <div className={`relative ${compact ? "w-20 h-20" : "sm:w-1/3 aspect-square"}`}>
+            <div className={`flex flex-col sm:flex-row bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden ${compact ? "p-2" : "p-4"}`}>
+                <Link
+                    to={`/product/${product._id}`}
+                    className={`relative ${compact ? "w-20 h-20" : "sm:w-1/3 aspect-square"}`}
+                    aria-label={`View ${product.name} details`}
+                >
                     <img
                         src={product.images?.[0] || '/fallback.jpg'}
                         alt={product.name}
-                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                        className="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
                     />
-                </div>
-                <div className={`flex flex-col ${compact ? "pl-2 flex-grow" : "sm:w-2/3 p-2"}`}>
-                    <h3 className={`${compact ? "text-sm" : "font-medium"} text-gray-900 line-clamp-2`}>
-                        {product.name}
-                    </h3>
+                    {renderBadges()}
+                </Link>
+                <div className={`flex flex-col ${compact ? "pl-3 flex-grow" : "sm:w-2/3 p-4"}`}>
+                    <Link to={`/product/${product._id}`} className="hover:text-green-700 transition-colors">
+                        <h3 className={`${compact ? "text-sm" : "text-base"} font-semibold text-gray-900 line-clamp-2`}>
+                            {product.name}
+                        </h3>
+                    </Link>
                     {!compact && renderRating()}
                     {renderPrice()}
                     {!compact && (
-                        <button
-                            className="mt-2 flex items-center justify-center gap-1 bg-gray-900 text-white py-1.5 px-3 rounded-md text-xs font-medium hover:bg-gray-800 transition-colors"
-                            onClick={(e) => e.preventDefault()}
-                        >
-                            <FaShoppingBag size={12} />
-                            <span>Add to Bag</span>
-                        </button>
+                        <div className="mt-4">
+                            <AddToCartButton
+                                id={product._id}
+                                quantity={1}
+                                size="small"
+                            />
+                        </div>
                     )}
                 </div>
-            </Link>
+            </div>
         );
     }
 
     // Compact vertical card
     if (compact) {
         return (
-            <Link
-                to={`/product/${product._id}`}
-                className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow transition-all relative h-full flex flex-col p-3"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-            >
-                <div className="relative aspect-square mb-2">
+            <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col">
+                <Link
+                    to={`/product/${product._id}`}
+                    className="relative aspect-square"
+                    aria-label={`View ${product.name} details`}
+                >
                     <img
                         src={product.images?.[0] || '/fallback.jpg'}
                         alt={product.name}
-                        className="w-full h-full object-cover rounded"
+                        className="w-full h-full object-cover rounded-t-xl transition-transform duration-300 group-hover:scale-105"
                     />
-                </div>
-                <div className="flex flex-col flex-grow">
-                    <h3 className="text-sm text-gray-900 line-clamp-2">{product.name}</h3>
+                    {renderBadges()}
+                </Link>
+                <div className="p-3 flex flex-col flex-grow">
+                    <Link to={`/product/${product._id}`} className="hover:text-green-700 transition-colors">
+                        <h3 className="text-sm font-semibold text-gray-900 line-clamp-2">{product.name}</h3>
+                    </Link>
                     {renderPrice()}
                 </div>
-            </Link>
+            </div>
         );
     }
 
     // Default vertical card
     return (
-        <Link
-            to={`/product/${product._id}`}
-            className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all relative h-full flex flex-col"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-        >
-            <div className="relative aspect-square">
+        <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col group">
+            <Link
+                to={`/product/${product._id}`}
+                className="relative aspect-square"
+                aria-label={`View ${product.name} details`}
+            >
                 <img
                     src={product.images?.[0] || '/fallback.jpg'}
                     alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                    className="w-full h-full object-cover rounded-t-xl transition-transform duration-300 group-hover:scale-105"
                 />
-
-            </div>
-
+                {renderBadges()}
+            </Link>
             <div className="p-4 flex flex-col flex-grow">
-                <h3 className="font-medium text-gray-900 line-clamp-2">{product.name}</h3>
+                <Link to={`/product/${product._id}`} className="hover:text-green-700 transition-colors">
+                    <h3 className="text-base font-semibold text-gray-900 line-clamp-2">{product.name}</h3>
+                </Link>
                 {product.category && (
-                    <p className="text-xs text-gray-500 mt-1">{product.category}</p>
+                    <p className="text-xs text-gray-500 mt-1 capitalize">{product.category}</p>
                 )}
                 {renderRating()}
                 {renderPrice()}
                 <div className="mt-auto pt-4">
-                    <button
-                        className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-2 px-4 rounded-lg text-sm font-medium hover:from-green-700 hover:to-green-800 transition-all flex items-center justify-center gap-2"
-                        onClick={(e) => e.preventDefault()}
-                    >
-                        <FaShoppingBag size={14} />
-                        <span>Add to Cart</span>
-                    </button>
+                    <AddToCartButton
+                        id={product._id}
+                        quantity={1}
+                        size="small"
+                    />
                 </div>
             </div>
-        </Link>
+        </div>
     );
 }

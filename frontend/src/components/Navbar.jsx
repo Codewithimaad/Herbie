@@ -1,17 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
 import { GiHamburgerMenu } from 'react-icons/gi';
 import { IoClose } from 'react-icons/io5';
-import { FiUser, FiLogIn, FiShoppingCart } from 'react-icons/fi';
+import { FiUser, FiLogIn, FiShoppingCart, FiSettings, FiLogOut } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import navbarLogo from '../assets/images/Logo.png';
 import { useAuth } from '../context/authContext';
+import { useCart } from '../context/cartContext'; // Import useCart
 
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isMoreOpen, setIsMoreOpen] = useState(false);
+    const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
     const moreRef = useRef(null);
+    const userDropdownRef = useRef(null);
     const { user, token, logout } = useAuth();
+    const { cartItems } = useCart(); // Get cartItems from CartContext
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
@@ -20,19 +24,25 @@ const Navbar = () => {
             if (moreRef.current && !moreRef.current.contains(event.target)) {
                 setIsMoreOpen(false);
             }
+            if (userDropdownRef.current && !userDropdownRef.current.contains(event.target)) {
+                setIsUserDropdownOpen(false);
+            }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     const navLinks = [
+        { name: 'PRODUCTS', path: '/products' },
         { name: 'ABOUT US', path: '/about' },
         { name: 'DISCLAIMER', path: '/disclaimer' },
         { name: 'CUSTOMER SERVICE', path: '/customer-service' },
-        { name: 'PRODUCT', path: '/products' },
         { name: 'MORE', path: '#' },
         { name: 'CONTACT', path: '/contact' },
     ];
+
+    // Calculate total quantity of items in cart
+    const cartProductCount = cartItems.length;
 
     return (
         <header className="bg-white shadow-md sticky top-0 z-50">
@@ -45,8 +55,8 @@ const Navbar = () => {
                         </Link>
                         <div>
                             <Link to="/">
-                                <h1 className="text-xl md:text-2xl font-bold text-green-800">Herbie</h1>
-                                <span className="text-xs text-gray-500 tracking-wide">Herbal Wellness Shop</span>
+                                <h1 className="text-md md:text-2xl font-bold text-green-800">Herbie</h1>
+                                <span className="hidden md:block text-xs text-gray-500 tracking-wide">Herbal Wellness Shop</span>
                             </Link>
                         </div>
                     </div>
@@ -105,11 +115,74 @@ const Navbar = () => {
                     {/* Desktop Right Section */}
                     <div className="hidden lg:flex items-center gap-6">
                         {token && user ? (
-                            <div className="flex items-center gap-4 text-sm text-green-800">
-                                <span className="truncate max-w-[150px]">{user.email}</span>
-                                <button onClick={logout} className="hover:text-red-600 transition-colors underline">
-                                    Logout
+                            <div ref={userDropdownRef} className="relative">
+                                <button
+                                    onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                                    className="flex items-center gap-2 text-sm text-green-800 hover:text-green-600 transition-colors"
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700">
+                                        {user.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="truncate max-w-[120px]">{user.name}</span>
+                                    <svg
+                                        className={`w-4 h-4 transition-transform duration-200 ${isUserDropdownOpen ? 'rotate-180' : ''}`}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
                                 </button>
+
+                                <AnimatePresence>
+                                    {isUserDropdownOpen && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: 10 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-100"
+                                        >
+                                            <div className="px-4 py-2 border-b border-gray-100">
+                                                <p className="text-sm font-medium text-gray-900 truncate">{user.email}</p>
+                                            </div>
+                                            <Link
+                                                to="/profile"
+                                                onClick={() => setIsUserDropdownOpen(false)}
+                                                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700"
+                                            >
+                                                <FiUser className="mr-3" size={14} />
+                                                Profile
+                                            </Link>
+                                            <Link
+                                                to="/orders"
+                                                onClick={() => setIsUserDropdownOpen(false)}
+                                                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700"
+                                            >
+                                                <FiUser className="mr-3" size={14} />
+                                                Orders
+                                            </Link>
+                                            <Link
+                                                to="/settings"
+                                                onClick={() => setIsUserDropdownOpen(false)}
+                                                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700"
+                                            >
+                                                <FiSettings className="mr-3" size={14} />
+                                                Settings
+                                            </Link>
+                                            <button
+                                                onClick={() => {
+                                                    setIsUserDropdownOpen(false);
+                                                    logout();
+                                                }}
+                                                className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-red-600"
+                                            >
+                                                <FiLogOut className="mr-3" size={14} />
+                                                Logout
+                                            </button>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
                         ) : (
                             <Link to="/login" className="flex items-center gap-1 text-sm text-green-800 hover:text-green-600 transition-colors">
@@ -118,29 +191,109 @@ const Navbar = () => {
                             </Link>
                         )}
 
-                        <Link to='/cart' className="flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white px-4 py-2 text-sm rounded-md transition-all">
+                        <Link
+                            to='/cart'
+                            className="flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white px-4 py-2 text-sm rounded-md transition-all relative"
+                        >
                             <FiShoppingCart size={18} />
                             Cart
+                            {cartProductCount > 0 && (
+                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                    {cartProductCount}
+                                </span>
+                            )}
                         </Link>
                     </div>
 
                     {/* Mobile Right Section */}
                     <div className="flex justify-end lg:hidden items-center gap-4">
                         {token && user ? (
-                            <>
-                                <span className="text-sm text-green-800 truncate max-w-[120px]">{user.email}</span>
-                                <button onClick={logout} className="text-sm text-red-600 underline">
-                                    Logout
+                            <div ref={userDropdownRef} className="relative">
+                                <button
+                                    onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                                    className="flex items-center gap-1 text-sm text-green-800 hover:text-green-600 transition-colors"
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700">
+                                        {user.email.charAt(0).toUpperCase()}
+                                    </div>
                                 </button>
-                            </>
+
+                                <AnimatePresence>
+                                    {isUserDropdownOpen && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: 10 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-100"
+                                        >
+                                            <div className="px-4 py-2 border-b border-gray-100">
+                                                <p className="text-sm font-medium text-gray-900 truncate">{user.email}</p>
+                                            </div>
+                                            <Link
+                                                to="/profile"
+                                                onClick={() => {
+                                                    setIsUserDropdownOpen(false);
+                                                    setIsMenuOpen(false);
+                                                }}
+                                                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700"
+                                            >
+                                                <FiUser className="mr-3" size={14} />
+                                                Profile
+                                            </Link>
+                                            <Link
+                                                to="/orders"
+                                                onClick={() => {
+                                                    setIsUserDropdownOpen(false);
+                                                    setIsMenuOpen(false);
+                                                }}
+                                                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700"
+                                            >
+                                                <FiUser className="mr-3" size={14} />
+                                                Orders
+                                            </Link>
+                                            <Link
+                                                to="/settings"
+                                                onClick={() => {
+                                                    setIsUserDropdownOpen(false);
+                                                    setIsMenuOpen(false);
+                                                }}
+                                                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700"
+                                            >
+                                                <FiSettings className="mr-3" size={14} />
+                                                Settings
+                                            </Link>
+                                            <button
+                                                onClick={() => {
+                                                    setIsUserDropdownOpen(false);
+                                                    setIsMenuOpen(false);
+                                                    logout();
+                                                }}
+                                                className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-red-600"
+                                            >
+                                                <FiLogOut className="mr-3" size={14} />
+                                                Logout
+                                            </button>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                         ) : (
                             <Link to="/login" className="flex items-center gap-1 text-sm text-green-800 hover:text-green-600 transition-colors">
                                 <FiUser size={18} />
                             </Link>
                         )}
 
-                        <Link to='/cart' className="flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white px-4 py-2 text-sm rounded-md transition-all">
+                        <Link
+                            to='/cart'
+                            className="flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white px-4 py-2 text-sm rounded-md transition-all relative"
+                        >
                             <FiShoppingCart size={18} />
+                            {cartProductCount > 0 && (
+                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                    {cartProductCount}
+                                </span>
+                            )}
                         </Link>
 
                         <button className="lg:hidden text-green-800 p-2" onClick={toggleMenu} aria-label="Toggle Menu">

@@ -12,6 +12,7 @@ export function CartProvider({ children }) {
     const [cartItems, setCartItems] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const currency = 'Rs';
 
     const api = axios.create({
         baseURL: backendUrl,
@@ -22,15 +23,14 @@ export function CartProvider({ children }) {
     });
 
     const transformCartItems = (items) => {
-        return items.map(item => ({
-            id: item._id,
+        return items.map((item) => ({
+            cartItemId: item._id, // Use cartItemId instead of id
             productId: item.product?._id,
-            _id: item._id,
             name: item.product?.name || 'Unknown Product',
             price: item.product?.price || 0,
             quantity: item.quantity,
             image: item.product?.images?.[0] || '/herbs/placeholder.jpg',
-            category: item.product?.category || 'Uncategorized'
+            category: item.product?.category || 'Uncategorized',
         }));
     };
 
@@ -39,7 +39,7 @@ export function CartProvider({ children }) {
         setError(null);
         try {
             const response = await api.get('/api/cart');
-            const items = Array.isArray(response.data) ? response.data : [];
+            const items = Array.isArray(response.data) ? response.data : response.data.cart || [];
             setCartItems(transformCartItems(items));
         } catch (err) {
             console.error("Failed to fetch cart:", err);
@@ -60,14 +60,38 @@ export function CartProvider({ children }) {
 
     const addToCart = async (productId, quantity) => {
         try {
-            await api.post('/api/cart/add', { productId, quantity });
-            await fetchCart();
-            toast.success('Added to cart!');
+            // Optimistically update cartItems
+            const newItem = {
+                productId,
+                quantity,
+                // Placeholder data until fetchCart provides full details
+                id: `temp-${productId}`,
+                name: 'Loading...',
+                price: 0,
+                image: '/herbs/placeholder.jpg',
+                category: 'Uncategorized',
+            };
+            setCartItems((prev) => {
+                const existingItem = prev.find((item) => item.productId === productId);
+                if (existingItem) {
+                    return prev.map((item) =>
+                        item.productId === productId
+                            ? { ...item, quantity: item.quantity + quantity }
+                            : item
+                    );
+                }
+                return [...prev, newItem];
+            });
+
+            // Perform API call
+            const response = await api.post('/api/cart/add', { productId, quantity });
+            await fetchCart(); // Sync with backend
             return { success: true };
         } catch (err) {
             console.error("Add to cart error:", err);
             const errorMsg = err.response?.data?.error || err.message || 'Add to cart failed';
             toast.error(errorMsg);
+            await fetchCart(); // Re-sync in case of error
             return { success: false, message: errorMsg };
         }
     };
@@ -101,13 +125,13 @@ export function CartProvider({ children }) {
     const clearCart = async () => {
         try {
             await api.post('/api/cart/clear');
-            setCartItems([]); // Immediately set empty array
-            toast.success('Cart cleared successfully');
+            setCartItems([]); // Set empty array only on success
+            return { success: true };
         } catch (err) {
             console.error("Clear cart error:", err);
             toast.error('Failed to clear cart');
-        } finally {
-            await fetchCart(); // Then verify with server
+            await fetchCart(); // Re-sync with backend
+            return { success: false, message: 'Failed to clear cart' };
         }
     };
 
@@ -121,7 +145,8 @@ export function CartProvider({ children }) {
                 removeFromCart,
                 updateQuantity,
                 clearCart,
-                fetchCart
+                fetchCart,
+                currency
             }}
         >
             {children}

@@ -16,7 +16,8 @@ export default function Cart() {
         removeFromCart,
         updateQuantity,
         clearCart,
-        fetchCart
+        fetchCart,
+        currency
     } = useCart();
 
     const [localLoading, setLocalLoading] = useState(false);
@@ -205,7 +206,7 @@ export default function Cart() {
                                                 <h3 className="text-lg font-semibold text-gray-800">{item.name}</h3>
                                                 <p className="text-sm text-gray-500">{item.category}</p>
                                                 <p className="text-green-700 text-lg font-bold mt-1">
-                                                    ${item.price.toFixed(2)}
+                                                    {currency}{item.price.toFixed(2)}
                                                 </p>
                                             </div>
 
@@ -273,23 +274,23 @@ export default function Cart() {
                     <div className="space-y-3 mb-6">
                         <div className="flex justify-between">
                             <span className="text-gray-600">Subtotal ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
-                            <span className="font-medium">${subtotal.toFixed(2)}</span>
+                            <span className="font-medium">{currency}{subtotal.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-gray-600">Shipping</span>
                             <span className="font-medium">
-                                {shippingFee === 0 ? 'FREE' : `$${shippingFee.toFixed(2)}`}
+                                {shippingFee === 0 ? 'FREE' : `${currency}${shippingFee.toFixed(2)}`}
                             </span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-gray-600">Tax ({(taxRate * 100)}%)</span>
-                            <span className="font-medium">${tax.toFixed(2)}</span>
+                            <span className="font-medium">{currency}{tax.toFixed(2)}</span>
                         </div>
                     </div>
 
                     <div className="flex justify-between text-lg font-semibold border-t pt-4 mb-6">
                         <span>Total</span>
-                        <span className="text-green-700">${grandTotal.toFixed(2)}</span>
+                        <span className="text-green-700">{currency}{grandTotal.toFixed(2)}</span>
                     </div>
 
                     <Link
@@ -302,7 +303,7 @@ export default function Cart() {
 
                     {subtotal < 50 && (
                         <p className="text-sm text-gray-500 mt-4 text-center">
-                            Spend ${(50 - subtotal).toFixed(2)} more for free shipping
+                            Spend {currency}{(50 - subtotal).toFixed(2)} more for free shipping
                         </p>
                     )}
                 </motion.aside>

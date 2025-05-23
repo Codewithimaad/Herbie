@@ -39,8 +39,28 @@ export const loginUser = async (req, res) => {
 // Get current logged-in user
 export const getCurrentUser = async (req, res) => {
     try {
-        res.json({ user: req.user });
+        const user = await User.findById(req.user.id)
+            .select('_id email name cart createdAt')
+            .populate('cart.product', 'name price image'); // Optional: populate cart product details
+
+        console.log('User:', user);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Structure the response to match exactly what you need
+        const userData = {
+            _id: user._id,
+            email: user.email,
+            name: user.name || '', // Fallback if name doesn't exist
+            createdAt: user.createdAt,
+            cart: user.cart || []
+        };
+
+        res.json({ user: userData });
     } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+        console.error('Error fetching user:', err);
+        res.status(500).json({ message: 'Error fetching user data' });
     }
 };

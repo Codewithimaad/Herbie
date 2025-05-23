@@ -7,6 +7,7 @@ import {
     FaChevronUp, FaFire, FaLeaf
 } from 'react-icons/fa';
 import { useAuth } from '../context/authContext';
+import { useCart } from '../context/cartContext';
 
 export default function Products() {
     const [products, setProducts] = useState([]);
@@ -15,6 +16,7 @@ export default function Products() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
     const { backendUrl } = useAuth();
+    const { currency } = useCart();
 
     // Fetch products from backend
     useEffect(() => {
