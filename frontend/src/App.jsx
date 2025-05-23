@@ -19,7 +19,7 @@ import Disclaimer from './pages/Disclaimer';
 import RefundPolicy from './pages/RefundPolicy';
 import CustomerService from './pages/CustomerService';
 import ShippingHandling from './pages/ShippingHandling';
-import FAQsPage from './pages/FAQs';
+import FAQsPage from './pages/FaQs';
 import Contact from './pages/Contact';
 import MyOrdersPage from './pages/MyOrdersPage';
 import { useAuth } from './context/authContext';
