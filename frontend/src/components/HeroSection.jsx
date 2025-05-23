@@ -1,5 +1,6 @@
 import React from 'react';
 import herbalHero from '../assets/images/HeroSection.jpeg'; // Replace with your actual image
+import { Link } from 'react-router-dom'
 
 const HeroSection = () => {
     return (
@@ -20,12 +21,12 @@ const HeroSection = () => {
                 <p className="text-lg md:text-xl mb-6 font-light drop-shadow-md">
                     Shop premium herbal remedies crafted with ancient wisdom and modern science.
                 </p>
-                <a
-                    href="#shop"
+                <Link
+                    to="/products"
                     className="inline-block bg-white text-green-800 hover:bg-green-100 font-semibold px-6 py-3 rounded-full transition-all duration-300 shadow-md"
                 >
                     Explore Our Products
-                </a>
+                </Link>
             </div>
         </section>
     );
