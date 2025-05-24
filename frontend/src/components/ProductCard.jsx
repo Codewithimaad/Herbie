@@ -2,30 +2,25 @@ import { Link } from 'react-router-dom';
 import { FaStar, FaRegStar, FaFire, FaLeaf } from 'react-icons/fa';
 import AddToCartButton from './addToCart';
 import { useCart } from '../context/cartContext';
-
+import { useEffect, useMemo } from 'react';
+import ReviewSmall from './ReviewSmall'; // Import ReviewSmall component
 
 export default function ProductCard({ product, variant = 'vertical', compact = false }) {
+    const { currency, fetchProductReviews, hasFetchedReviews } = useCart();
 
-    const { currency } = useCart();
+    // Memoize product ID to prevent unnecessary effect triggers
+    const productId = product?._id;
 
+    // Fetch reviews when component mounts (if not already fetched)
+    useEffect(() => {
+        if (productId && typeof productId === 'string' && !hasFetchedReviews(productId)) {
+            console.log('Fetching reviews for productId:', productId); // Debug
+            fetchProductReviews(productId);
+        }
+    }, [productId, fetchProductReviews, hasFetchedReviews]);
 
-
-    // Render product rating stars
-    const renderRating = () => !compact && (
-        <div className="flex items-center gap-1">
-            <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                    i < Math.floor(product.rating || 0) ?
-                        <FaStar key={i} className="text-amber-400 text-xs" /> :
-                        <FaRegStar key={i} className="text-amber-400 text-xs" />
-                ))}
-            </div>
-            <span className="text-xs text-gray-500">({product.reviews || 0})</span>
-        </div>
-    );
-
-    // Render price with discount if available
-    const renderPrice = () => (
+    // Memoize price rendering
+    const renderPrice = useMemo(() => (
         <div className={compact ? "mt-2" : "mt-3"}>
             <span className={`${compact ? "text-base" : "text-lg"} font-semibold text-gray-900`}>
                 {currency} {product.price.toFixed(2)}
@@ -36,23 +31,27 @@ export default function ProductCard({ product, variant = 'vertical', compact = f
                 </span>
             )}
         </div>
-    );
+    ), [compact, currency, product.price, product.originalPrice]);
 
-    // Render badges for special attributes
-    const renderBadges = () => !compact && (
-        <div className="absolute top-3 left-3 flex flex-col gap-1">
-            {product.isBestSeller && (
-                <span className="flex items-center gap-1 bg-amber-100 text-amber-800 text-xs font-medium px-2 py-1 rounded-full">
-                    <FaFire size={12} /> Best Seller
-                </span>
-            )}
-            {product.isNew && (
-                <span className="flex items-center gap-1 bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
-                    <FaLeaf size={12} /> New Arrival
-                </span>
-            )}
-        </div>
-    );
+    // Memoize badges rendering
+    const renderBadges = useMemo(() => {
+        if (compact) return null;
+
+        return (
+            <div className="absolute top-3 left-3 flex flex-col gap-1">
+                {product.isBestSeller && (
+                    <span className="flex items-center gap-1 bg-amber-100 text-amber-800 text-xs font-medium px-2 py-1 rounded-full">
+                        <FaFire size={12} /> Best Seller
+                    </span>
+                )}
+                {product.isNew && (
+                    <span className="flex items-center gap-1 bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+                        <FaLeaf size={12} /> New Arrival
+                    </span>
+                )}
+            </div>
+        );
+    }, [compact, product.isBestSeller, product.isNew]);
 
     // Horizontal card variant
     if (variant === 'horizontal') {
@@ -67,8 +66,9 @@ export default function ProductCard({ product, variant = 'vertical', compact = f
                         src={product.images?.[0] || '/fallback.jpg'}
                         alt={product.name}
                         className="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
                     />
-                    {renderBadges()}
+                    {renderBadges}
                 </Link>
                 <div className={`flex flex-col ${compact ? "pl-3 flex-grow" : "sm:w-2/3 p-4"}`}>
                     <Link to={`/product/${product._id}`} className="hover:text-green-700 transition-colors">
@@ -76,8 +76,14 @@ export default function ProductCard({ product, variant = 'vertical', compact = f
                             {product.name}
                         </h3>
                     </Link>
-                    {!compact && renderRating()}
-                    {renderPrice()}
+                    {!compact && (
+                        <ReviewSmall
+                            productId={product._id}
+                            productRating={product.rating}
+                            productReviewCount={product.reviewCount}
+                        />
+                    )}
+                    {renderPrice}
                     {!compact && (
                         <div className="mt-4">
                             <AddToCartButton
@@ -105,14 +111,15 @@ export default function ProductCard({ product, variant = 'vertical', compact = f
                         src={product.images?.[0] || '/fallback.jpg'}
                         alt={product.name}
                         className="w-full h-full object-cover rounded-t-xl transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
                     />
-                    {renderBadges()}
+                    {renderBadges}
                 </Link>
                 <div className="p-3 flex flex-col flex-grow">
                     <Link to={`/product/${product._id}`} className="hover:text-green-700 transition-colors">
                         <h3 className="text-sm font-semibold text-gray-900 line-clamp-2">{product.name}</h3>
                     </Link>
-                    {renderPrice()}
+                    {renderPrice}
                 </div>
             </div>
         );
@@ -130,8 +137,9 @@ export default function ProductCard({ product, variant = 'vertical', compact = f
                     src={product.images?.[0] || '/fallback.jpg'}
                     alt={product.name}
                     className="w-full h-full object-cover rounded-t-xl transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
                 />
-                {renderBadges()}
+                {renderBadges}
             </Link>
             <div className="p-4 flex flex-col flex-grow">
                 <Link to={`/product/${product._id}`} className="hover:text-green-700 transition-colors">
@@ -140,8 +148,12 @@ export default function ProductCard({ product, variant = 'vertical', compact = f
                 {product.category && (
                     <p className="text-xs text-gray-500 mt-1 capitalize">{product.category}</p>
                 )}
-                {renderRating()}
-                {renderPrice()}
+                <ReviewSmall
+                    productId={product._id} // Fixed: Use product._id instead of undefined id
+                    productRating={product.rating}
+                    productReviewCount={product.reviewCount}
+                />
+                {renderPrice}
                 <div className="mt-auto pt-4">
                     <AddToCartButton
                         id={product._id}

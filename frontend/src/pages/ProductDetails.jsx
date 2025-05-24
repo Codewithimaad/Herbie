@@ -1,65 +1,76 @@
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Star, Heart, ShieldCheck, Truck } from 'lucide-react';
-import ReviewSection from '../components/ReviewSection';
+import { Heart, ShieldCheck, Truck } from 'lucide-react';
 import { useAuth } from '../context/authContext';
-import { useCart } from '../context/cartContext'; // Add this import
+import { useCart } from '../context/cartContext';
 import AddToCartButton from '../components/addToCart';
+import ReviewSection from '../components/ReviewSection';
+import ReviewSmall from '../components/ReviewSmall';
 
-
-
-export default function ProductDetails({ productId }) {
+export default function ProductDetails() {
     const { id } = useParams();
     const [product, setProduct] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const [isWishlisted, setIsWishlisted] = useState(false);
     const [mainImage, setMainImage] = useState('');
     const { backendUrl } = useAuth();
-
-
-    const { addToCart, currency } = useCart(); // Get addToCart from cart context
-
-
-
-
+    const { currency } = useCart();
 
     useEffect(() => {
-        // Fetch product details by id from backend API
+        let isMounted = true;
+
         async function fetchProduct() {
             try {
-                const res = await fetch(`${backendUrl}/api/products/${id}`); // adjust URL to your backend route
+                const res = await fetch(`${backendUrl}/api/products/${id}`);
                 if (!res.ok) throw new Error('Failed to fetch product');
                 const data = await res.json();
-                setProduct(data);
-                if (data.images && data.images.length > 0) {
-                    setMainImage(data.images[0]);
+
+                if (isMounted) {
+                    setProduct(data);
+                    if (data.images?.length > 0) {
+                        setMainImage(data.images[0]);
+                    }
                 }
             } catch (error) {
-                console.error(error);
+                console.error("Product fetch error:", error);
             }
         }
 
         fetchProduct();
-    }, [id]);
 
-    // Fetch reviews on mount and when productId changes
-    useEffect(() => {
-        const loadReviews = async () => {
-            try {
-                await fetchReviews(productId);
-                // Since we removed pagination, we'll assume all reviews are loaded at once
-                setHasMoreReviews(false);
-            } catch (err) {
-                console.error('Error loading reviews:', err);
-                toast.error('Failed to load reviews');
-            }
+        return () => {
+            isMounted = false;
         };
-        loadReviews();
-    }, [productId]);
-
+    }, [id, backendUrl]);
 
     if (!product) {
-        return <div className="text-center py-20">Loading product details...</div>;
+        return (
+            <div className="flex items-center justify-center py-20 bg-white rounded-xl shadow-sm">
+                <div className="text-center">
+                    <svg
+                        className="animate-spin h-8 w-8 text-green-700 mx-auto mb-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                        ></circle>
+                        <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8z"
+                        ></path>
+                    </svg>
+                    <p className="text-lg font-medium text-gray-700">Loading product details...</p>
+                </div>
+            </div>
+        );
     }
 
     const features = [
@@ -77,11 +88,13 @@ export default function ProductDetails({ productId }) {
                             src={mainImage}
                             alt={product.name}
                             className="w-full h-full object-cover transition-opacity duration-300 hover:opacity-90"
+                            loading="lazy"
                             onError={(e) => (e.target.src = '/herbs/placeholder.jpg')}
                         />
                         <button
                             onClick={() => setIsWishlisted(!isWishlisted)}
                             className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
+                            aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                         >
                             <Heart
                                 size={24}
@@ -99,11 +112,13 @@ export default function ProductDetails({ productId }) {
                                     ? 'border-green-600 ring-2 ring-green-200'
                                     : 'border-gray-200 hover:border-green-400'
                                     }`}
+                                aria-label={`View image ${index + 1}`}
                             >
                                 <img
                                     src={img}
                                     alt={`Thumbnail ${index + 1}`}
                                     className="w-full h-full object-cover"
+                                    loading="lazy"
                                     onError={(e) => (e.target.src = '/herbs/placeholder.jpg')}
                                 />
                             </button>
@@ -131,23 +146,20 @@ export default function ProductDetails({ productId }) {
                             {product.name}
                         </h1>
 
-                        <div className="flex items-center mb-4">
-                            <div className="flex">
-                                {[...Array(5)].map((_, i) => (
-                                    <Star
-                                        key={i}
-                                        size={18}
-                                        className={`${i < Math.floor(product.rating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
-                                    />
-                                ))}
-                            </div>
-                            <span className="text-sm text-gray-500 ml-2">({product.reviewCount} reviews)</span>
-                        </div>
+                        <ReviewSmall
+                            productId={id}
+                            productRating={product.rating}
+                            productReviewCount={product.reviewCount}
+                        />
 
                         <div className="mb-6">
-                            <span className="text-3xl font-bold text-gray-900">{currency}{product.price.toFixed(2)}</span>
+                            <span className="text-3xl font-bold text-gray-900">
+                                {currency}{product.price.toFixed(2)}
+                            </span>
                             {product.originalPrice && (
-                                <span className="text-lg text-gray-400 line-through ml-2">{currency}{product.originalPrice.toFixed(2)}</span>
+                                <span className="text-lg text-gray-400 line-through ml-2">
+                                    {currency}{product.originalPrice.toFixed(2)}
+                                </span>
                             )}
                             <p className={`text-sm mt-1 ${product.inStock ? 'text-green-700' : 'text-red-600'}`}>
                                 {product.inStock ? 'In stock & ready to ship' : 'Out of stock'}
@@ -168,7 +180,6 @@ export default function ProductDetails({ productId }) {
                             ))}
                         </div>
 
-                        {/* Quantity Selector */}
                         <div className="mb-8">
                             <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
                             <div className="flex border border-gray-300 rounded-lg w-fit">
@@ -193,17 +204,9 @@ export default function ProductDetails({ productId }) {
                         <div className="flex flex-col sm:flex-row gap-4">
                             <AddToCartButton id={id} quantity={quantity} size='medium' />
 
-
-                            <button
-                                className="flex-1 bg-white border-2 border-green-600 text-green-700 hover:bg-green-50 px-6 py-4 rounded-lg font-semibold text-lg shadow-sm transition-colors flex items-center justify-center gap-2"
-                            >
-                                Buy Now
-                            </button>
                         </div>
 
-                        {/* Trust badges */}
                         <div className="mt-8 pt-6 border-t border-gray-200 flex flex-wrap gap-4 items-center">
-                            {/* Secure Payment Badge */}
                             <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
                                 <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -211,7 +214,6 @@ export default function ProductDetails({ productId }) {
                                 <span className="text-sm text-gray-600">Secure Payment</span>
                             </div>
 
-                            {/* Money Back Guarantee */}
                             <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
                                 <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -219,7 +221,6 @@ export default function ProductDetails({ productId }) {
                                 <span className="text-sm text-gray-600">30-Day Guarantee</span>
                             </div>
 
-                            {/* Organic Certified */}
                             <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
                                 <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -231,7 +232,6 @@ export default function ProductDetails({ productId }) {
                 </div>
             </div>
 
-            {/* Optional: Include Review Section if you have */}
             <ReviewSection productId={id} />
         </section>
     );

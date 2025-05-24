@@ -150,7 +150,8 @@ export const getUserOrders = async (req, res) => {
             })(),
             shippingAddress: `${order.shippingAddress.address}, ${order.shippingAddress.city}, ${order.shippingAddress.country} ${order.shippingAddress.zip}`,
             itemsDetails: order.items.map((item, itemIndex) => ({
-                id: itemIndex + 1, // Simple incremental ID for frontend
+                id: item._id.toString(), // Use _id instead of itemIndex + 1
+                product: item.product?._id.toString(), // Include product ObjectId
                 name: item.name,
                 image: item.product?.image || '/products/placeholder.jpg', // Fallback image
                 price: item.price,

@@ -64,3 +64,21 @@ export const getCurrentUser = async (req, res) => {
         res.status(500).json({ message: 'Error fetching user data' });
     }
 };
+
+
+// Logout controller
+export const logoutUser = async (req, res) => {
+    try {
+        // If you're using cookies for JWT, clear the cookie
+        res.clearCookie('token', {
+            httpOnly: true,
+            sameSite: 'None', // or 'Lax'/'Strict' depending on your frontend setup
+            secure: true      // true if using HTTPS (production)
+        });
+
+        res.status(200).json({ message: 'Logged out successfully' });
+    } catch (err) {
+        console.error('Logout error:', err);
+        res.status(500).json({ message: 'Logout failed' });
+    }
+};

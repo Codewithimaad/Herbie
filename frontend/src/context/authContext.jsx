@@ -1,5 +1,7 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const AuthContext = createContext();
 
@@ -11,6 +13,8 @@ export const AuthProvider = ({ children }) => {
     const [productLoading, setProductLoading] = useState(true);
     const [productError, setProductError] = useState(null);
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    const navigate = useNavigate();
+
 
     // Fetch authenticated user on mount
     useEffect(() => {
@@ -28,7 +32,6 @@ export const AuthProvider = ({ children }) => {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                console.log('User:', res.data.user);
                 setUser(res.data.user);
             } catch (err) {
                 console.error('Failed to fetch user:', err);
@@ -50,7 +53,6 @@ export const AuthProvider = ({ children }) => {
                 setProductLoading(true);
                 setProductError(null);
                 const res = await axios.get(`${backendUrl}/api/products`);
-                console.log('Raw product response:', res.data);
 
                 let fetchedProducts = [];
 
@@ -78,6 +80,8 @@ export const AuthProvider = ({ children }) => {
     }, [backendUrl]);
 
     const login = (userData, jwtToken) => {
+
+
         setUser(userData);
         if (jwtToken) {
             setToken(jwtToken);
@@ -85,15 +89,28 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const logout = async () => {
+    const logout = () => {
         try {
-            await axios.get(`${backendUrl}/api/auth/logout`, { withCredentials: true });
+            // Clear frontend state
+            setUser(null);
+            setToken(null);
+            localStorage.removeItem('token');
+
+            // Show success message
+            toast.success('Logged out successfully');
+
+            // Redirect to login
+            navigate('/login');
         } catch (err) {
             console.error('Logout failed:', err);
+            toast.error('Logout failed. Please try again.');
+
+            // Still ensure cleanup
+            setUser(null);
+            setToken(null);
+            localStorage.removeItem('token');
+            navigate('/login');
         }
-        setUser(null);
-        setToken(null);
-        localStorage.removeItem('token');
     };
 
     return (

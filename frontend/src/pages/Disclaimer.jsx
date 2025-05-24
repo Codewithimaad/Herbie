@@ -3,7 +3,7 @@ import HeadingText from '../components/HeadingText';
 
 const Disclaimer = () => {
     return (
-        <section className="min-h-scree md:py-16 md:px-6">
+        <section className="min-h-scree px-4 md:py-16 md:px-6">
             <div className="md:p-8 rounded-2xl">
                 <HeadingText
                     title='Disclaimer'

@@ -10,17 +10,19 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { login, backendUrl } = useAuth();
 
     const handleGoogleLogin = () => {
-        window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/auth/google`;
+        // Clear any existing toasts before redirecting
+        toast.dismiss();
+        window.location.href = `${backendUrl}/api/auth/google`;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/login`, {
+            const response = await fetch(`${backendUrl}/api/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

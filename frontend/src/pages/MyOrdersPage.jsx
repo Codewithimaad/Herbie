@@ -2,7 +2,7 @@ import { Calendar, Package, CheckCircle, Truck, RefreshCw, XCircle, Search, Chev
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/authContext';
 import { useCart } from '../context/cartContext';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useReactToPrint } from 'react-to-print';
@@ -20,8 +20,6 @@ const MyOrdersPage = () => {
     const [error, setError] = useState(null);
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [cancelOrderId, setCancelOrderId] = useState(null);
-    const [printOrderId, setPrintOrderId] = useState(null);
-    const printRef = useRef();
 
     const fetchOrders = async () => {
         setIsLoading(true);
@@ -72,22 +70,8 @@ const MyOrdersPage = () => {
         }
     };
 
-    const handlePrint = (orderId) => {
-        if (!printRef.current) {
-            console.error('Print reference is not set');
-            toast.error('Unable to print receipt');
-            return;
-        }
-        setPrintOrderId(orderId);
-        setTimeout(() => {
-            const printHandler = useReactToPrint({
-                content: () => printRef.current,
-                documentTitle: `Receipt_${orderId}_${new Date().toISOString().split('T')[0]}`,
-                onAfterPrint: () => setPrintOrderId(null),
-            });
-            printHandler();
-        }, 100);
-    };
+
+
 
 
     const statusStyles = {
@@ -362,49 +346,65 @@ const MyOrdersPage = () => {
                                         {/* Order Items */}
                                         <div className="mb-8">
                                             <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Order Details</h4>
-                                            <div className="space-y-4">
-                                                {order.itemsDetails.map((item) => (
-                                                    <div key={item.id} className="flex p-3 bg-white rounded-lg border border-gray-100 shadow-xs">
-                                                        <div className="flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border border-gray-100">
-                                                            <img
-                                                                src={item.image}
-                                                                alt={item.name}
-                                                                className="w-full h-full object-cover"
-                                                            />
-                                                        </div>
-
-                                                        <div className="ml-4 flex-1">
-                                                            <div className="flex justify-between">
-                                                                <h5 className="text-sm font-medium text-gray-900">{item.name}</h5>
-                                                                <p className="text-sm font-medium text-gray-900">{currency}{item.price.toFixed(2)}</p>
+                                            <div className="mb-8">
+                                                <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Order Details</h4>
+                                                <div className="space-y-4">
+                                                    {order.itemsDetails.map((item) => (
+                                                        <div key={item._id} className="flex p-3 bg-white rounded-lg border border-gray-100 shadow-xs">
+                                                            <div className="flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border border-gray-100">
+                                                                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                                                             </div>
-                                                            <p className="text-xs text-gray-500 mt-1">Qty: {item.quantity}</p>
-
-                                                            <div className="mt-3 flex flex-wrap gap-2">
-                                                                <button
-                                                                    onClick={() => navigate(`/products/${item.productId}`)}
-                                                                    className="text-xs font-medium text-green-600 hover:text-green-800 px-2.5 py-1 border border-green-100 rounded-full bg-green-50 hover:bg-green-100 transition-colors"
-                                                                >
-                                                                    Buy it again
-                                                                </button>
-                                                                {item.returnEligible && (
+                                                            <div className="ml-4 flex-1">
+                                                                <div className="flex justify-between">
+                                                                    <h5 className="text-sm font-medium text-gray-900">{item.name}</h5>
+                                                                    <p className="text-sm font-medium text-gray-900">{currency}{item.price.toFixed(2)}</p>
+                                                                </div>
+                                                                <p className="text-xs text-gray-500 mt-1">Qty: {item.quantity}</p>
+                                                                <div className="mt-3 flex flex-wrap gap-2">
                                                                     <button
-                                                                        onClick={() => navigate(`/products/${item.productId}/return`)}
-                                                                        className="text-xs font-medium text-gray-600 hover:text-gray-800 px-2.5 py-1 border border-gray-200 rounded-full bg-white hover:bg-gray-50 transition-colors"
+                                                                        onClick={() => {
+                                                                            const productId = item.product || 'not-found';
+                                                                            navigate(`/product/${productId}`);
+                                                                        }}
+                                                                        className={`text-xs font-medium px-2.5 py-1 border border-green-100 rounded-full transition-colors ${item.product
+                                                                            ? 'text-green-600 hover:text-green-800 bg-green-50 hover:bg-green-100'
+                                                                            : 'text-gray-400 bg-gray-50 cursor-not-allowed'
+                                                                            }`}
+
                                                                     >
-                                                                        Return or replace
+                                                                        Buy it again
                                                                     </button>
-                                                                )}
-                                                                <button
-                                                                    onClick={() => navigate(`/products/${item.productId}#reviews`)}
-                                                                    className="text-xs font-medium text-gray-600 hover:text-gray-800 px-2.5 py-1 border border-gray-200 rounded-full bg-white hover:bg-gray-50 transition-colors"
-                                                                >
-                                                                    Write a review
-                                                                </button>
+                                                                    {item.returnEligible && (
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                console.log('Return item:', item);
+                                                                                navigate(`/products/${item.product}/return`);
+                                                                            }}
+                                                                            className="text-xs font-medium text-gray-600 hover:text-gray-800 px-2.5 py-1 border border-gray-200 rounded-full bg-white hover:bg-gray-50 transition-colors"
+                                                                        >
+                                                                            Return or replace
+                                                                        </button>
+                                                                    )}
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            const productId = item.product || 'not-found';
+                                                                            navigate(`/product/${productId}#reviews`);
+                                                                        }}
+                                                                        className={`text-xs font-medium px-2.5 py-1 border border-gray-200 rounded-full transition-colors ${item.product
+                                                                            ? 'text-gray-600 hover:text-gray-800 bg-white hover:bg-gray-50'
+                                                                            : 'text-gray-400 bg-gray-50 cursor-not-allowed'
+                                                                            }`}
+                                                                        aria-label={item.product ? `Write a review for ${item.name || 'product'}` : 'Product unavailable'}
+                                                                        disabled={!item.product}
+                                                                    >
+                                                                        Write a review
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                ))}
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
 
@@ -476,7 +476,9 @@ const MyOrdersPage = () => {
                                                 </button>
                                             )}
                                             <button
-                                                onClick={() => navigate(`/product/${order.itemsDetails[0]?.productId}#reviews`)}
+                                                onClick={() =>
+                                                    navigate(`/product/${order.itemsDetails[0]?.product}`)
+                                                }
                                                 className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
                                             >
                                                 Leave review
@@ -487,15 +489,14 @@ const MyOrdersPage = () => {
                                             >
                                                 Contact support
                                             </button>
-                                            <button
-                                                onClick={() => handlePrint(order.id)}
-                                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
-                                            >
-                                                Print receipt
-                                            </button>
+
+
+
+
                                         </div>
                                     </div>
-                                )}
+                                )
+                                }
                             </div>
                         );
                     })
@@ -522,136 +523,50 @@ const MyOrdersPage = () => {
                 )}
             </div>
 
-            {/* Printable Receipt (Hidden) */}
-            {printOrderId && (
-                <div style={{ display: 'none' }}>
-                    {orders.filter(order => order.id === printOrderId).map(order => (
-                        <div key={order.id} ref={printRef} className="p-8 max-w-2xl mx-auto font-sans">
-                            <div className="flex justify-between items-start mb-6">
-                                <div>
-                                    <h1 className="text-2xl font-bold">Order Receipt</h1>
-                                    <p className="text-sm text-gray-600 mt-1">Order #{order.id}</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-sm text-gray-600">
-                                        {new Date(order.date).toLocaleDateString('en-US', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric',
-                                        })}
-                                    </p>
-                                    <p className={`text-xs mt-2 px-2 py-1 rounded-full inline-flex items-center ${statusStyles[order.status]?.bg || 'bg-gray-50'} ${statusStyles[order.status]?.text || 'text-gray-800'}`}>
-                                        {order.status}
-                                    </p>
-                                </div>
-                            </div>
 
-                            <h2 className="text-lg font-semibold mb-3 border-b pb-2">Order Details</h2>
-                            <table className="w-full mb-6">
-                                <thead>
-                                    <tr className="border-b">
-                                        <th className="text-left py-2 text-sm font-medium">Item</th>
-                                        <th className="text-right py-2 text-sm font-medium">Qty</th>
-                                        <th className="text-right py-2 text-sm font-medium">Price</th>
-                                        <th className="text-right py-2 text-sm font-medium">Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {order.itemsDetails.map((item) => (
-                                        <tr key={item.id} className="border-b">
-                                            <td className="py-3 text-sm">{item.name}</td>
-                                            <td className="text-right py-3 text-sm">{item.quantity}</td>
-                                            <td className="text-right py-3 text-sm">{currency}{item.price.toFixed(2)}</td>
-                                            <td className="text-right py-3 text-sm">{currency}{(item.price * item.quantity).toFixed(2)}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-
-                            <div className="grid grid-cols-2 gap-6">
-                                <div>
-                                    <h2 className="text-lg font-semibold mb-3 border-b pb-2">Shipping Information</h2>
-                                    <div className="text-sm">
-                                        <p className="mb-2">{order.shippingAddress}</p>
-                                        {order.trackingNumber && (
-                                            <p>Tracking Number: {order.trackingNumber}</p>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <h2 className="text-lg font-semibold mb-3 border-b pb-2">Payment Summary</h2>
-                                    <div className="text-sm space-y-1">
-                                        <div className="flex justify-between">
-                                            <span>Subtotal</span>
-                                            <span>{currency}{order.totals?.subtotal?.toFixed(2) || (order.total - (order.totals?.tax || 0) - (order.totals?.shipping || 0)).toFixed(2)}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span>Shipping</span>
-                                            <span>{currency}{order.totals?.shipping?.toFixed(2) || '0.00'}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span>Tax</span>
-                                            <span>{currency}{order.totals?.tax?.toFixed(2) || '0.00'}</span>
-                                        </div>
-                                        <div className="pt-2 mt-2 border-t flex justify-between font-medium">
-                                            <span>Total</span>
-                                            <span>{currency}{order.total.toFixed(2)}</span>
-                                        </div>
-                                    </div>
-                                    <div className="mt-4 pt-4 border-t">
-                                        <p className="text-xs text-gray-500">Payment method</p>
-                                        <p className="text-sm font-medium">{order.paymentMethod}</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="mt-8 pt-4 border-t text-center text-xs text-gray-500">
-                                Thank you for shopping with us!
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
 
             {/* Pagination - Desktop */}
-            {filteredOrders.length > 0 && (
-                <div className="mt-8 hidden sm:flex items-center justify-between">
-                    <div>
-                        <p className="text-sm text-gray-700">
-                            Showing <span className="font-medium">1</span> to <span className="font-medium">{filteredOrders.length}</span> of{' '}
-                            <span className="font-medium">{orders.length}</span> orders
-                        </p>
+            {
+                filteredOrders.length > 0 && (
+                    <div className="mt-8 hidden sm:flex items-center justify-between">
+                        <div>
+                            <p className="text-sm text-gray-700">
+                                Showing <span className="font-medium">1</span> to <span className="font-medium">{filteredOrders.length}</span> of{' '}
+                                <span className="font-medium">{orders.length}</span> orders
+                            </p>
+                        </div>
+                        <nav className="flex items-center space-x-2">
+                            <button className="p-2 rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled>
+                                <ArrowLeft className="h-5 w-5" />
+                            </button>
+                            <button className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                1
+                            </button>
+                            <button className="p-2 rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 transition-colors" disabled>
+                                <ArrowRight className="h-5 w-5" />
+                            </button>
+                        </nav>
                     </div>
-                    <nav className="flex items-center space-x-2">
-                        <button className="p-2 rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled>
-                            <ArrowLeft className="h-5 w-5" />
-                        </button>
-                        <button className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                            1
-                        </button>
-                        <button className="p-2 rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 transition-colors" disabled>
-                            <ArrowRight className="h-5 w-5" />
-                        </button>
-                    </nav>
-                </div>
-            )}
+                )
+            }
 
             {/* Pagination - Mobile */}
-            {filteredOrders.length > 0 && (
-                <div className="mt-8 flex items-center justify-between sm:hidden">
-                    <button className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors" disabled>
-                        Previous
-                    </button>
-                    <div className="text-sm text-gray-700">
-                        Page 1 of 1
+            {
+                filteredOrders.length > 0 && (
+                    <div className="mt-8 flex items-center justify-between sm:hidden">
+                        <button className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors" disabled>
+                            Previous
+                        </button>
+                        <div className="text-sm text-gray-700">
+                            Page 1 of 1
+                        </div>
+                        <button className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors" disabled>
+                            Next
+                        </button>
                     </div>
-                    <button className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors" disabled>
-                        Next
-                    </button>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 

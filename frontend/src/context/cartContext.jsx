@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from './authContext';
 import { toast } from 'react-toastify';
@@ -13,6 +13,18 @@ export function CartProvider({ children }) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const currency = 'Rs';
+
+
+    // New state for reviews
+    const [reviews, setReviews] = useState([]);
+    const [ratingStats, setRatingStats] = useState({
+        average: 0,
+        total: 0,
+        breakdown: [0, 0, 0, 0, 0],
+        recommendPercentage: 0
+    });
+    const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+    const [reviewError, setReviewError] = useState(null);
 
     const api = axios.create({
         baseURL: backendUrl,
@@ -135,6 +147,47 @@ export function CartProvider({ children }) {
         }
     };
 
+
+    // NEW: Function to fetch reviews for a product
+    const fetchProductReviews = async (productId) => {
+        setIsLoadingReviews(true);
+        setReviewError(null);
+        try {
+            const response = await api.get(`/api/reviews/${productId}`);
+            const reviews = Array.isArray(response.data.reviews) ? response.data.reviews : [];
+            const stats = response.data.ratingStats || {
+                average: 0,
+                total: 0,
+                breakdown: [0, 0, 0, 0, 0],
+                recommendPercentage: 0
+            };
+            setReviews(reviews);
+            setRatingStats((prev) => ({
+                ...prev,
+                [productId]: stats
+            }));
+        } catch (err) {
+            console.error("Failed to fetch reviews:", err);
+            setReviewError(err.response?.data?.message || 'Failed to load reviews');
+            setReviews([]);
+            setRatingStats((prev) => ({
+                ...prev,
+                [productId]: {
+                    average: 0,
+                    total: 0,
+                    breakdown: [0, 0, 0, 0, 0],
+                    recommendPercentage: 0
+                }
+            }));
+        } finally {
+            setIsLoadingReviews(false);
+        }
+    };
+
+    const hasFetchedReviews = useCallback((productId) => {
+        return ratingStats[productId] !== undefined;
+    }, [ratingStats]);
+
     return (
         <CartContext.Provider
             value={{
@@ -146,7 +199,14 @@ export function CartProvider({ children }) {
                 updateQuantity,
                 clearCart,
                 fetchCart,
-                currency
+                currency,
+                // NEW: Review-related values
+                reviews,
+                ratingStats,
+                isLoadingReviews,
+                reviewError,
+                fetchProductReviews,
+                hasFetchedReviews
             }}
         >
             {children}
