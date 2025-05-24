@@ -8,6 +8,7 @@ import MainContent from './components/MainContent';
 import AddProduct from './pages/AddProduct';
 import Products from './pages/Products';
 import { EditProduct } from './pages/EditProduct';
+import OrdersPage from './pages/OrdersPage';
 
 function App() {
   const navigate = useNavigate();
@@ -24,6 +25,8 @@ function App() {
             <Route path="add-product" element={<AddProduct />} />
             <Route path="products" element={<Products />} />
             <Route path="edit-product/:id" element={<EditProduct />} />
+            <Route path="orders" element={<OrdersPage />} />
+
 
 
           </Route>
