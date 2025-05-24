@@ -4,6 +4,7 @@ import { FiLogIn } from 'react-icons/fi';
 import { FcGoogle } from 'react-icons/fc';
 import image from '../assets/images/HeroSection.jpeg';
 import { useAuth } from '../context/authContext';
+import { toast } from 'react-toastify';
 
 const Login = () => {
     const [email, setEmail] = useState('');
