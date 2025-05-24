@@ -26,9 +26,10 @@ connectDB();
 
 // Middleware
 app.use(cors({
-    origin: process.env.FRONT_END_URL || 'http://localhost:3000', // Fallback for local dev
+    origin: [process.env.FRONT_END_URL, process.env.ADMIN_URL], // Pass as array
     credentials: true,
 }));
+
 
 app.use(express.json());
 app.use(cookieParser());

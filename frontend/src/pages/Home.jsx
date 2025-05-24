@@ -1,14 +1,14 @@
 import { Link } from 'react-router-dom';
 import HeroSection from '../components/HeroSection';
 import FeaturedProducts from '../components/FeaturedProduct';
-import BestSellers from '../components/BestSeller';
+import BestSeller from '../components/BestSeller';
 import NewArrivals from '../components/NewArrivals';
 import ProductSection from '../components/ProductSection';
 import productData from '../assets/ProductData';
 
 export default function Home() {
     return (
-        <div>
+        <div className="bg-gray-50">
             <HeroSection />
             <section className="py-16 space-y-16">
                 {productData.map((product, index) => (
@@ -19,12 +19,13 @@ export default function Home() {
                         benefits={product.benefits}
                         imageSrc={product.imageSrc}
                         imageAlt={product.imageAlt}
-
+                        ctaText={product.ctaText}
+                        ctaLink={product.ctaLink}
                     />
                 ))}
             </section>
             <FeaturedProducts />
-            <BestSellers />
+            <BestSeller />
             <NewArrivals />
         </div>
     );
