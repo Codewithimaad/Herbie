@@ -1,7 +1,7 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
 
 const AdminContext = createContext();
 
@@ -9,8 +9,6 @@ export const AdminProvider = ({ children }) => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
     const navigate = useNavigate();
 
-
-    // Orders states (your existing)
     const [orders, setOrders] = useState([]);
     const [loadingOrders, setLoadingOrders] = useState(true);
     const [ordersError, setOrdersError] = useState(null);
@@ -18,16 +16,23 @@ export const AdminProvider = ({ children }) => {
     const [orderById, setOrderById] = useState(null);
     const [loadingOrderById, setLoadingOrderById] = useState(false);
     const [orderByIdError, setOrderByIdError] = useState(null);
+
     const [categories, setCategories] = useState([]);
+
+    const [admins, setAdmins] = useState([]);
+    const [loadingAdmins, setLoadingAdmins] = useState(true);
+    const [adminsError, setAdminsError] = useState(null);
+
+    const [faqs, setFaqs] = useState([]);
+    const [loadingFaqs, setLoadingFaqs] = useState(true);
+    const [faqsError, setFaqsError] = useState(null);
 
     const currency = 'Rs';
 
-    // Auth states
     const [admin, setAdmin] = useState(null);
     const [token, setToken] = useState(localStorage.getItem('adminToken') || '');
     const [loadingAuth, setLoadingAuth] = useState(false);
 
-    // Set axios Authorization header when token changes
     useEffect(() => {
         if (token) {
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -36,7 +41,6 @@ export const AdminProvider = ({ children }) => {
         }
     }, [token]);
 
-    // Fetch all orders on mount
     useEffect(() => {
         const fetchOrders = async () => {
             try {
@@ -55,7 +59,6 @@ export const AdminProvider = ({ children }) => {
         fetchOrders();
     }, [backendUrl]);
 
-    // Fetch categories on mount
     useEffect(() => {
         const fetchCategories = async () => {
             try {
@@ -66,9 +69,129 @@ export const AdminProvider = ({ children }) => {
             }
         };
         fetchCategories();
-    }, []);
+    }, [backendUrl]);
 
-    // Function to fetch order by ID
+    const fetchAllAdmins = useCallback(async () => {
+        if (!token) {
+            setAdmins([]);
+            setLoadingAdmins(false);
+            return;
+        }
+
+        try {
+            setLoadingAdmins(true);
+            setAdminsError(null);
+            const response = await axios.get(`${backendUrl}/api/admins`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            const adminsData = response.data.admins || response.data;
+            if (!Array.isArray(adminsData)) {
+                throw new Error('Invalid response format: admins is not an array');
+            }
+            setAdmins(adminsData);
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || 'Failed to load admins';
+            setAdminsError(errorMessage);
+            console.error('Fetch admins error:', error);
+            toast.error(errorMessage);
+        } finally {
+            setLoadingAdmins(false);
+        }
+    }, [backendUrl, token]);
+
+    useEffect(() => {
+        fetchAllAdmins();
+    }, [fetchAllAdmins]);
+
+    const fetchAllFAQs = useCallback(async () => {
+        try {
+            setLoadingFaqs(true);
+            setFaqsError(null);
+
+            const response = await axios.get(`${backendUrl}/api/faqs`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+
+            const faqsData = response.data.faqs || response.data;
+            if (!Array.isArray(faqsData)) {
+                throw new Error('Invalid response format: FAQs is not an array');
+            }
+            setFaqs(faqsData);
+        } catch (error) {
+            console.error('Full FAQ fetch error:', error); // More detailed error
+            console.error('Error response:', error.response); // Response if exists
+
+            const errorMessage = error.response?.data?.message ||
+                error.message ||
+                'Failed to load FAQs';
+            setFaqsError(errorMessage);
+            toast.error(errorMessage);
+
+            // If unauthorized, clear token
+            if (error.response?.status === 401) {
+                logoutAdmin();
+            }
+        } finally {
+            setLoadingFaqs(false);
+        }
+    }, [backendUrl, token]);
+
+
+
+    const addFAQ = async (faqData) => {
+        if (!token) {
+            toast.error('Please log in to add FAQs');
+            return { success: false, error: 'Authentication required' };
+        }
+
+        try {
+            setLoadingAuth(true);
+            const { data } = await axios.post(`${backendUrl}/api/faqs`, faqData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setFaqs((prevFaqs) => [...prevFaqs, data.faq]);
+            toast.success('FAQ added successfully');
+            return { success: true, faq: data.faq };
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || 'Failed to add FAQ';
+            toast.error(errorMessage);
+            return { success: false, error: errorMessage };
+        } finally {
+            setLoadingAuth(false);
+        }
+    };
+
+    const deleteFAQ = async (id) => {
+        if (!token) {
+            toast.error('Please log in to delete FAQs');
+            return { success: false, error: 'Authentication required' };
+        }
+
+        try {
+            setLoadingAuth(true);
+            await axios.delete(`${backendUrl}/api/faqs/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setFaqs((prevFaqs) => prevFaqs.filter((faq) => faq._id !== id));
+            return { success: true };
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || 'Failed to delete FAQ';
+            toast.error(errorMessage);
+            return { success: false, error: errorMessage };
+        } finally {
+            setLoadingAuth(false);
+        }
+    };
+
     const fetchOrderById = async (id) => {
         try {
             setLoadingOrderById(true);
@@ -87,12 +210,9 @@ export const AdminProvider = ({ children }) => {
         }
     };
 
-    // Delete an order by ID
     const deleteOrder = async (id) => {
         try {
-            await axios.delete(`${backendUrl}/api/admin/${id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            await axios.delete(`${backendUrl}/api/admin/${id}`);
             setOrders((prevOrders) => prevOrders.filter((order) => order._id !== id));
             toast.success('Order deleted');
             return { success: true };
@@ -102,37 +222,40 @@ export const AdminProvider = ({ children }) => {
         }
     };
 
-    // ===== Admin Login =====
     const loginAdmin = async (email, password) => {
         try {
             setLoadingAuth(true);
             const { data } = await axios.post(`${backendUrl}/api/admins/login`, { email, password });
-            setAdmin(data.admin);
             setToken(data.token);
             localStorage.setItem('adminToken', data.token);
+            setAdmin(data.admin);
             return { success: true };
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Login failed');
-            return { success: false, error: error.response?.data?.message || 'Login failed' };
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Login failed');
+            return { success: false, error: err.response?.data?.message || 'Login failed' };
         } finally {
             setLoadingAuth(false);
         }
     };
 
-    // ===== Admin Logout =====
     const logoutAdmin = () => {
         setAdmin(null);
         setToken('');
+        setAdmins([]);
         localStorage.removeItem('adminToken');
         navigate('/login');
         toast.info('Logged out');
     };
 
-    // ===== Add New Admin =====
     const addAdmin = async (adminData) => {
         try {
             setLoadingAuth(true);
-            const { data } = await axios.post(`${backendUrl}/api/admins`, adminData);
+            const { data } = await axios.post(`${backendUrl}/api/admins`, adminData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setAdmins((prevAdmins) => [...prevAdmins, data.admin]);
             toast.success('Admin added successfully');
             return { success: true, admin: data.admin };
         } catch (error) {
@@ -143,11 +266,17 @@ export const AdminProvider = ({ children }) => {
         }
     };
 
-    // ===== Update Admin =====
     const updateAdmin = async (id, updatedData) => {
         try {
             setLoadingAuth(true);
-            const { data } = await axios.put(`${backendUrl}/api/admins/${id}`, updatedData);
+            const { data } = await axios.put(`${backendUrl}/api/admins/${id}`, updatedData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setAdmins((prevAdmins) =>
+                prevAdmins.map((admin) => (admin._id === id ? data.admin : admin))
+            );
             toast.success('Admin updated successfully');
             if (admin && admin._id === id) {
                 setAdmin(data.admin);
@@ -161,11 +290,15 @@ export const AdminProvider = ({ children }) => {
         }
     };
 
-    // ===== Delete Admin =====
     const deleteAdmin = async (id) => {
         try {
             setLoadingAuth(true);
-            await axios.delete(`${backendUrl}/api/admins/${id}`);
+            await axios.delete(`${backendUrl}/api/admins/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setAdmins((prevAdmins) => prevAdmins.filter((admin) => admin._id !== id));
             toast.success('Admin deleted successfully');
             if (admin && admin._id === id) {
                 logoutAdmin();
@@ -178,6 +311,31 @@ export const AdminProvider = ({ children }) => {
             setLoadingAuth(false);
         }
     };
+
+    useEffect(() => {
+        const fetchAdmin = async () => {
+            if (!token) {
+                setAdmin(null);
+                return;
+            }
+
+            try {
+                const res = await axios.get(`${backendUrl}/api/admins/get-admin`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                setAdmin(res.data.admin);
+            } catch (err) {
+                console.error('Failed to fetch admin:', err);
+                setAdmin(null);
+                localStorage.removeItem('adminToken');
+                setToken('');
+            }
+        };
+
+        fetchAdmin();
+    }, [token, backendUrl]);
 
     return (
         <AdminContext.Provider
@@ -195,6 +353,15 @@ export const AdminProvider = ({ children }) => {
                 deleteOrder,
                 categories,
                 admin,
+                admins,
+                loadingAdmins,
+                adminsError,
+                faqs,
+                loadingFaqs,
+                faqsError,
+                fetchAllFAQs,
+                addFAQ,
+                deleteFAQ,
                 token,
                 loadingAuth,
                 loginAdmin,
@@ -202,12 +369,13 @@ export const AdminProvider = ({ children }) => {
                 addAdmin,
                 updateAdmin,
                 deleteAdmin,
+                fetchAllAdmins,
             }}
         >
             {children}
         </AdminContext.Provider>
-    );
-};
+    )
+}
 
 export const useAdmin = () => useContext(AdminContext);
 

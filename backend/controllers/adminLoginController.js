@@ -1,38 +1,81 @@
 import Admin from '../models/Admin.js';
 import jwt from 'jsonwebtoken'
+import bcrypt from 'bcryptjs';
+
 
 const generateToken = (id) => {
     return jwt.sign({ id, role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '7d' });
 };
 
 
+
 // Add new admin
 export const addAdmin = async (req, res) => {
     const { name, email, password, image, bio } = req.body;
-    try {
-        const existing = await Admin.findOne({ email });
-        if (existing) return res.status(400).json({ message: 'Admin already exists' });
 
-        const admin = new Admin({ name, email, password, image, bio });
+    try {
+        // Check if admin already exists
+        const existing = await Admin.findOne({ email });
+        if (existing) {
+            return res.status(400).json({ message: 'Admin already exists' });
+        }
+
+        // Hash the password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // Create new admin with hashed password
+        const admin = new Admin({
+            name,
+            email,
+            password: hashedPassword,
+            image,
+            bio
+        });
+
         await admin.save();
 
-        res.status(201).json({ message: 'Admin created', admin });
+        // Return response without the password
+        const adminToReturn = admin.toObject();
+        delete adminToReturn.password;
+
+        res.status(201).json({
+            message: 'Admin created successfully',
+            admin: adminToReturn
+        });
+
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+        console.error('Error creating admin:', error);
+        res.status(500).json({
+            message: 'Server error',
+            error: error.message
+        });
     }
 };
 
+// Login admin
 export const loginAdmin = async (req, res) => {
     const { email, password } = req.body;
+
     try {
+        // Find admin by email
         const admin = await Admin.findOne({ email });
-        if (!admin || admin.password !== password) {
+        if (!admin) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
 
+        // Compare provided password with hashed password
+        const isMatch = await bcrypt.compare(password, admin.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+
+        // Generate JWT token
         const token = generateToken(admin._id);
 
-        res.json({
+        // Send response with admin details and token
+        res.status(200).json({
+            success: true,
             message: 'Login successful',
             admin: {
                 _id: admin._id,
@@ -41,12 +84,14 @@ export const loginAdmin = async (req, res) => {
                 image: admin.image,
                 bio: admin.bio,
             },
-            token,
+            token: token,
         });
-    } catch (error) {
+    } catch (err) {
+        console.error('Login error:', err);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
+
 
 // Get all admins
 export const getAllAdmins = async (req, res) => {
@@ -58,17 +103,30 @@ export const getAllAdmins = async (req, res) => {
     }
 };
 
-// Get single admin by ID
 export const getAdmin = async (req, res) => {
     try {
-        const admin = await Admin.findById(req.params.id).select('-password');
+        // Assume your adminAuth middleware sets req.admin or req.adminId
+        const adminId = req.admin._id || req.adminId;
+        const admin = await Admin.findById(adminId).select('-password');
+        console.log('Admin data:', admin); // Debug log
+        if (!admin) return res.status(404).json({ message: 'Admin not found' });
         if (!admin) return res.status(404).json({ message: 'Admin not found' });
 
-        res.json(admin);
+
+        // Structure the response to match exactly what you need
+        const adminData = {
+            _id: admin._id,
+            email: admin.email,
+            name: admin.name || '', // Fallback if name doesn't exist
+            bio: admin.bio
+        };
+
+        res.json({ admin: adminData });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
+
 
 // Update admin
 export const updateAdmin = async (req, res) => {

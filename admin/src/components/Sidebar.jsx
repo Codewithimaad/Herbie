@@ -7,12 +7,17 @@ import {
     FiSettings,
     FiUsers,
     FiBarChart2,
-    FiHelpCircle
+    FiHelpCircle,
+    FiUserCheck,
+
+
 } from 'react-icons/fi';
 import { RiPlantLine } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
+import { useAdmin } from '../context/AdminContext'
 
 const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
+    const { admin } = useAdmin();
     const [openMenus, setOpenMenus] = useState({
         products: false,
         orders: false,
@@ -149,6 +154,30 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                             )}
                         </div>
 
+                        {/* Admins */}
+                        <Link
+                            to="/all-admins"
+                            className="flex items-center w-full px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-emerald-600 transition-colors duration-200 group"
+                            onClick={() => window.innerWidth < 1024 && toggleSidebar()}
+                        >
+                            <div className="p-2 mr-3 rounded-lg bg-gray-50 group-hover:bg-emerald-50 transition-colors">
+                                <FiUserCheck className="text-gray-500 group-hover:text-emerald-600" />
+                            </div>
+                            <span>Admins</span>
+                        </Link>
+
+                        {/* FAQS */}
+                        <Link
+                            to="/faqs"
+                            className="flex items-center w-full px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-emerald-600 transition-colors duration-200 group"
+                            onClick={() => window.innerWidth < 1024 && toggleSidebar()}
+                        >
+                            <div className="p-2 mr-3 rounded-lg bg-gray-50 group-hover:bg-emerald-50 transition-colors">
+                                <FiHelpCircle className="text-gray-500 group-hover:text-emerald-600" />
+                            </div>
+                            <span>FAQS</span>
+                        </Link>
+
 
                     </div>
 
@@ -157,27 +186,38 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                             Support
                         </span>
 
-                        <Link
-                            to="/settings"
-                            className="flex items-center w-full px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-emerald-600 transition-colors duration-200 group"
-                            onClick={() => window.innerWidth < 1024 && toggleSidebar()}
-                        >
-                            <div className="p-2 mr-3 rounded-lg bg-gray-50 group-hover:bg-emerald-50 transition-colors">
-                                <FiSettings className="text-gray-500 group-hover:text-emerald-600" />
-                            </div>
-                            <span>Settings</span>
-                        </Link>
+                        {/* Settings Dropdown */}
+                        <div className="space-y-1">
+                            <button
+                                onClick={() => toggleMenu('settings')}
+                                className="flex items-center justify-between w-full px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-emerald-600 transition-colors duration-200 group"
+                            >
+                                <div className="flex items-center">
+                                    <div className="p-2 mr-3 rounded-lg bg-gray-50 group-hover:bg-emerald-50 transition-colors">
+                                        <FiSettings className="text-gray-500 group-hover:text-emerald-600" />
+                                    </div>
+                                    <span>Settings</span>
+                                </div>
+                                <FiChevronRight className={`transition-transform duration-200 ${openMenus.settings ? 'rotate-90' : ''}`} />
+                            </button>
 
-                        <Link
-                            to="/help"
-                            className="flex items-center w-full px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-emerald-600 transition-colors duration-200 group"
-                            onClick={() => window.innerWidth < 1024 && toggleSidebar()}
-                        >
-                            <div className="p-2 mr-3 rounded-lg bg-gray-50 group-hover:bg-emerald-50 transition-colors">
-                                <FiHelpCircle className="text-gray-500 group-hover:text-emerald-600" />
-                            </div>
-                            <span>Help Center</span>
-                        </Link>
+                            {openMenus.settings && (
+                                <div className="ml-14 mt-1 space-y-2">
+                                    <Link
+                                        to="/account"
+                                        className="block px-4 py-2 text-sm text-gray-500 hover:text-emerald-600 hover:bg-gray-50 rounded-lg transition-colors"
+                                        onClick={() => window.innerWidth < 1024 && toggleSidebar()}
+                                    >
+                                        Account
+                                    </Link>
+
+
+
+                                </div>
+                            )}
+                        </div>
+
+
                     </div>
                 </nav>
 
@@ -188,8 +228,8 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                             <span className="text-sm font-medium text-emerald-800">AD</span>
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-800 truncate">Admin User</p>
-                            <p className="text-xs text-gray-500 truncate">admin@herbie.com</p>
+                            <p className="text-sm font-semibold text-gray-800 truncate">{admin?.name || 'admin'}</p>
+                            <p className="text-xs text-gray-500 truncate">{admin?.email || 'no email'}</p>
                         </div>
                     </div>
                 </div>

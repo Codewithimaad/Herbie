@@ -1,119 +1,204 @@
-import {
-    Accordion,
-    AccordionItem,
-    AccordionTrigger,
-    AccordionContent,
-} from "@radix-ui/react-accordion";
-import { ChevronDown } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronDown, RotateCw } from 'lucide-react';
+import axios from 'axios';
 import HeadingText from "../components/HeadingText";
 
-const categories = [
-    {
-        title: "Account & Shopping",
-        faqs: [
-            {
-                question: "Do I need to have an account to shop with you?",
-                answer:
-                    "No, but creating an account makes checkout faster and allows order tracking.",
-            },
-            {
-                question: "How do I create an account?",
-                answer:
-                    "Click on the user icon > 'Create an Account' > Fill in your details > Submit.",
-            },
-            {
-                question: "What if I forget my password?",
-                answer:
-                    "Use 'Forgot Password' on the login page and follow the email instructions.",
-            },
-            {
-                question: "How can I update my address?",
-                answer:
-                    "Go to 'My Account' after signing in to manage your shipping/billing info.",
-            },
-            {
-                question: "How can I view my order history?",
-                answer: "Log into your account and go to 'Order History'.",
-            },
-        ],
-    },
-    {
-        title: "Order Issues",
-        faqs: [
-            {
-                question: "I haven't received a confirmation email/SMS?",
-                answer:
-                    "Check your spam folder. If still missing, contact our support team.",
-            },
-            {
-                question: "Why was my order unsuccessful?",
-                answer:
-                    "Please verify your billing information or try using a different payment method.",
-            },
-            {
-                question: "Why can't I checkout certain items?",
-                answer:
-                    "They may be out of stock or restricted by quantity limits.",
-            },
-            {
-                question: "How can I place an order?",
-                answer:
-                    "Sign in, add items to your cart, proceed to checkout, and submit.",
-            },
-            {
-                question: "How do I know you received my order?",
-                answer:
-                    "You'll receive a confirmation email/SMS after successful order placement.",
-            },
-            {
-                question: "How can I track my order?",
-                answer:
-                    "Log into your account and check your order status in the dashboard.",
-            },
-            {
-                question: "What if the product is out of stock?",
-                answer:
-                    "We'll contact you to offer alternatives or provide further assistance.",
-            },
-        ],
-    },
-];
+// Animation variants
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.2
+        }
+    }
+};
+
+const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+        y: 0,
+        opacity: 1,
+        transition: {
+            type: "spring",
+            stiffness: 100,
+            damping: 15
+        }
+    }
+};
+
+const accordionVariants = {
+    closed: { height: 0, opacity: 0 },
+    open: {
+        height: "auto",
+        opacity: 1,
+        transition: {
+            type: "spring",
+            stiffness: 300,
+            damping: 25
+        }
+    }
+};
 
 export default function FAQsPage() {
+    const [faqs, setFaqs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [activeIndex, setActiveIndex] = useState(null);
+
+    useEffect(() => {
+        const fetchFAQs = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                const response = await axios.get('http://localhost:5000/api/faqs/for-all');
+                const faqsData = response.data.faqs || response.data;
+                if (!Array.isArray(faqsData)) {
+                    throw new Error('Invalid response format: FAQs is not an array');
+                }
+                setFaqs(faqsData);
+            } catch (err) {
+                const errorMessage = err.response?.data?.message || 'Failed to load FAQs';
+                setError(errorMessage);
+                console.error('Fetch FAQs error:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchFAQs();
+    }, []);
+
+    const toggleAccordion = (index) => {
+        setActiveIndex(activeIndex === index ? null : index);
+    };
+
     return (
-        <div className="px-0 py-8 md:px-8 mx-auto">
-            <HeadingText
-                title="Frequently Asked Questions"
-                description="Find answers to common questions about your shopping experience."
-            />
+        <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+            className="px-4 py-12 md:px-8 mx-auto max-w-7xl"
+        >
+            <motion.div variants={itemVariants}>
+                <HeadingText
+                    title="Frequently Asked Questions"
+                    description="Find answers to common questions about your shopping experience."
+                />
+            </motion.div>
 
-            {categories.map((category, i) => (
-                <section key={i} className="mb-10">
-                    <h2 className="text-xl font-semibold text-green-700 mb-4 border-b pb-2">
-                        {category.title}
-                    </h2>
+            <AnimatePresence mode="wait">
+                {loading ? (
+                    <motion.div
+                        key="loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex flex-col items-center justify-center py-16 space-y-4"
+                    >
+                        <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                            className="text-emerald-500"
+                        >
+                            <RotateCw className="h-8 w-8" />
+                        </motion.div>
+                        <p className="text-gray-500">Loading FAQs...</p>
+                    </motion.div>
+                ) : error ? (
+                    <motion.div
+                        key="error"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="p-8 text-center space-y-4"
+                    >
+                        <div className="inline-flex items-center justify-center p-3 bg-red-100 rounded-full">
+                            <svg className="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <p className="text-red-500">{error}</p>
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => window.location.reload()}
+                            className="inline-flex items-center gap-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-colors shadow-sm hover:shadow-md"
+                        >
+                            Try Again
+                        </motion.button>
+                    </motion.div>
+                ) : faqs.length === 0 ? (
+                    <motion.div
+                        key="empty"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="p-8 text-center space-y-4"
+                    >
+                        <div className="inline-flex items-center justify-center p-3 bg-gray-100 rounded-full">
+                            <svg className="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <p className="text-gray-500">No FAQs available at the moment</p>
+                    </motion.div>
+                ) : (
+                    <motion.section
+                        key="content"
+                        variants={containerVariants}
+                        className="space-y-6 mt-8"
+                    >
+                        <motion.div variants={itemVariants}>
+                            <h2 className="text-xl font-semibold text-emerald-700 mb-4 pb-2 border-b border-emerald-100">
+                                General Questions
+                            </h2>
+                        </motion.div>
 
-                    <Accordion type="single" collapsible className="space-y-3">
-                        {category.faqs.map((faq, j) => (
-                            <AccordionItem
-                                key={`${i}-${j}`}
-                                value={`${i}-${j}`}
-                                className="border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 hover:border-gray-300"
-                            >
-                                <AccordionTrigger className="flex items-center justify-between w-full bg-white px-4 py-3 text-left text-base font-medium text-gray-800 hover:bg-gray-50 transition-colors duration-200">
-                                    {faq.question}
-                                    <ChevronDown className="h-5 w-5 shrink-0 transition-transform duration-300 ease-[cubic-bezier(0.87,_0,_0.13,_1)] group-data-[state=open]:rotate-180" />
-                                </AccordionTrigger>
-                                <AccordionContent className="overflow-hidden text-sm text-gray-700 transition-all duration-300 ease-[cubic-bezier(0.87,_0,_0.13,_1)] data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-                                    <div className="px-4 py-3 bg-gray-50 border-t">
-                                        {faq.answer}
-                                    </div>
-                                </AccordionContent>
-                            </AccordionItem>
-                        ))}
-                    </Accordion>
-                </section>
-            ))}
-        </div>
+                        <div className="space-y-3">
+                            {faqs.map((faq, index) => (
+                                <motion.div
+                                    key={index}
+                                    variants={itemVariants}
+                                    className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow"
+                                >
+                                    <motion.button
+                                        initial={false}
+                                        onClick={() => toggleAccordion(index)}
+                                        className={`flex items-center justify-between w-full px-6 py-4 text-left text-base font-medium transition-colors ${activeIndex === index ? 'text-emerald-600 bg-emerald-50' : 'text-gray-800 hover:bg-gray-50'}`}
+                                    >
+                                        <span>{faq.question}</span>
+                                        <motion.div
+                                            animate={{ rotate: activeIndex === index ? 180 : 0 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            <ChevronDown className="h-5 w-5 text-current" />
+                                        </motion.div>
+                                    </motion.button>
+
+                                    <AnimatePresence>
+                                        {activeIndex === index && (
+                                            <motion.div
+                                                initial="closed"
+                                                animate="open"
+                                                exit="closed"
+                                                variants={accordionVariants}
+                                                className="overflow-hidden"
+                                            >
+                                                <div className="px-6 py-4 text-gray-600 bg-gray-50 border-t border-gray-100">
+                                                    {faq.answer || "No answer provided"}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </motion.section>
+                )}
+            </AnimatePresence>
+        </motion.div>
     );
 }

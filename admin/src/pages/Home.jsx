@@ -7,27 +7,9 @@ import { toast } from 'react-toastify'
 import { useEffect } from 'react';
 
 const Home = () => {
-    const { token } = useAdmin();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
-
-    const navigate = useNavigate();
-    const location = useLocation();
-
-
-
-    useEffect(() => {
-        // Delay slightly to avoid showing warning during redirect to login
-        if (!token && location.pathname !== '/login') {
-            const timer = setTimeout(() => {
-                toast.warning('Not authorized. Please login first.');
-                navigate('/login', { replace: true });
-            }, 300); // short delay
-
-            return () => clearTimeout(timer); // clean up
-        }
-    }, [token, navigate, location.pathname]);
 
     const toggleModal = () => setIsModalOpen(!isModalOpen);
 

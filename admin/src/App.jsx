@@ -11,6 +11,9 @@ import OrdersPage from './pages/OrdersPage';
 import OrderViewPage from './pages/OrderViewPage';
 import Categories from './pages/Categories';
 import Home from './pages/Home';
+import ProtectedRoute from './components/ProtectedRoute';
+import AllAdmins from './pages/AllAdmins';
+import FAQsPage from './pages/FaQsPage';
 
 function App() {
   const navigate = useNavigate();
@@ -21,7 +24,15 @@ function App() {
       <main className="flex-1">
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="" element={<Dashboard />}>
+
+          <Route
+            path=""
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          >
             <Route path="/" element={<Home />} />
             <Route path="add-product" element={<AddProduct />} />
             <Route path="products" element={<Products />} />
@@ -29,11 +40,12 @@ function App() {
             <Route path="orders" element={<OrdersPage />} />
             <Route path="order/:id" element={<OrderViewPage />} />
             <Route path="categories" element={<Categories />} />
-
-
+            <Route path="all-admins" element={<AllAdmins />} />
+            <Route path="faqs" element={<FAQsPage />} />
           </Route>
         </Routes>
       </main>
+
       <ToastContainer
         position="top-right"
         autoClose={3000}

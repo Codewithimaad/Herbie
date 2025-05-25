@@ -17,7 +17,7 @@ router.post('/login', loginAdmin);
 // CRUD
 router.post('/', adminAuth, addAdmin);         // Add new admin
 router.get('/', adminAuth, getAllAdmins);      // Get all admins
-router.get('/:id', adminAuth, getAdmin);       // Get single admin
+router.get('/get-admin', adminAuth, getAdmin);       // Get single admin
 router.put('/:id', adminAuth, updateAdmin);    // Update admin
 router.delete('/:id', adminAuth, deleteAdmin); // Delete admin
 
