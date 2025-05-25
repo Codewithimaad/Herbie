@@ -144,42 +144,12 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                                     >
                                         All Orders
                                     </Link>
-                                    <Link
-                                        to="/orders/pending"
-                                        className="block px-4 py-2 text-sm text-gray-500 hover:text-emerald-600 hover:bg-gray-50 rounded-lg transition-colors"
-                                        onClick={() => window.innerWidth < 1024 && toggleSidebar()}
-                                    >
-                                        Pending
-                                    </Link>
-                                    <Link
-                                        to="/orders/completed"
-                                        className="block px-4 py-2 text-sm text-gray-500 hover:text-emerald-600 hover:bg-gray-50 rounded-lg transition-colors"
-                                        onClick={() => window.innerWidth < 1024 && toggleSidebar()}
-                                    >
-                                        Completed
-                                    </Link>
-                                    <Link
-                                        to="/orders/returns"
-                                        className="block px-4 py-2 text-sm text-gray-500 hover:text-emerald-600 hover:bg-gray-50 rounded-lg transition-colors"
-                                        onClick={() => window.innerWidth < 1024 && toggleSidebar()}
-                                    >
-                                        Returns
-                                    </Link>
+
                                 </div>
                             )}
                         </div>
 
-                        {/* Customers */}
-                        <Link
-                            to="/customers"
-                            className="flex items-center w-full px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-emerald-600 transition-colors duration-200 group"
-                            onClick={() => window.innerWidth < 1024 && toggleSidebar()}
-                        >
-                            <div className="p-2 mr-3 rounded-lg bg-gray-50 group-hover:bg-emerald-50 transition-colors">
-                                <FiUsers className="text-gray-500 group-hover:text-emerald-600" />
-                            </div>
-                            <span>Customers</span>
-                        </Link>
+
                     </div>
 
                     <div className="mt-8 space-y-1">

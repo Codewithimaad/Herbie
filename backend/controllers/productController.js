@@ -45,27 +45,32 @@ export const createProduct = async (req, res) => {
 };
 
 
-// PUT (Admin) - Update product with optional image upload
 export const updateProduct = async (req, res) => {
     try {
-        const updateData = {
-            ...req.body,
-        };
-
-        // If image is uploaded, update image field too
-        if (req.file) {
-            updateData.image = req.file.path;
+        const productId = req.params.id;
+        const existing = await Product.findById(productId);
+        if (!existing) {
+            return res.status(404).json({ message: 'Product not found' });
         }
 
-        const updated = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        // Handle image URLs
+        const newImages = req.files ? req.files.map(file => file.path) : [];
+        const retainedImages = JSON.parse(req.body.existingImages || '[]');
+        const allImages = [...retainedImages, ...newImages];
 
-        if (!updated) return res.status(404).json({ message: 'Product not found' });
+        const updated = await Product.findByIdAndUpdate(productId, {
+            ...req.body,
+            images: allImages,
+        }, { new: true });
 
         res.status(200).json(updated);
     } catch (err) {
+        console.error(err);
         res.status(400).json({ message: err.message });
     }
 };
+
+
 
 // DELETE (Admin) - Remove product
 export const deleteProduct = async (req, res) => {

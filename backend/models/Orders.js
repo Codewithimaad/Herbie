@@ -42,7 +42,7 @@ const orderSchema = new mongoose.Schema({
     },
     paymentMethod: {
         type: String,
-        enum: ['card', 'easypaisa', 'cod'],
+        enum: ['card', 'easypaisa', 'cod', 'paid'],
         required: [true, 'Payment method is required'],
     },
     paymentDetails: {
@@ -74,9 +74,10 @@ const orderSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
-        default: 'pending',
+        enum: ['placed', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'],
+        default: 'placed',
     },
+
     createdAt: {
         type: Date,
         default: Date.now,
@@ -85,6 +86,13 @@ const orderSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+    statusHistory: [
+        {
+            status: { type: String, required: true },
+            timestamp: { type: Date, default: Date.now },
+        },
+    ],
+
 });
 
 orderSchema.pre('save', function (next) {

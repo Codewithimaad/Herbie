@@ -100,7 +100,7 @@ export const orderCreation = async (req, res) => {
                 tax,
                 grandTotal,
             },
-            status: 'pending',
+            status: 'placed',
         });
 
         // Update product stock
@@ -127,39 +127,47 @@ export const getUserOrders = async (req, res) => {
 
         // Fetch orders for the user, populate product details
         const orders = await Order.find({ user: userId })
-            .populate('items.product', 'name price image')
+            .populate('items.product', 'name price images')
             .sort({ createdAt: -1 }); // Sort by newest first
 
         // Transform orders to match frontend structure
-        const formattedOrders = orders.map((order, index) => ({
+        const formattedOrders = orders.map((order) => ({
             id: order._id.toString(),
-            date: order.createdAt.toISOString().split('T')[0], // Format as YYYY-MM-DD
-            status: order.status.charAt(0).toUpperCase() + order.status.slice(1), // Capitalize (e.g., 'pending' -> 'Pending')
-            items: order.items.reduce((sum, item) => sum + item.quantity, 0), // Total item quantity
-            total: order.totals.grandTotal, // Use grandTotal from totals
-            deliveryDate: order.deliveryDate ? order.deliveryDate.toISOString().split('T')[0] : null,
+            createdAt: order.createdAt, // Full ISO string
+            updatedAt: order.updatedAt, // Full ISO string
+            status: order.status.charAt(0).toUpperCase() + order.status.slice(1),
+            items: order.items.reduce((sum, item) => sum + item.quantity, 0),
+            total: order.totals.grandTotal,
             trackingNumber: order.trackingNumber || null,
             paymentMethod: (() => {
                 if (order.paymentMethod === 'card') {
                     return `Card •••• ${order.paymentDetails.cardNumber || 'XXXX'}`;
                 } else if (order.paymentMethod === 'easypaisa') {
                     return `Easypaisa •••• ${order.paymentDetails.easypaisaNumber?.slice(-4) || 'XXXX'}`;
-                } else {
-                    return 'Cash on Delivery';
+                }
+                else if (order.paymentMethod === 'paid') {
+                    return 'paid';
+                }
+                else {
+                    return 'cod';
                 }
             })(),
             shippingAddress: `${order.shippingAddress.address}, ${order.shippingAddress.city}, ${order.shippingAddress.country} ${order.shippingAddress.zip}`,
-            itemsDetails: order.items.map((item, itemIndex) => ({
-                id: item._id.toString(), // Use _id instead of itemIndex + 1
-                product: item.product?._id.toString(), // Include product ObjectId
+            itemsDetails: order.items.map((item) => ({
+                id: item._id.toString(),
+                product: item.product?._id.toString(),
                 name: item.name,
-                image: item.product?.image || '/products/placeholder.jpg', // Fallback image
+                image: item.product?.images?.[0] || '/products/placeholder.jpg',
                 price: item.price,
                 quantity: item.quantity,
-                status: order.status.charAt(0).toUpperCase() + order.status.slice(1), // Match order status
-                returnEligible: ['delivered'].includes(order.status.toLowerCase()) && // Eligible if delivered
-                    (new Date(order.deliveryDate).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000), // Within 30 days
+                status: order.status.charAt(0).toUpperCase() + order.status.slice(1),
+                returnEligible: ['delivered'].includes(order.status.toLowerCase()) &&
+                    (new Date(order.deliveryDate).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000),
             })),
+            // Add timeline dates if available
+            processingDate: order.processingDate || null,
+            shippedDate: order.shippedDate || null,
+            deliveredDate: order.deliveredDate || null,
         }));
 
         res.status(200).json({ orders: formattedOrders });
@@ -167,8 +175,7 @@ export const getUserOrders = async (req, res) => {
         console.error('Error fetching orders:', err);
         res.status(500).json({ message: err.message || 'Failed to fetch orders' });
     }
-}
-
+};
 
 // Cancel order
 export const cancelOrder = async (req, res) => {
@@ -209,3 +216,4 @@ export const cancelOrder = async (req, res) => {
         res.status(500).json({ message: err.message || 'Failed to cancel order' });
     }
 };
+

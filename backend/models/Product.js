@@ -9,7 +9,6 @@ const productSchema = new mongoose.Schema({
     reviews: { type: Number, default: 0 },
     category: {
         type: String,
-        enum: ['Tea Herbs', 'Medicinal Herbs', 'Spices', 'Beauty Herbs', 'Culinary Herbs'],
         required: true
     },
     inStock: { type: Number, required: true, min: 0, default: 0 },

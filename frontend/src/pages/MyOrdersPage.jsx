@@ -8,6 +8,8 @@ import { toast } from 'react-toastify';
 import { useReactToPrint } from 'react-to-print';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
+import OrderTimeline from '../components/orderTimeline';
+
 
 const MyOrdersPage = () => {
     const { token, backendUrl } = useAuth();
@@ -28,6 +30,7 @@ const MyOrdersPage = () => {
                 headers: { Authorization: `Bearer ${token}` },
                 withCredentials: true,
             });
+            console.log('order data: ', response.data.orders)
             setOrders(response.data.orders);
             setError(null);
         } catch (err) {
@@ -94,6 +97,9 @@ const MyOrdersPage = () => {
             if (activeFilter === 'Completed') return order.status === 'Delivered';
             return true;
         });
+
+    console.log('date:', filteredOrders);
+
 
     if (isLoading) {
         return (
@@ -244,10 +250,13 @@ const MyOrdersPage = () => {
                                         <div>
                                             <h3 className="text-base font-semibold text-gray-900">Order #{order.id}</h3>
                                             <p className="text-sm text-gray-500 mt-1">
-                                                {new Date(order.date).toLocaleDateString('en-US', {
+                                                {new Date(order.createdAt).toLocaleDateString('en-pk', {
+                                                    timeZone: 'Asia/Karachi',
                                                     year: 'numeric',
                                                     month: 'short',
                                                     day: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
                                                 })}
                                                 <span className="mx-2">•</span>
                                                 {order.items} {order.items > 1 ? 'items' : 'item'}
@@ -275,79 +284,15 @@ const MyOrdersPage = () => {
                                 {expandedOrder === order.id && (
                                     <div className="px-5 py-4 md:px-6 md:py-5 bg-gray-50/50 border-t border-gray-100">
                                         {/* Order Timeline */}
-                                        <div className="mb-8">
-                                            <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Order Status</h4>
-                                            <div className="relative pl-8">
-                                                <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gray-200"></div>
 
-                                                <div className="relative pb-6">
-                                                    <div className="absolute -left-8 top-0 h-4 w-4 rounded-full bg-green-500 border-4 border-white"></div>
-                                                    <div className="pl-2">
-                                                        <p className="text-sm font-medium text-gray-900">Order confirmed</p>
-                                                        <p className="text-xs text-gray-500 mt-1">
-                                                            {new Date(order.date).toLocaleDateString('en-US', {
-                                                                month: 'short',
-                                                                day: 'numeric',
-                                                                hour: '2-digit',
-                                                                minute: '2-digit',
-                                                            })}
-                                                        </p>
-                                                    </div>
-                                                </div>
+                                        {order && <OrderTimeline order={order} />}
 
-                                                {order.status.toLowerCase() !== 'cancelled' && (
-                                                    <>
-                                                        <div className="relative pb-6">
-                                                            <div className={`absolute -left-8 top-0 h-4 w-4 rounded-full ${['pending', 'processing'].includes(order.status.toLowerCase()) ? 'bg-gray-300 border-4 border-white' : 'bg-green-500 border-4 border-white'}`}></div>
-                                                            <div className="pl-2">
-                                                                <p className="text-sm font-medium text-gray-900">Processing</p>
-                                                                {order.status.toLowerCase() !== 'pending' && order.status.toLowerCase() !== 'processing' && (
-                                                                    <p className="text-xs text-gray-500 mt-1">
-                                                                        {new Date(order.date).toLocaleDateString('en-US', {
-                                                                            month: 'short',
-                                                                            day: 'numeric',
-                                                                            hour: '2-digit',
-                                                                            minute: '2-digit',
-                                                                        })}
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="relative pb-6">
-                                                            <div className={`absolute -left-8 top-0 h-4 w-4 rounded-full ${['pending', 'processing', 'cancelled'].includes(order.status.toLowerCase()) ? 'bg-gray-300 border-4 border-white' : 'bg-green-500 border-4 border-white'}`}></div>
-                                                            <div className="pl-2">
-                                                                <p className="text-sm font-medium text-gray-900">Shipped</p>
-                                                                {order.status.toLowerCase() === 'shipped' && order.trackingNumber && (
-                                                                    <div className="mt-1 flex items-center">
-                                                                        <span className="text-xs text-gray-500 mr-2">
-                                                                            Tracking #{order.trackingNumber}
-                                                                        </span>
-                                                                        <button className="text-xs font-medium text-green-600 hover:text-green-800 transition-colors">
-                                                                            Track package
-                                                                        </button>
-                                                                    </div>
-                                                                )}
-                                                                {order.status.toLowerCase() === 'delivered' && order.deliveryDate && (
-                                                                    <p className="text-xs text-gray-500 mt-1">
-                                                                        Delivered on {new Date(order.deliveryDate).toLocaleDateString('en-US', {
-                                                                            month: 'short',
-                                                                            day: 'numeric',
-                                                                        })}
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
 
                                         {/* Order Items */}
                                         <div className="mb-8">
                                             <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Order Details</h4>
                                             <div className="mb-8">
-                                                <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Order Details</h4>
+
                                                 <div className="space-y-4">
                                                     {order.itemsDetails.map((item) => (
                                                         <div key={item._id} className="flex p-3 bg-white rounded-lg border border-gray-100 shadow-xs">
@@ -457,9 +402,20 @@ const MyOrdersPage = () => {
                                                 })()}
 
                                                 <div className="mt-3 pt-3 border-t border-gray-100">
-                                                    <p className="text-xs text-gray-500">Payment method</p>
-                                                    <p className="text-sm font-medium text-gray-900 mt-1">
-                                                        {order.paymentMethod}
+                                                    <p className="text-xs text-gray-500">Payment Status</p>
+                                                    <p className={`text-sm font-medium mt-1 ${order.paymentMethod === 'paid' ? 'text-green-600' :
+                                                        order.paymentMethod === 'cod' ? 'text-yellow-600' :
+                                                            'text-gray-900'
+                                                        }`}>
+                                                        {order.paymentMethod === 'paid' ? (
+                                                            'Paid'
+                                                        ) : order.paymentMethod === 'cod' ? (
+                                                            'Cash on Delivery'
+                                                        ) : order.paymentMethod ? (
+                                                            `Paid via ${order.paymentMethod.charAt(0).toUpperCase() + order.paymentMethod.slice(1)}`
+                                                        ) : (
+                                                            'Pending Payment'
+                                                        )}
                                                     </p>
                                                 </div>
                                             </div>

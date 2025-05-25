@@ -19,6 +19,7 @@ const Products = () => {
         const fetchProducts = async () => {
             try {
                 const response = await axios.get(`${backendUrl}/api/products/`);
+                console.log('product:', response.data)
                 const productsWithId = response.data.map(p => ({ ...p, id: p._id }));
                 setProducts(productsWithId);
             } catch (err) {
@@ -71,16 +72,16 @@ const Products = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 p-0 md:p-6 lg:ml-72">
+        <div className="min-h-screen bg-gray-50 p-3 md:p-6 lg:ml-72">
             <div className=" mx-auto">
                 {/* Header and Actions */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
                     <div>
-                        <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-3">
                             <FiPlus className="text-emerald-600" size={24} />
                             Product Management
                         </h2>
-                        <p className="text-gray-600 mt-2">Browse and manage your product inventory</p>
+                        <p className="text-gray-600 mt-2 text-sm md:text-lg">Browse and manage your product inventory</p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
                         <div className="relative flex-1">
@@ -107,7 +108,7 @@ const Products = () => {
                 </div>
 
                 {/* Products Table */}
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                <div className="bg-white rounded-2xl text-sm md:text-base shadow-lg border border-gray-100 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-100">
                             <thead className="bg-gray-50">

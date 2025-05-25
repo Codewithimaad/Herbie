@@ -9,11 +9,11 @@ const router = express.Router();
 // Post User Order
 router.post('/', authUser, orderCreation);
 
-
 // Get User Orders
 router.get('/', authUser, getUserOrders)
 
 // Cancel Order
 router.patch('/:id/cancel', authUser, cancelOrder)
+
 
 export default router;

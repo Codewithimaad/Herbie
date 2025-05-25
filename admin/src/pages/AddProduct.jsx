@@ -6,10 +6,14 @@ import {
 } from 'react-icons/fi';
 import { useAdmin } from '../context/AdminContext';
 import { FaMoneyBillWave } from 'react-icons/fa';
+import { toast } from 'react-toastify'
+import { useNavigate } from 'react-router-dom'
 
 
 const AddProduct = () => {
-    const { backendUrl } = useAdmin();
+    const navigate = useNavigate();
+
+    const { backendUrl, categories } = useAdmin();
     const [product, setProduct] = useState({
         name: '',
         price: '',
@@ -22,6 +26,7 @@ const AddProduct = () => {
     });
     const [previewImages, setPreviewImages] = useState([]);
     const [selectedFiles, setSelectedFiles] = useState([]);
+    const [uploadError, setUploadError] = useState('');
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -35,10 +40,36 @@ const AddProduct = () => {
 
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
-        const previews = files.map(file => URL.createObjectURL(file));
-        setSelectedFiles(prev => [...prev, ...files]);
+        setUploadError('');
+
+        // Validate file count
+        if (files.length + selectedFiles.length > 5) {
+            setUploadError('Maximum 5 images allowed');
+            return;
+        }
+
+        const validFiles = files.filter(file => {
+            // Validate file type
+            if (!file.type.match('image.*')) {
+                setUploadError('Only image files are allowed (PNG, JPG, JPEG)');
+                return false;
+            }
+
+            // Validate file size (1MB max)
+            if (file.size > 1 * 1024 * 1024) {
+                setUploadError('Image size exceeds 1MB limit');
+                return false;
+            }
+
+            return true;
+        });
+
+        const previews = validFiles.map(file => URL.createObjectURL(file));
+        setSelectedFiles(prev => [...prev, ...validFiles]);
         setPreviewImages(prev => [...prev, ...previews]);
     };
+
+
 
     const removeImage = (index) => {
         setPreviewImages(prev => prev.filter((_, i) => i !== index));
@@ -48,7 +79,7 @@ const AddProduct = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (selectedFiles.length === 0) {
-            return alert("Please upload at least one image");
+            return toast.success("Please upload at least one image");
         }
 
         const formData = new FormData();
@@ -58,12 +89,12 @@ const AddProduct = () => {
         selectedFiles.forEach(file => formData.append("images", file));
 
         try {
-            await axios.post(`${backendUrl}/api/products`, formData, {
+            const data = await axios.post(`${backendUrl}/api/products`, formData, {
                 headers: {
                     "Content-Type": "multipart/form-data"
                 }
             });
-            alert("Product added successfully!");
+
             setProduct({
                 name: '',
                 price: '',
@@ -76,26 +107,28 @@ const AddProduct = () => {
             });
             setPreviewImages([]);
             setSelectedFiles([]);
+            navigate('/products')
+            toast.success('Product added successfully.');
         } catch (err) {
             console.error(err);
             const msg = err.response?.data?.message || "Something went wrong";
-            alert(msg);
+            toast.error(msg);
         }
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 md:p-6 lg:ml-72">
+        <div className="min-h-screen bg-gray-50 p-2 md:p-6 lg:ml-72">
             <div className="mx-auto">
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-100">
                     <div className="p-8 border-b border-gray-100">
-                        <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-3">
                             <FiPlus className="text-emerald-600" size={24} />
                             Add New Product
                         </h2>
-                        <p className="text-gray-600 mt-2">Complete the form below to add a new product to your catalog</p>
+                        <p className="text-gray-600 text-sm md:text-base mt-2">Complete the form below to add a new product to your catalog</p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                    <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="md:col-span-2">
                                 <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
@@ -154,14 +187,16 @@ const AddProduct = () => {
                                 </label>
                                 <select
                                     name="category"
-                                    value={product.category}
+                                    value={product.category || ''}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50/50 transition-all duration-200 ease-in-out appearance-none"
+                                    className="w-full px-4 py-3 rounded-lg text-gray-700 border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50/50 transition-all duration-200 ease-in-out appearance-none"
                                     required
                                 >
                                     <option value="">Select a category</option>
-                                    {['Tea Herbs', 'Medicinal Herbs', 'Spices', 'Beauty Herbs', 'Culinary Herbs'].map(category => (
-                                        <option key={category} value={category}>{category}</option>
+                                    {categories?.map(category => (
+                                        <option key={category._id} value={category.name}>
+                                            {category.name}
+                                        </option>
                                     ))}
                                 </select>
                             </div>
@@ -231,7 +266,7 @@ const AddProduct = () => {
                                             Drop your images here or{' '}
                                             <span className="text-emerald-600 hover:text-emerald-700">click to browse</span>
                                         </p>
-                                        <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF (Max 5MB each)</p>
+                                        <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF (Max 1MB each)</p>
                                     </div>
                                     <input
                                         type="file"
