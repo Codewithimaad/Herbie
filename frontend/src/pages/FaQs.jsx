@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, RotateCw } from 'lucide-react';
 import axios from 'axios';
 import HeadingText from "../components/HeadingText";
+import { useAuth } from '../context/authContext'
 
 // Animation variants
 const containerVariants = {
@@ -47,13 +48,14 @@ export default function FAQsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [activeIndex, setActiveIndex] = useState(null);
+    const { backendUrl } = useAuth();
 
     useEffect(() => {
         const fetchFAQs = async () => {
             try {
                 setLoading(true);
                 setError(null);
-                const response = await axios.get('http://localhost:5000/api/faqs/for-all');
+                const response = await axios.get(`${backendUrl}/api/faqs/for-all`);
                 const faqsData = response.data.faqs || response.data;
                 if (!Array.isArray(faqsData)) {
                     throw new Error('Invalid response format: FAQs is not an array');
