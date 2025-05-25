@@ -79,7 +79,7 @@ export default function ProductDetails() {
     ];
 
     return (
-        <section className="max-w-7xl mx-auto px-2 md:px-6 lg:px-8 py-12">
+        <section className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-12">
             <div className="flex flex-col lg:flex-row gap-12">
                 {/* Product Image Gallery */}
                 <div className="lg:w-1/2">

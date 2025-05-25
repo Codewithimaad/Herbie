@@ -15,6 +15,7 @@ import orderRoutes from './routes/orderRoutes.js'
 import userRoutes from './routes/userRoutes.js'
 import adminRoutes from './routes/adminRoutes.js'
 import categoryRoutes from './routes/categoryRoutes.js'
+import adminLoginRoutes from './routes/adminLoginRoutes.js'
 import { notFound, errorHandler } from './middlewares/errorMiddlewares.js';
 
 // Load environment variables FIRST
@@ -59,6 +60,8 @@ app.use('/api/orders', orderRoutes)
 app.use('/api/user', userRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/category', categoryRoutes)
+app.use('/api/admins', adminLoginRoutes);
+
 
 
 app.get('/', (req, res) => {

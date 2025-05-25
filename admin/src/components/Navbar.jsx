@@ -1,9 +1,11 @@
 
 import React, { useState } from 'react';
 import { FaBars, FaUser, FaSignOutAlt } from 'react-icons/fa';
+import { useAdmin } from '../context/AdminContext';
 
 const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+    const { logoutAdmin } = useAdmin();
 
     const toggleProfileDropdown = () => setIsProfileDropdownOpen(!isProfileDropdownOpen);
 
@@ -44,7 +46,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                                     </div>
                                     <button
                                         className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-emerald-100 hover:text-emerald-600 rounded-b-xl transition-colors"
-                                        onClick={() => console.log('Logout')}
+                                        onClick={logoutAdmin}
                                     >
                                         <FaSignOutAlt className="mr-2 h-4 w-4" />
                                         Logout

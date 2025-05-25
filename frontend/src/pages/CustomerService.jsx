@@ -3,7 +3,7 @@ import HeadingText from '../components/HeadingText';
 
 const CustomerService = () => {
     return (
-        <main className="min-h-screen py-12 md:px-4 sm:px-2 lg:px-20 text-gray-800">
+        <main className="min-h-screen py-12 md:px-6 px-4 lg:px-20 text-gray-800">
             <div className="rounded-2xl sm:p-4 md:p-12 transition-all duration-300">
                 <HeadingText
                     title='Customer Services'

@@ -357,7 +357,7 @@ const ReviewSection = ({ productId }) => {
 
                         {/* Reviews List */}
                         <div className="space-y-8">
-                            <div className="flex items-center justify-between mb-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                                 <h3 className="text-xl font-semibold text-gray-900">
                                     Customer Reviews ({ratingStats.total})
                                 </h3>

@@ -1,11 +1,33 @@
 import React, { useState } from 'react';
 import { FaPlus, FaEye, FaSearch, FaFilter, FaBox, FaShoppingCart, FaDollarSign, FaClock } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { useAdmin } from '../context/AdminContext'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import { useEffect } from 'react';
 
 const Home = () => {
+    const { token } = useAdmin();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
+
+    const navigate = useNavigate();
+    const location = useLocation();
+
+
+
+    useEffect(() => {
+        // Delay slightly to avoid showing warning during redirect to login
+        if (!token && location.pathname !== '/login') {
+            const timer = setTimeout(() => {
+                toast.warning('Not authorized. Please login first.');
+                navigate('/login', { replace: true });
+            }, 300); // short delay
+
+            return () => clearTimeout(timer); // clean up
+        }
+    }, [token, navigate, location.pathname]);
 
     const toggleModal = () => setIsModalOpen(!isModalOpen);
 

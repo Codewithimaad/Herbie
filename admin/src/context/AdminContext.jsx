@@ -1,12 +1,16 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { toast } from 'react-toastify'
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom'
 
 const AdminContext = createContext();
 
 export const AdminProvider = ({ children }) => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    const navigate = useNavigate();
 
+
+    // Orders states (your existing)
     const [orders, setOrders] = useState([]);
     const [loadingOrders, setLoadingOrders] = useState(true);
     const [ordersError, setOrdersError] = useState(null);
@@ -17,6 +21,20 @@ export const AdminProvider = ({ children }) => {
     const [categories, setCategories] = useState([]);
 
     const currency = 'Rs';
+
+    // Auth states
+    const [admin, setAdmin] = useState(null);
+    const [token, setToken] = useState(localStorage.getItem('adminToken') || '');
+    const [loadingAuth, setLoadingAuth] = useState(false);
+
+    // Set axios Authorization header when token changes
+    useEffect(() => {
+        if (token) {
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        } else {
+            delete axios.defaults.headers.common['Authorization'];
+        }
+    }, [token]);
 
     // Fetch all orders on mount
     useEffect(() => {
@@ -37,16 +55,27 @@ export const AdminProvider = ({ children }) => {
         fetchOrders();
     }, [backendUrl]);
 
+    // Fetch categories on mount
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const { data } = await axios.get(`${backendUrl}/api/category`);
+                setCategories(data);
+            } catch (error) {
+                toast.error('Failed to load categories');
+            }
+        };
+        fetchCategories();
+    }, []);
+
     // Function to fetch order by ID
     const fetchOrderById = async (id) => {
         try {
             setLoadingOrderById(true);
             setOrderByIdError(null);
             const response = await axios.get(`${backendUrl}/api/admin/${id}`);
-            console.log('order by Id:', response.data); // Inspect the response
             if (!response.data.items) {
-                console.warn('Items missing in response:', response.data);
-                response.data.items = []; // Fallback to empty array
+                response.data.items = [];
             }
             setOrderById(response.data);
         } catch (error) {
@@ -58,17 +87,14 @@ export const AdminProvider = ({ children }) => {
         }
     };
 
-
     // Delete an order by ID
     const deleteOrder = async (id) => {
         try {
-            console.log(`Deleting order with ID: ${id}`);
             await axios.delete(`${backendUrl}/api/admin/${id}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                headers: { Authorization: `Bearer ${token}` },
             });
-            console.log('Order deleted:', id);
-            // Update orders state by removing the deleted order
             setOrders((prevOrders) => prevOrders.filter((order) => order._id !== id));
+            toast.success('Order deleted');
             return { success: true };
         } catch (error) {
             console.error('Delete order error:', error.response?.data || error.message);
@@ -76,23 +102,82 @@ export const AdminProvider = ({ children }) => {
         }
     };
 
+    // ===== Admin Login =====
+    const loginAdmin = async (email, password) => {
+        try {
+            setLoadingAuth(true);
+            const { data } = await axios.post(`${backendUrl}/api/admins/login`, { email, password });
+            setAdmin(data.admin);
+            setToken(data.token);
+            localStorage.setItem('adminToken', data.token);
+            return { success: true };
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Login failed');
+            return { success: false, error: error.response?.data?.message || 'Login failed' };
+        } finally {
+            setLoadingAuth(false);
+        }
+    };
 
-    // Fetch categories from backend
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const { data } = await axios.get(`${backendUrl}/api/category`);
-                console.log('categories', data.data);
+    // ===== Admin Logout =====
+    const logoutAdmin = () => {
+        setAdmin(null);
+        setToken('');
+        localStorage.removeItem('adminToken');
+        navigate('/login');
+        toast.info('Logged out');
+    };
 
-                setCategories(data);
-            } catch (error) {
-                toast.error('Failed to load categories');
+    // ===== Add New Admin =====
+    const addAdmin = async (adminData) => {
+        try {
+            setLoadingAuth(true);
+            const { data } = await axios.post(`${backendUrl}/api/admins`, adminData);
+            toast.success('Admin added successfully');
+            return { success: true, admin: data.admin };
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to add admin');
+            return { success: false, error: error.response?.data?.message || 'Failed to add admin' };
+        } finally {
+            setLoadingAuth(false);
+        }
+    };
+
+    // ===== Update Admin =====
+    const updateAdmin = async (id, updatedData) => {
+        try {
+            setLoadingAuth(true);
+            const { data } = await axios.put(`${backendUrl}/api/admins/${id}`, updatedData);
+            toast.success('Admin updated successfully');
+            if (admin && admin._id === id) {
+                setAdmin(data.admin);
             }
-        };
+            return { success: true, admin: data.admin };
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to update admin');
+            return { success: false, error: error.response?.data?.message || 'Failed to update admin' };
+        } finally {
+            setLoadingAuth(false);
+        }
+    };
 
-        fetchCategories();
-    }, []);
-
+    // ===== Delete Admin =====
+    const deleteAdmin = async (id) => {
+        try {
+            setLoadingAuth(true);
+            await axios.delete(`${backendUrl}/api/admins/${id}`);
+            toast.success('Admin deleted successfully');
+            if (admin && admin._id === id) {
+                logoutAdmin();
+            }
+            return { success: true };
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to delete admin');
+            return { success: false, error: error.response?.data?.message || 'Failed to delete admin' };
+        } finally {
+            setLoadingAuth(false);
+        }
+    };
 
     return (
         <AdminContext.Provider
@@ -108,7 +193,15 @@ export const AdminProvider = ({ children }) => {
                 fetchOrderById,
                 currency,
                 deleteOrder,
-                categories
+                categories,
+                admin,
+                token,
+                loadingAuth,
+                loginAdmin,
+                logoutAdmin,
+                addAdmin,
+                updateAdmin,
+                deleteAdmin,
             }}
         >
             {children}
