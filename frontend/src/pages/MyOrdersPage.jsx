@@ -403,16 +403,18 @@ const MyOrdersPage = () => {
 
                                                 <div className="mt-3 pt-3 border-t border-gray-100">
                                                     <p className="text-xs text-gray-500">Payment Status</p>
-                                                    <p className={`text-sm font-medium mt-1 ${order.paymentMethod === 'paid' ? 'text-green-600' :
+                                                    <p className={`text-sm font-medium mt-1 ${order.isPaid ? 'text-green-600' :
                                                         order.paymentMethod === 'cod' ? 'text-yellow-600' :
-                                                            'text-gray-900'
+                                                            'text-gray-600'
                                                         }`}>
-                                                        {order.paymentMethod === 'paid' ? (
-                                                            'Paid'
+                                                        {order.isPaid ? (
+                                                            order.paymentMethod === 'cod' ? (
+                                                                'Paid (Cash on Delivery)'
+                                                            ) : (
+                                                                `Paid${order.paymentMethod ? ` via ${order.paymentMethod.charAt(0).toUpperCase() + order.paymentMethod.slice(1)}` : ''}`
+                                                            )
                                                         ) : order.paymentMethod === 'cod' ? (
-                                                            'Cash on Delivery'
-                                                        ) : order.paymentMethod ? (
-                                                            `Paid via ${order.paymentMethod.charAt(0).toUpperCase() + order.paymentMethod.slice(1)}`
+                                                            'Pending (Cash on Delivery)'
                                                         ) : (
                                                             'Pending Payment'
                                                         )}

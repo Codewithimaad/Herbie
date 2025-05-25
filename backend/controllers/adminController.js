@@ -1,4 +1,5 @@
 import Order from '../models/Orders.js';
+import Product from '../models/Product.js'
 
 // Get all orders without pagination or filters
 export const getAllOrders = async (req, res) => {
@@ -56,12 +57,13 @@ export const getOrderById = async (req, res) => {
 // Update order payment method (e.g., mark as paid)
 export const updateOrderPaymentMethod = async (req, res) => {
     try {
-        const { paymentMethod } = req.body;
+        const { isPaid } = req.body;
 
-        // Optionally: validate payment method
-        const validMethods = ['cod', 'paid', 'easypaisa', 'card'];
-        if (paymentMethod && !validMethods.includes(paymentMethod)) {
-            return res.status(400).json({ message: 'Invalid payment method' });
+        // Validate input
+        if (typeof isPaid !== 'boolean') {
+            return res.status(400).json({
+                message: 'Invalid input: isPaid must be boolean (true/false)'
+            });
         }
 
         const order = await Order.findById(req.params.id);
@@ -69,25 +71,40 @@ export const updateOrderPaymentMethod = async (req, res) => {
             return res.status(404).json({ message: 'Order not found' });
         }
 
-        // Update payment method
-        if (paymentMethod && order.paymentMethod !== paymentMethod) {
-            order.paymentMethod = paymentMethod;
+        // Only update if status is changing
+        if (order.isPaid !== isPaid) {
+            order.isPaid = isPaid;
 
-            // Optionally: store timestamp for when payment was marked
+            // Update payment details
             order.paymentDetails = {
                 ...order.paymentDetails,
-                paidAt: new Date(),
+                [isPaid ? 'paidAt' : 'unpaidAt']: new Date()
             };
+
+
         }
 
-        await order.save();
-        res.status(200).json(order);
+        const updatedOrder = await order.save();
+
+        res.status(200).json({
+            message: `Order payment status updated to ${isPaid ? 'PAID' : 'UNPAID'}`,
+            order: {
+                id: updatedOrder._id,
+                isPaid: updatedOrder.isPaid,
+                updatedAt: updatedOrder.updatedAt,
+                paymentStatus: isPaid ? 'Confirmed' : 'Pending'
+            }
+        });
+
     } catch (err) {
-        console.error('Error updating payment method:', err);
-        res.status(500).json({ message: 'Server error: ' + err.message });
+        console.error('Error updating payment status:', err);
+        res.status(500).json({
+            message: 'Server error',
+            error: err.message,
+            stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        });
     }
 };
-
 
 
 
@@ -145,3 +162,164 @@ export const deleteOrder = async (req, res) => {
         res.status(500).json({ message: 'Server error: ' + err.message });
     }
 };
+
+
+
+
+
+// @desc    Get dashboard metrics
+// @route   GET /api/admin/dashboard
+// @access  Private/Admin
+export const getDashboardMetrics = async (req, res) => {
+    try {
+        // Get total products count
+        const totalProducts = await Product.countDocuments();
+
+        // Get total orders count
+        const totalOrders = await Order.countDocuments();
+
+        // Get pending orders count
+        const pendingOrders = await Order.countDocuments({ isDelivered: false });
+        const deliveredOrders = await Order.countDocuments({ isDelivered: true });
+
+
+        res.json({
+            totalProducts,
+            totalOrders,
+            pendingOrders,
+            deliveredOrders
+        });
+
+    } catch (error) {
+        console.error('Error getting dashboard metrics:', error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+// @desc    Get recent orders
+// @route   GET /api/admin/orders/recent
+// @access  Private/Admin
+export const getRecentOrders = async (req, res) => {
+    try {
+        const orders = await Order.find({})
+            .sort({ createdAt: -1 })
+            .limit(10)
+            .populate('user', 'name email')
+            .lean();
+
+        const formattedOrders = orders.map(order => ({
+            id: order._id,
+            customer: order.user.name,
+            date: order.createdAt.toLocaleDateString('en-PK', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            }),
+            total: order.totals.grandTotal,
+            status: order.isDelivered ? 'Delivered' : 'Pending'
+        }));
+
+        res.json(formattedOrders);
+    } catch (error) {
+        console.error('Error getting recent orders:', error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+// @desc    Get sales data for chart
+// @route   GET /api/admin/sales-data
+// @access  Private/Admin
+export const getSalesData = async (req, res) => {
+    try {
+        // Explicitly define date range
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        const salesData = await Order.aggregate([
+            {
+                $match: {
+                    isPaid: true,
+                    createdAt: {
+                        $gte: thirtyDaysAgo,
+                        $lte: new Date() // Add upper bound
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    // Ensure createdAt is a Date object
+                    createdAtDate: {
+                        $cond: {
+                            if: { $eq: [{ $type: "$createdAt" }, "string"] },
+                            then: { $toDate: "$createdAt" },
+                            else: "$createdAt"
+                        }
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        $dateToString: {
+                            format: "%Y-%m-%d",
+                            date: "$createdAtDate" // Use the normalized field
+                        }
+                    },
+                    totalSales: { $sum: "$totals.grandTotal" }, // Changed from totalPrice
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        console.log('Raw sales data:', salesData); // Debug output
+
+        res.json(salesData);
+    } catch (error) {
+        console.error('Error getting sales data:', error);
+        res.status(500).json({
+            message: 'Server Error',
+            error: error.message
+        });
+    }
+};
+
+
+export const updateOrderDeliveryStatus = async (req, res) => {
+    try {
+        const { isDelivered } = req.body;
+
+        // Validate input
+        if (typeof isDelivered !== 'boolean') {
+            return res.status(400).json({ message: 'Invalid input: isDelivered must be boolean' });
+        }
+
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        // Update both fields
+        order.isDelivered = isDelivered;
+        order.deliveryStatus = isDelivered ? 'Delivered' : 'In Transit';
+        const updatedOrder = await order.save();
+        console.log('Updated Order:', updatedOrder); // Debug
+
+        res.status(200).json({
+            message: `Order delivery status updated to ${isDelivered ? 'DELIVERED' : 'NOT DELIVERED'} `,
+            order: {
+                id: updatedOrder._id,
+                isDelivered: updatedOrder.isDelivered,
+                deliveryStatus: updatedOrder.deliveryStatus,
+                updatedAt: updatedOrder.updatedAt,
+            },
+        });
+    } catch (err) {
+        console.error('Error updating delivery status:', err);
+        res.status(500).json({
+            message: 'Server error',
+            error: err.message,
+        });
+    }
+};
+

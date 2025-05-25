@@ -144,9 +144,7 @@ export const getUserOrders = async (req, res) => {
                     return `Card •••• ${order.paymentDetails.cardNumber || 'XXXX'}`;
                 } else if (order.paymentMethod === 'easypaisa') {
                     return `Easypaisa •••• ${order.paymentDetails.easypaisaNumber?.slice(-4) || 'XXXX'}`;
-                }
-                else if (order.paymentMethod === 'paid') {
-                    return 'paid';
+
                 }
                 else {
                     return 'cod';
@@ -168,6 +166,8 @@ export const getUserOrders = async (req, res) => {
             processingDate: order.processingDate || null,
             shippedDate: order.shippedDate || null,
             deliveredDate: order.deliveredDate || null,
+            isPaid: order.isPaid,
+
         }));
 
         res.status(200).json({ orders: formattedOrders });

@@ -18,11 +18,12 @@ import moment from 'moment';
 import axios from 'axios';
 import { useAdmin } from '../context/AdminContext';
 import { toast } from 'react-toastify'
+import DeliveryActions from '../components/DeliveryActions';
 
 const OrderViewPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { orderById, loadingOrderById, currency, orderByIdError, fetchOrderById, backendUrl } = useAdmin();
+    const { orderById, token, loadingOrderById, currency, orderByIdError, fetchOrderById, backendUrl } = useAdmin();
 
     const [editableOrder, setEditableOrder] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -31,6 +32,8 @@ const OrderViewPage = () => {
     const [newStatus, setNewStatus] = useState('');
     const [error, setError] = useState(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isDeliveryProcessing, setIsDeliveryProcessing] = useState(false);
+
 
     const statusOptions = [
         { value: 'placed', label: 'Placed', color: 'bg-pink-100 text-pink-800' },
@@ -170,7 +173,7 @@ const OrderViewPage = () => {
     }
 
     return (
-        <div className="bg-gray-50 min-h-screen p-3 md:p-6 lg:ml-72">
+        <div className="bg-gray-50 text-sm md:text-base min-h-screen p-3 md:p-6 lg:ml-72">
             {/* Order Status Modification Dialog with Animation */}
             <div className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${showStatusModal ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                 {/* Backdrop with transition */}
@@ -236,13 +239,7 @@ const OrderViewPage = () => {
                         >
                             Change Status
                         </button>
-                        <button
-                            onClick={() => window.print()}
-                            className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                        >
-                            <FiPrinter className="mr-2" />
-                            Print Order
-                        </button>
+
                     </div>
                 </div>
 
@@ -250,8 +247,8 @@ const OrderViewPage = () => {
                 <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-800">Order {editableOrder.id}</h1>
-                            <p className="text-gray-600">
+                            <h1 className="text-lg md:text-2xl font-bold text-gray-800">Order {editableOrder.id}</h1>
+                            <p className="text-sm md:text-base text-gray-600">
                                 Placed on {moment(editableOrder.createdAt).format('MMMM Do YYYY, h:mm:ss a')}
                                 {editableOrder.updatedAt !== editableOrder.createdAt && (
                                     <span>
@@ -628,20 +625,36 @@ const OrderViewPage = () => {
                                             </span>
                                         </div>
 
-                                        {editableOrder.paymentMethod === 'cod' && (
+                                        <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                            <span className="text-sm font-medium text-gray-500">Status</span>
+                                            <span className={`text-sm font-semibold ${editableOrder.isPaid ? 'text-emerald-600' : 'text-amber-600'
+                                                }`}>
+                                                {editableOrder.isPaid ? 'Paid' : 'Pending'}
+                                            </span>
+                                        </div>
+
+                                        {!editableOrder.isPaid && (
                                             <button
                                                 onClick={async () => {
                                                     try {
                                                         setIsProcessing(true);
                                                         const response = await axios.put(
                                                             `${backendUrl}/api/admin/payment/${id}`,
-                                                            { paymentMethod: 'paid' }
+                                                            { isPaid: true }  // Changed from paymentMethod to isPaid
                                                         );
-                                                        setEditableOrder(response.data);
+                                                        setEditableOrder(prev => ({
+                                                            ...prev,
+                                                            isPaid: true,
+                                                            paymentDetails: {
+                                                                ...prev.paymentDetails,
+                                                                paidAt: new Date()
+                                                            },
+
+                                                        }));
                                                         setError(null);
-                                                        toast.success('Payment marked as completed');
+                                                        toast.success(response.data.message);
                                                     } catch (err) {
-                                                        setError(err.response?.data?.message || 'Failed to mark as paid');
+                                                        setError(err.response?.data?.message || 'Failed to update payment status');
                                                         toast.error('Payment update failed');
                                                     } finally {
                                                         setIsProcessing(false);
@@ -663,9 +676,64 @@ const OrderViewPage = () => {
                                                 )}
                                             </button>
                                         )}
+
+                                        {editableOrder.isPaid && (
+                                            <button
+                                                onClick={async () => {
+                                                    try {
+                                                        setIsProcessing(true);
+                                                        const response = await axios.put(
+                                                            `${backendUrl}/api/admin/payment/${id}/`,
+                                                            { isPaid: false }  // Option to mark as unpaid
+                                                        );
+                                                        setEditableOrder(prev => ({
+                                                            ...prev,
+                                                            isPaid: false,
+                                                            paymentDetails: {
+                                                                ...prev.paymentDetails,
+                                                                unpaidAt: new Date()
+                                                            },
+
+                                                        }));
+                                                        setError(null);
+                                                        toast.success(response.data.message);
+                                                    } catch (err) {
+                                                        setError(err.response?.data?.message || 'Failed to update payment status');
+                                                        toast.error('Payment update failed');
+                                                    } finally {
+                                                        setIsProcessing(false);
+                                                    }
+                                                }}
+                                                disabled={isProcessing}
+                                                className="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium rounded-lg hover:from-amber-600 hover:to-amber-700 transition-all duration-200 shadow-sm hover:shadow-md active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+                                            >
+                                                {isProcessing ? (
+                                                    <>
+                                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        Processing...
+                                                    </>
+                                                ) : (
+                                                    'Mark as Unpaid'
+                                                )}
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Delivery Actions - Modern Design */}
+                            <DeliveryActions
+                                editableOrder={editableOrder}
+                                setEditableOrder={setEditableOrder}
+                                backendUrl={backendUrl}
+                                id={id}
+                                token={token}
+                                isDeliveryProcessing={isDeliveryProcessing}
+                                setIsDeliveryProcessing={setIsDeliveryProcessing}
+                            />
 
 
                             {/* Order Management */}

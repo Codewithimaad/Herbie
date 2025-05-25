@@ -84,7 +84,7 @@ const NewArrivals = () => {
                                     {/* Product Image with New Arrival Ribbon */}
                                     <div className="relative pt-[100%] overflow-hidden">
                                         <img
-                                            src={product.image || '/fallback.jpg'}
+                                            src={product.images[0] || '/fallback.jpg'}
                                             alt={product.name}
                                             className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                             loading="lazy"

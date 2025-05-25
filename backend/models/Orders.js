@@ -42,7 +42,7 @@ const orderSchema = new mongoose.Schema({
     },
     paymentMethod: {
         type: String,
-        enum: ['card', 'easypaisa', 'cod', 'paid'],
+        enum: ['card', 'easypaisa', 'cod'],
         required: [true, 'Payment method is required'],
     },
     paymentDetails: {
@@ -71,13 +71,17 @@ const orderSchema = new mongoose.Schema({
             required: [true, 'Total is required'],
             min: [0, 'Total cannot be negative'],
         },
+
     },
     status: {
         type: String,
         enum: ['placed', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'],
         default: 'placed',
     },
-
+    isPaid: { type: Boolean, default: false },
+    isDelivered: { type: Boolean, default: false },
+    paymentStatus: { type: String },
+    deliveryStatus: { type: String, default: 'In Transit', enum: ['In Transit', 'Delivered'] },
     createdAt: {
         type: Date,
         default: Date.now,

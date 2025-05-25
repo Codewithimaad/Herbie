@@ -9,8 +9,6 @@ import {
     FiBarChart2,
     FiHelpCircle,
     FiUserCheck,
-
-
 } from 'react-icons/fi';
 import { RiPlantLine } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
@@ -21,7 +19,8 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
     const [openMenus, setOpenMenus] = useState({
         products: false,
         orders: false,
-        analytics: false
+        analytics: false,
+        settings: false // Added missing settings state
     });
 
     const toggleMenu = (menu) => {
@@ -61,8 +60,8 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                     </button>
                 </div>
 
-                {/* Navigation */}
-                <nav className="flex-1 p-4 overflow-y-auto">
+                {/* Navigation - Added scrollbar-hide class */}
+                <nav className="flex-1 p-4 overflow-y-auto scrollbar-hide">
                     <div className="space-y-1">
                         <span className="px-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
                             Dashboard
@@ -149,7 +148,6 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                                     >
                                         All Orders
                                     </Link>
-
                                 </div>
                             )}
                         </div>
@@ -177,8 +175,6 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                             </div>
                             <span>FAQS</span>
                         </Link>
-
-
                     </div>
 
                     <div className="mt-8 space-y-1">
@@ -210,14 +206,9 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                                     >
                                         Account
                                     </Link>
-
-
-
                                 </div>
                             )}
                         </div>
-
-
                     </div>
                 </nav>
 
