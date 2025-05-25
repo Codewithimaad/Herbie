@@ -45,30 +45,13 @@ function App() {
             },
           });
           login(res.data.user, token);
-          toast.success('Successfully logged in with Google!', {
-            position: 'top-right',
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            theme: 'light',
-          });
           // Clean URL
           urlParams.delete('token');
           const cleanUrl = `${window.location.pathname}${urlParams.toString() ? '?' + urlParams.toString() : ''}`;
           navigate(cleanUrl, { replace: true });
         } catch (err) {
           console.error('OAuth login failed', err);
-          toast.error('Failed to log in with Google. Please try again.', {
-            position: 'top-right',
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            theme: 'light',
-          });
+
         }
       };
 

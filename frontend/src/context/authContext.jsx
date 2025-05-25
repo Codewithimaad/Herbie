@@ -12,7 +12,6 @@ export const AuthProvider = ({ children }) => {
     const [products, setProducts] = useState([]);
     const [productLoading, setProductLoading] = useState(true);
     const [productError, setProductError] = useState(null);
-    const [faqs, setFaqs] = useState([]);
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
     const navigate = useNavigate();
 
