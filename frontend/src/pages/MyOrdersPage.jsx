@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 import { useReactToPrint } from 'react-to-print';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-import OrderTimeline from '../components/orderTimeline';
+import OrderTimeline from '../components/OrderTimeline';
 
 
 const MyOrdersPage = () => {
