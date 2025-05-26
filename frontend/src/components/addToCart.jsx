@@ -11,13 +11,11 @@ export default function AddToCartButton({ id, quantity, size, onClick }) {
     const [status, setStatus] = useState('idle');
 
     const handleClick = async (e) => {
-        e.stopPropagation(); // Prevent event bubbling
+        e.stopPropagation();
 
         if (!token) {
             toast.error('Please log in to add items to your cart');
-            if (onClick) {
-                onClick(e);
-            }
+            if (onClick) onClick(e);
             return;
         }
 
@@ -28,10 +26,11 @@ export default function AddToCartButton({ id, quantity, size, onClick }) {
 
             // ✅ GA4 Add to Cart Event
             ReactGA.event('add_to_cart', {
-                product_id: id,
-                quantity: quantity,
+                items: [{
+                    item_id: id,
+                    quantity: quantity,
+                }],
             });
-
 
             setTimeout(() => setStatus('idle'), 2000);
         } catch (err) {
@@ -39,10 +38,9 @@ export default function AddToCartButton({ id, quantity, size, onClick }) {
             toast.error('Failed to add product to cart');
             setStatus('idle');
         }
-        if (onClick) {
-            onClick(e);
-        }
+        if (onClick) onClick(e);
     };
+
 
 
     // Define size-specific styles

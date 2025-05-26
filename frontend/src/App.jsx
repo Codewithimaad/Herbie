@@ -27,8 +27,12 @@ import axios from 'axios';
 import UserProfile from './pages/UserProfile';
 import ReactGA from 'react-ga4';
 
+
 // ✅ Initialize GA4 ONCE outside component
-ReactGA.initialize('G-LJZ6KHRS8F'); // your Measurement ID
+ReactGA.initialize('G-LJZ6KHRS8', {
+  debug_mode: true
+});
+
 
 function App() {
   const { login } = useAuth();
@@ -39,6 +43,7 @@ function App() {
   useEffect(() => {
     ReactGA.send({ hitType: 'pageview', page: location.pathname });
   }, [location.pathname]);
+
 
   // ✅ Google OAuth token handler
   useEffect(() => {
