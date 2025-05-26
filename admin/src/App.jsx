@@ -16,12 +16,13 @@ import AllAdmins from './pages/AllAdmins';
 import FAQsPage from './pages/FaQsPage';
 import AccountPage from './pages/AccountPage';
 
+
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-green-100 via-purple-100 to-pink-100">
       <main className="flex-1">
         <Routes>
           <Route path="/login" element={<Login />} />

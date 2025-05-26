@@ -41,7 +41,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
             )}
 
             <aside
-                className={`fixed inset-y-0 left-0 w-72 bg-white transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                className={`fixed inset-y-0 left-0 w-72 bg-gradient-to-br from-green-100 via-white to-green-50/50 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
                     } lg:translate-x-0 transition-transform duration-300 ease-in-out z-40 shadow-xl flex flex-col`}
             >
                 {/* Header */}
@@ -216,7 +216,16 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                 <div className="p-4 border-t border-gray-100">
                     <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                         <div className="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
-                            <span className="text-sm font-medium text-emerald-800">AD</span>
+                            <span className="text-sm font-medium text-emerald-800">
+                                {admin?.name
+                                    ? admin.name
+                                        .split(' ')
+                                        .map(word => word[0])
+                                        .join('')
+                                        .toUpperCase()
+                                        .slice(0, 2)
+                                    : 'AD'}
+                            </span>
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-gray-800 truncate">{admin?.name || 'admin'}</p>

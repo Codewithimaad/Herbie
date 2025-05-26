@@ -18,7 +18,7 @@ const Dashboard = () => {
                     toggleSidebar={toggleSidebar}
                     currentPath={location.pathname}
                 />
-                <div className="flex-1 p-2 md:p-6 overflow-x-hidden overflow-y-auto">
+                <div className="flex-1 mt-10 md:mt-2 p-2 md:p-6 overflow-x-hidden overflow-y-auto">
                     <Outlet /> {/* This renders the nested routes */}
                 </div>
             </div>

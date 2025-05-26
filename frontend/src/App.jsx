@@ -25,13 +25,22 @@ import MyOrdersPage from './pages/MyOrdersPage';
 import { useAuth } from './context/authContext';
 import axios from 'axios';
 import UserProfile from './pages/UserProfile';
+import ReactGA from 'react-ga4';
+
+// ✅ Initialize GA4 ONCE outside component
+ReactGA.initialize('G-LJZ6KHRS8F'); // your Measurement ID
 
 function App() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Google OAuth token handler
+  // ✅ Track pageviews on route change
+  useEffect(() => {
+    ReactGA.send({ hitType: 'pageview', page: location.pathname });
+  }, [location.pathname]);
+
+  // ✅ Google OAuth token handler
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
@@ -40,9 +49,7 @@ function App() {
       const fetchUser = async () => {
         try {
           const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/auth/get-user`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           });
           login(res.data.user, token);
           // Clean URL
@@ -51,10 +58,8 @@ function App() {
           navigate(cleanUrl, { replace: true });
         } catch (err) {
           console.error('OAuth login failed', err);
-
         }
       };
-
       fetchUser();
     }
   }, [location.search, login, navigate]);

@@ -4,10 +4,20 @@ import { Link } from 'react-router-dom';
 import { useAdmin } from '../context/AdminContext';
 import { toast } from 'react-toastify';
 import axios from 'axios';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
-import { Line } from 'react-chartjs-2';
+// Update your ChartJS imports to include additional elements
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+    Filler // Add this for better area fills
+} from 'chart.js'; import { Line } from 'react-chartjs-2';
 
-// Register ChartJS components
+// Register the components
 ChartJS.register(
     CategoryScale,
     LinearScale,
@@ -15,9 +25,9 @@ ChartJS.register(
     LineElement,
     Title,
     Tooltip,
-    Legend
+    Legend,
+    Filler
 );
-
 const Home = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
@@ -64,51 +74,130 @@ const Home = () => {
         fetchDashboardData();
     }, [token]);
 
-    // Prepare chart data
+    // Then update your chartData and chartOptions as follows:
+
     const chartData = {
-        labels: salesData.map(item => item._id),
+        labels: salesData.map(item => {
+            // Format date labels better if they're dates
+            if (item._id.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                return new Date(item._id).toLocaleDateString('en-PK', { month: 'short', day: 'numeric' });
+            }
+            return item._id;
+        }),
         datasets: [
             {
-                label: 'Total Sales',
+                label: 'Total Sales (Rs)',
                 data: salesData.map(item => item.totalSales),
                 borderColor: 'rgb(16, 185, 129)',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                tension: 0.3,
-                fill: true
+                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: 'white',
+                pointBorderColor: 'rgb(16, 185, 129)',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6
             },
             {
                 label: 'Number of Orders',
                 data: salesData.map(item => item.count),
                 borderColor: 'rgb(59, 130, 246)',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                tension: 0.3,
-                fill: true
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: 'white',
+                pointBorderColor: 'rgb(59, 130, 246)',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6
             }
         ]
     };
 
     const chartOptions = {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
             legend: {
                 position: 'top',
+                labels: {
+                    usePointStyle: true,
+                    padding: 20,
+                    font: {
+                        size: 13
+                    }
+                }
             },
             tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleFont: {
+                    size: 14,
+                    weight: 'bold'
+                },
+                bodyFont: {
+                    size: 13
+                },
+                padding: 12,
+                usePointStyle: true,
                 callbacks: {
                     label: function (context) {
-                        return `${context.dataset.label}: ${context.raw.toFixed(2)}`;
+                        let label = context.dataset.label || '';
+                        if (label.includes('Sales')) {
+                            return `${label}: ${context.raw.toFixed(2)}`;
+                        }
+                        return `${label}: ${context.raw}`;
                     }
+                }
+            },
+            title: {
+                display: true,
+                text: 'Sales Performance',
+                font: {
+                    size: 16,
+                    weight: 'bold'
+                },
+                padding: {
+                    bottom: 20
                 }
             }
         },
         scales: {
-            y: {
-                beginAtZero: true,
+            x: {
+                grid: {
+                    display: false,
+                    drawBorder: false
+                },
                 ticks: {
+                    font: {
+                        size: 12
+                    },
+                    color: '#6B7280'
+                }
+            },
+            y: {
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)',
+                    drawBorder: false
+                },
+                ticks: {
+                    font: {
+                        size: 12
+                    },
+                    color: '#6B7280',
                     callback: function (value) {
-                        return value.toFixed(2);
+                        if (value >= 1000) {
+                            return 'Rs' + (value / 1000).toFixed(1) + 'k';
+                        }
+                        return 'Rs' + value;
                     }
                 }
+            }
+        },
+        elements: {
+            line: {
+                borderJoinStyle: 'round'
             }
         }
     };
@@ -129,12 +218,12 @@ const Home = () => {
     }
 
     return (
-        <main className="min-h-screen bg-gray-50 p-6 lg:p-8 lg:ml-64 overflow-y-auto">
+        <main className="min-h-screen text-sm md:text-lg bg-gray-50 p-6 lg:p-8 lg:ml-64 overflow-y-auto">
             <div className="max-w-6xl mx-auto space-y-8">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Order Dashboard</h1>
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Order Dashboard</h1>
                         <p className="text-gray-600 mt-2">Manage and track your orders</p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
@@ -191,20 +280,50 @@ const Home = () => {
                 {/* Sales Chart */}
                 <section id="sales-chart">
                     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-3">
-                                <FaChartLine className="text-emerald-600" size={20} />
-                                Sales Overview (Last 30 Days)
-                            </h2>
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                            <div>
+                                <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-3">
+                                    <FaChartLine className="text-emerald-600" size={20} />
+                                    Sales Overview
+                                </h2>
+                                <p className="text-sm text-gray-500 mt-1">
+                                    Last {salesData.length} days performance
+                                </p>
+                            </div>
+
                         </div>
                         <div className="h-80">
                             {salesData.length > 0 ? (
                                 <Line data={chartData} options={chartOptions} />
                             ) : (
-                                <div className="flex items-center justify-center h-full text-gray-500">
-                                    No sales data available
+                                <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-2">
+                                    <svg
+                                        className="w-12 h-12 text-gray-300"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={1}
+                                            d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                        />
+                                    </svg>
+                                    <p>No sales data available</p>
                                 </div>
                             )}
+                        </div>
+                        <div className="flex justify-between items-center mt-4 text-sm text-gray-500">
+                            <div className="flex items-center gap-2">
+                                <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
+                                <span>Total Sales: Rs{salesData.reduce((sum, item) => sum + item.totalSales, 0).toFixed(2)}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+                                <span>Total Orders: {salesData.reduce((sum, item) => sum + item.count, 0)}</span>
+                            </div>
                         </div>
                     </div>
                 </section>
