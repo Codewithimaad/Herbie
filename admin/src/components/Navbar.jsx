@@ -17,7 +17,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
     const toggleProfileDropdown = () => setIsProfileDropdownOpen(!isProfileDropdownOpen);
 
     return (
-        <nav className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md shadow-sm z-50 border-b border-gray-100/50">
+        <nav className="fixed top-0 left-0 right-0 bg-gradient-to-br from-green-100 via-white to-green-50/50 backdrop-blur-md shadow-sm z-50 border-b border-gray-100/50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-20">
                     <div className="flex items-center">

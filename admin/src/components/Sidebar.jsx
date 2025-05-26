@@ -45,7 +45,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                     } lg:translate-x-0 transition-transform duration-300 ease-in-out z-40 shadow-xl flex flex-col`}
             >
                 {/* Header */}
-                <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+                <div className="p-5  border-b border-gray-100 flex items-center justify-between">
                     <Link to="/" className="flex items-center space-x-2 group">
                         <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-400 rounded-lg group-hover:rotate-12 transition-transform">
                             <RiPlantLine className="text-2xl text-white" />
