@@ -27,12 +27,11 @@ export default function AddToCartButton({ id, quantity, size, onClick }) {
             setStatus('added');
 
             // ✅ GA4 Add to Cart Event
-            ReactGA.event({
-                category: 'Cart',
-                action: 'Add to Cart',
-                label: `Product ID: ${id}`,
-                value: quantity, // You could also use price if available
+            ReactGA.event('add_to_cart', {
+                product_id: id,
+                quantity: quantity,
             });
+
 
             setTimeout(() => setStatus('idle'), 2000);
         } catch (err) {
