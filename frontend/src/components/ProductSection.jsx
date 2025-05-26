@@ -81,7 +81,7 @@ const decorCircleVariants = {
 
 const ProductSection = ({ productName, description, benefits, imageSrc, imageAlt }) => {
     return (
-        <section className="relative bg-gradient-to-br from-gray-50 via-white to-green-50/50 py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        <section className="relative text-sm md:text-lg bg-gradient-to-br from-green-100 via-white to-green-50/50 py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
             {/* Decorative elements with animation */}
             <motion.div
                 className="absolute top-0 left-0 w-1/3 h-full bg-green-100/10 -skew-x-12 -translate-x-1/2"
@@ -150,7 +150,7 @@ const ProductSection = ({ productName, description, benefits, imageSrc, imageAlt
                                 ></motion.span>
                                 <span className="text-sm font-medium tracking-wider text-green-600 uppercase">Overview</span>
                             </div>
-                            <p className="text-lg md:text-xl text-gray-600 leading-relaxed">{description}</p>
+                            <p className="text-base md:text-xl text-gray-600 leading-relaxed">{description}</p>
                         </motion.div>
 
                         {/* Benefits */}
@@ -169,7 +169,7 @@ const ProductSection = ({ productName, description, benefits, imageSrc, imageAlt
                                     {benefits.map((benefit, index) => (
                                         <motion.li
                                             key={index}
-                                            className="p-4 rounded-xl border border-gray-100 bg-white/50 backdrop-blur-sm"
+                                            className="p-2 rounded-xl border border-gray-100 bg-white/50 backdrop-blur-sm"
                                             variants={benefitVariants}
                                             initial="hidden"
                                             animate="visible"

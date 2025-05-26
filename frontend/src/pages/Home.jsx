@@ -8,7 +8,7 @@ import productData from '../assets/ProductData';
 
 export default function Home() {
     return (
-        <div className="bg-gray-50">
+        <div>
             <HeroSection />
             <section className="py-16 space-y-16">
                 {productData.map((product, index) => (
