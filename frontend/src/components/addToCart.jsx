@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useCart } from '../context/cartContext';
 import { useAuth } from '../context/authContext';
 import { toast } from 'react-toastify';
+import ReactGA from 'react-ga4';
+
 
 export default function AddToCartButton({ id, quantity, size, onClick }) {
     const { addToCart } = useCart();
@@ -23,6 +25,15 @@ export default function AddToCartButton({ id, quantity, size, onClick }) {
         try {
             await addToCart(id, quantity);
             setStatus('added');
+
+            // ✅ GA4 Add to Cart Event
+            ReactGA.event({
+                category: 'Cart',
+                action: 'Add to Cart',
+                label: `Product ID: ${id}`,
+                value: quantity, // You could also use price if available
+            });
+
             setTimeout(() => setStatus('idle'), 2000);
         } catch (err) {
             console.error('Add to cart failed', err);
@@ -33,6 +44,7 @@ export default function AddToCartButton({ id, quantity, size, onClick }) {
             onClick(e);
         }
     };
+
 
     // Define size-specific styles
     const sizeStyles = {
