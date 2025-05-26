@@ -17,7 +17,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import moment from 'moment';
 import axios from 'axios';
 import { useAdmin } from '../context/AdminContext';
-import { toast } from 'react-toastify'
+import { toast } from 'react-toastify';
 import DeliveryActions from '../components/DeliveryActions';
 
 const OrderViewPage = () => {
@@ -34,7 +34,6 @@ const OrderViewPage = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isDeliveryProcessing, setIsDeliveryProcessing] = useState(false);
 
-
     const statusOptions = [
         { value: 'placed', label: 'Placed', color: 'bg-pink-100 text-pink-800' },
         { value: 'pending', label: 'Pending', color: 'bg-amber-100 text-amber-800' },
@@ -43,37 +42,45 @@ const OrderViewPage = () => {
         { value: 'delivered', label: 'Delivered', color: 'bg-green-100 text-green-800' },
         { value: 'cancelled', label: 'Cancelled', color: 'bg-red-100 text-red-800' },
     ];
+
     // Fetch order when component mounts or ID changes
     useEffect(() => {
         let isMounted = true;
 
-        const fetchData = async () => {
+        const fetchOrder = async () => {
             try {
-                if (id && (!orderById || orderById.id !== id)) {
+                if (id && (!orderById || orderById?.id !== id)) {
+                    console.log('Fetching order for ID:', id); // Debug
                     await fetchOrderById(id);
                 }
             } catch (err) {
                 if (isMounted) {
+                    console.error('Error fetching order:', err.message); // Debug
                     setError('Failed to load order');
                 }
             }
         };
 
-        fetchData();
+        fetchOrder();
 
         return () => {
             isMounted = false;
         };
-    }, [id]); // Only depend on id
+    }, [id, fetchOrderById]);
 
     // Sync editableOrder with orderById when it changes
     useEffect(() => {
         if (orderById) {
-            setEditableOrder(orderById);
+            console.log('Syncing editableOrder with orderById:', orderById); // Debug
+            setEditableOrder(prev => ({
+                ...prev,
+                ...orderById,
+                isDelivered: orderById.isDelivered ?? prev?.isDelivered ?? false,
+                deliveryStatus: orderById.deliveryStatus ?? prev?.deliveryStatus ?? 'In Transit',
+            }));
             setNewStatus(orderById.status);
         }
     }, [orderById]);
-
 
     const handleStatusChange = (e) => {
         setNewStatus(e.target.value);
@@ -81,6 +88,7 @@ const OrderViewPage = () => {
 
     const updateOrderStatus = async () => {
         try {
+            setIsProcessing(true);
             const updateData = {
                 status: newStatus,
             };
@@ -88,15 +96,23 @@ const OrderViewPage = () => {
             if (newStatus === 'shipped') {
                 updateData.trackingNumber = editableOrder.trackingNumber;
             }
-            const response = await axios.put(`${backendUrl}/api/admin/${id}`, updateData);
+            console.log('Updating order status:', updateData); // Debug
+            const response = await axios.put(`${backendUrl}/api/admin/${id}`, updateData, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
             setEditableOrder(response.data);
+            await fetchOrderById(id); // Refresh orderById
             setShowStatusModal(false);
             setError(null);
+            toast.success('Order status updated');
         } catch (err) {
+            console.error('Error updating status:', err.response?.data || err.message); // Debug
             setError(err.response?.data?.message || 'Failed to update status');
+            toast.error('Failed to update status');
+        } finally {
+            setIsProcessing(false);
         }
     };
-
 
     const handleFieldChange = (field, value) => {
         setEditableOrder((prev) => ({
@@ -117,29 +133,46 @@ const OrderViewPage = () => {
 
     const saveChanges = async () => {
         try {
+            setIsProcessing(true);
+            console.log('Saving changes:', editableOrder); // Debug
             const response = await axios.put(
                 `${backendUrl}/api/admin/${id}`,
                 {
                     shippingAddress: editableOrder.shippingAddress,
                     adminNotes: editableOrder.adminNotes,
                     trackingNumber: editableOrder.trackingNumber,
-                }
-
+                },
+                { headers: { Authorization: `Bearer ${token}` } }
             );
             setEditableOrder(response.data);
+            await fetchOrderById(id); // Refresh orderById
             setIsEditing(false);
             setError(null);
+            toast.success('Changes saved');
         } catch (err) {
+            console.error('Error saving changes:', err.response?.data || err.message); // Debug
             setError(err.response?.data?.message || 'Failed to save changes');
+            toast.error('Failed to save changes');
+        } finally {
+            setIsProcessing(false);
         }
     };
 
     const cancelOrder = async () => {
         try {
-            await axios.delete(`${backendUrl}/api/admin/${id}`);
+            setIsProcessing(true);
+            console.log('Cancelling order:', id); // Debug
+            await axios.delete(`${backendUrl}/api/admin/${id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
             navigate('/orders');
+            toast.success('Order cancelled');
         } catch (err) {
+            console.error('Error cancelling order:', err.response?.data || err.message); // Debug
             setError(err.response?.data?.message || 'Failed to cancel order');
+            toast.error('Failed to cancel order');
+        } finally {
+            setIsProcessing(false);
         }
     };
 
@@ -155,7 +188,6 @@ const OrderViewPage = () => {
     const getPaymentMethod = (method) => {
         const methodNames = {
             cod: 'Cash on Delivery',
-
         };
         return methodNames[method] || method.toUpperCase();
     };
@@ -174,49 +206,39 @@ const OrderViewPage = () => {
 
     return (
         <div className="bg-gray-50 text-sm md:text-base min-h-screen p-3 md:p-6 lg:ml-72">
-            {/* Order Status Modification Dialog with Animation */}
+            {/* Order Status Modification Dialog */}
             <div className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${showStatusModal ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                {/* Backdrop with transition */}
                 <div
                     className={`fixed inset-0 bg-black transition-opacity duration-300 ${showStatusModal ? 'opacity-50' : 'opacity-0'}`}
                     onClick={() => setShowStatusModal(false)}
                 />
-
-                {/* Modal content with scale transition */}
                 <div
                     className={`bg-white rounded-lg shadow-xl w-full max-w-md transform transition-all duration-300 ${showStatusModal ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
                 >
                     <div className="p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                            Update Order Status
-                        </h3>
-
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Update Order Status</h3>
                         <select
                             value={newStatus}
                             onChange={handleStatusChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                         >
                             {statusOptions.map((option) => (
-                                <option
-                                    key={option.value}
-                                    value={option.value}
-                                    className="text-gray-700"
-                                >
+                                <option key={option.value} value={option.value}>
                                     {option.label}
                                 </option>
                             ))}
                         </select>
-
                         <div className="flex justify-end space-x-3 mt-6">
                             <button
                                 onClick={() => setShowStatusModal(false)}
-                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={updateOrderStatus}
-                                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                                disabled={isProcessing}
+                                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-70"
                             >
                                 Confirm Update
                             </button>
@@ -226,7 +248,7 @@ const OrderViewPage = () => {
             </div>
 
             <div className="max-w-6xl mx-auto">
-                {/* Header with back button */}
+                {/* Header */}
                 <div className="flex justify-between items-center mb-6">
                     <Link to="/orders" className="flex items-center text-gray-600 hover:text-emerald-600">
                         <FiArrowLeft className="mr-2" />
@@ -239,11 +261,10 @@ const OrderViewPage = () => {
                         >
                             Change Status
                         </button>
-
                     </div>
                 </div>
 
-                {/* Order header */}
+                {/* Order Header */}
                 <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                         <div>
@@ -272,25 +293,22 @@ const OrderViewPage = () => {
                 {/* Tabs */}
                 <div className="flex border-b border-gray-200 mb-6">
                     <button
-                        className={`py-2 px-4 font-medium ${activeTab === 'details' ? 'text-emerald-600 border-b-2 border-emerald-600' : 'text-gray-500'
-                            }`}
+                        className={`py-2 px-4 font-medium ${activeTab === 'details' ? 'text-emerald-600 border-b-2 border-emerald-600' : 'text-gray-500'}`}
                         onClick={() => setActiveTab('details')}
                     >
                         Order Details
                     </button>
                     <button
-                        className={`py-2 px-4 font-medium ${activeTab === 'actions' ? 'text-emerald-600 border-b-2 border-emerald-600' : 'text-gray-500'
-                            }`}
+                        className={`py-2 px-4 font-medium ${activeTab === 'actions' ? 'text-emerald-600 border-b-2 border-emerald-600' : 'text-gray-500'}`}
                         onClick={() => setActiveTab('actions')}
                     >
                         Actions
                     </button>
-
                 </div>
 
                 {activeTab === 'details' && (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Left column - Customer and Shipping */}
+                        {/* Left Column - Customer and Shipping */}
                         <div className="lg:col-span-2 space-y-6">
                             {/* Customer Information */}
                             <div className="bg-white rounded-xl shadow-sm p-6">
@@ -298,24 +316,15 @@ const OrderViewPage = () => {
                                     <h2 className="text-lg font-semibold text-gray-800">Customer Information</h2>
                                     {isEditing ? (
                                         <div className="flex space-x-2">
-                                            <button
-                                                onClick={saveChanges}
-                                                className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"
-                                            >
+                                            <button onClick={saveChanges} className="p-1 text-emerald-600 hover:bg-emerald-50 rounded">
                                                 <FiCheck size={18} />
                                             </button>
-                                            <button
-                                                onClick={() => setIsEditing(false)}
-                                                className="p-1 text-red-600 hover:bg-red-50 rounded"
-                                            >
+                                            <button onClick={() => setIsEditing(false)} className="p-1 text-red-600 hover:bg-red-50 rounded">
                                                 <FiX size={18} />
                                             </button>
                                         </div>
                                     ) : (
-                                        <button
-                                            onClick={() => setIsEditing(true)}
-                                            className="p-1 text-gray-600 hover:bg-gray-50 rounded"
-                                        >
+                                        <button onClick={() => setIsEditing(true)} className="p-1 text-gray-600 hover:bg-gray-50 rounded">
                                             <FiEdit size={18} />
                                         </button>
                                     )}
@@ -413,8 +422,7 @@ const OrderViewPage = () => {
                                                 <p className="text-gray-900 font-medium">{editableOrder.shippingAddress.name}</p>
                                                 <p className="text-gray-900">{editableOrder.shippingAddress.address}</p>
                                                 <p className="text-gray-900">
-                                                    {editableOrder.shippingAddress.city}, {editableOrder.shippingAddress.country}{' '}
-                                                    {editableOrder.shippingAddress.zip}
+                                                    {editableOrder.shippingAddress.city}, {editableOrder.shippingAddress.country} {editableOrder.shippingAddress.zip}
                                                 </p>
                                             </>
                                         )}
@@ -430,28 +438,16 @@ const OrderViewPage = () => {
                                         <table className="min-w-full divide-y divide-gray-200">
                                             <thead className="bg-gray-50">
                                                 <tr>
-                                                    <th
-                                                        scope="col"
-                                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                                    >
+                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                         Product
                                                     </th>
-                                                    <th
-                                                        scope="col"
-                                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                                    >
+                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                         Price
                                                     </th>
-                                                    <th
-                                                        scope="col"
-                                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                                    >
+                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                         Qty
                                                     </th>
-                                                    <th
-                                                        scope="col"
-                                                        className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                                    >
+                                                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                         Total
                                                     </th>
                                                 </tr>
@@ -461,11 +457,7 @@ const OrderViewPage = () => {
                                                     <tr key={index}>
                                                         <td className="px-6 py-4 whitespace-nowrap">
                                                             <div className="flex items-center">
-                                                                <img
-                                                                    src={item.image}
-                                                                    alt={item.name}
-                                                                    className="w-10 h-10 rounded-md object-cover mr-3"
-                                                                />
+                                                                <img src={item.image} alt={item.name} className="w-10 h-10 rounded-md object-cover mr-3" />
                                                                 <div>
                                                                     <div className="text-sm font-medium text-gray-900">{item.name}</div>
                                                                     <div className="text-sm text-gray-500">SKU: {item.productId}</div>
@@ -473,13 +465,13 @@ const OrderViewPage = () => {
                                                             </div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                            {currency}{item.price.toFixed(2)}
+                                                            {currency}
+                                                            {item.price.toFixed(2)}
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                            {item.quantity}
-                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.quantity}</td>
                                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
-                                                            {currency}{(item.price * item.quantity).toFixed(2)}
+                                                            {currency}
+                                                            {(item.price * item.quantity).toFixed(2)}
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -490,7 +482,7 @@ const OrderViewPage = () => {
                             </div>
                         </div>
 
-                        {/* Right column - Payment and Summary */}
+                        {/* Right Column - Payment and Summary */}
                         <div className="space-y-6">
                             {/* Payment Information */}
                             <div className="bg-white rounded-xl shadow-sm p-6">
@@ -514,19 +506,31 @@ const OrderViewPage = () => {
                                 <div className="space-y-3">
                                     <div className="flex justify-between">
                                         <span className="text-gray-600">Subtotal</span>
-                                        <span className="text-gray-900">{currency}{editableOrder.totals.subtotal.toFixed(2)}</span>
+                                        <span className="text-gray-900">
+                                            {currency}
+                                            {editableOrder.totals.subtotal.toFixed(2)}
+                                        </span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-gray-600">Shipping</span>
-                                        <span className="text-gray-900">{currency}{editableOrder.totals.shipping.toFixed(2)}</span>
+                                        <span className="text-gray-900">
+                                            {currency}
+                                            {editableOrder.totals.shipping.toFixed(2)}
+                                        </span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-gray-600">Tax</span>
-                                        <span className="text-gray-900">{currency}{editableOrder.totals.tax.toFixed(2)}</span>
+                                        <span className="text-gray-900">
+                                            {currency}
+                                            {editableOrder.totals.tax.toFixed(2)}
+                                        </span>
                                     </div>
                                     <div className="border-t border-gray-200 pt-3 flex justify-between">
                                         <span className="font-medium text-gray-900">Grand Total</span>
-                                        <span className="font-bold text-emerald-600">{currency}{editableOrder.totals.grandTotal.toFixed(2)}</span>
+                                        <span className="font-bold text-emerald-600">
+                                            {currency}
+                                            {editableOrder.totals.grandTotal.toFixed(2)}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -536,18 +540,18 @@ const OrderViewPage = () => {
                                 <h2 className="text-lg font-semibold text-gray-800 mb-4">Order Timeline</h2>
                                 <div className="space-y-4">
                                     {(editableOrder.statusHistory && editableOrder.statusHistory.length > 0
-                                        ? [...editableOrder.statusHistory].reverse() // Reverse to show latest first
+                                        ? [...editableOrder.statusHistory].reverse()
                                         : [
                                             { status: editableOrder.status, timestamp: editableOrder.updatedAt },
                                             { status: 'placed', timestamp: editableOrder.createdAt },
                                         ]
                                     ).map((event, index, array) => {
-                                        const statusObj = statusOptions.find((opt) => opt.value === event.status) || {
-                                            value: event.status,
-                                            label: event.status.charAt(0).toUpperCase() + event.status.slice(1),
-                                            color: 'bg-gray-100 text-gray-800',
-                                        };
-
+                                        const statusObj =
+                                            statusOptions.find((opt) => opt.value === event.status) || {
+                                                value: event.status,
+                                                label: event.status.charAt(0).toUpperCase() + event.status.slice(1),
+                                                color: 'bg-gray-100 text-gray-800',
+                                            };
                                         const icons = {
                                             pending: <FiPackage className="text-amber-500" />,
                                             processing: <FiTruck className="text-blue-500" />,
@@ -556,16 +560,13 @@ const OrderViewPage = () => {
                                             cancelled: <FiX className="text-red-500" />,
                                             placed: <FiPackage className="text-gray-500" />,
                                         };
-
                                         return (
                                             <div key={index} className="flex">
                                                 <div className="flex flex-col items-center mr-4">
                                                     <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100">
                                                         {icons[event.status] || <FiPackage className="text-gray-500" />}
                                                     </div>
-                                                    {index < array.length - 1 && (
-                                                        <div className="w-px h-full bg-gray-200 mt-1"></div>
-                                                    )}
+                                                    {index < array.length - 1 && <div className="w-px h-full bg-gray-200 mt-1"></div>}
                                                 </div>
                                                 <div className="pb-4">
                                                     <div className="flex items-center">
@@ -605,9 +606,7 @@ const OrderViewPage = () => {
                                 </button>
                             </div>
 
-
-
-                            {/* Payment Actions - Modern Design */}
+                            {/* Payment Actions */}
                             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                                 <div className="p-5">
                                     <div className="flex items-center mb-4">
@@ -616,44 +615,41 @@ const OrderViewPage = () => {
                                         </div>
                                         <h3 className="font-semibold text-gray-800">Payment Information</h3>
                                     </div>
-
                                     <div className="space-y-4">
                                         <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                                             <span className="text-sm font-medium text-gray-500">Method</span>
-                                            <span className="text-sm font-semibold text-gray-700">
-                                                {getPaymentMethod(editableOrder.paymentMethod)}
-                                            </span>
+                                            <span className="text-sm font-semibold text-gray-700">{getPaymentMethod(editableOrder.paymentMethod)}</span>
                                         </div>
-
                                         <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                                             <span className="text-sm font-medium text-gray-500">Status</span>
-                                            <span className={`text-sm font-semibold ${editableOrder.isPaid ? 'text-emerald-600' : 'text-amber-600'
-                                                }`}>
+                                            <span className={`text-sm font-semibold ${editableOrder.isPaid ? 'text-emerald-600' : 'text-amber-600'}`}>
                                                 {editableOrder.isPaid ? 'Paid' : 'Pending'}
                                             </span>
                                         </div>
-
-                                        {!editableOrder.isPaid && (
+                                        {!editableOrder.isPaid ? (
                                             <button
                                                 onClick={async () => {
                                                     try {
                                                         setIsProcessing(true);
+                                                        console.log('Marking as paid:', id); // Debug
                                                         const response = await axios.put(
                                                             `${backendUrl}/api/admin/payment/${id}`,
-                                                            { isPaid: true }  // Changed from paymentMethod to isPaid
+                                                            { isPaid: true },
+                                                            { headers: { Authorization: `Bearer ${token}` } }
                                                         );
                                                         setEditableOrder(prev => ({
                                                             ...prev,
                                                             isPaid: true,
                                                             paymentDetails: {
                                                                 ...prev.paymentDetails,
-                                                                paidAt: new Date()
+                                                                paidAt: new Date(),
                                                             },
-
                                                         }));
+                                                        await fetchOrderById(id); // Refresh orderById
                                                         setError(null);
-                                                        toast.success(response.data.message);
+                                                        toast.success(response.data.message || 'Payment marked as paid');
                                                     } catch (err) {
+                                                        console.error('Error updating payment:', err.response?.data || err.message); // Debug
                                                         setError(err.response?.data?.message || 'Failed to update payment status');
                                                         toast.error('Payment update failed');
                                                     } finally {
@@ -675,29 +671,30 @@ const OrderViewPage = () => {
                                                     'Mark as Paid'
                                                 )}
                                             </button>
-                                        )}
-
-                                        {editableOrder.isPaid && (
+                                        ) : (
                                             <button
                                                 onClick={async () => {
                                                     try {
                                                         setIsProcessing(true);
+                                                        console.log('Marking as unpaid:', id); // Debug
                                                         const response = await axios.put(
-                                                            `${backendUrl}/api/admin/payment/${id}/`,
-                                                            { isPaid: false }  // Option to mark as unpaid
+                                                            `${backendUrl}/api/admin/payment/${id}`,
+                                                            { isPaid: false },
+                                                            { headers: { Authorization: `Bearer ${token}` } }
                                                         );
                                                         setEditableOrder(prev => ({
                                                             ...prev,
                                                             isPaid: false,
                                                             paymentDetails: {
                                                                 ...prev.paymentDetails,
-                                                                unpaidAt: new Date()
+                                                                unpaidAt: new Date(),
                                                             },
-
                                                         }));
+                                                        await fetchOrderById(id); // Refresh orderById
                                                         setError(null);
-                                                        toast.success(response.data.message);
+                                                        toast.success(response.data.message || 'Payment marked as unpaid');
                                                     } catch (err) {
+                                                        console.error('Error updating payment:', err.response?.data || err.message); // Debug
                                                         setError(err.response?.data?.message || 'Failed to update payment status');
                                                         toast.error('Payment update failed');
                                                     } finally {
@@ -724,7 +721,7 @@ const OrderViewPage = () => {
                                 </div>
                             </div>
 
-                            {/* Delivery Actions - Modern Design */}
+                            {/* Delivery Actions */}
                             <DeliveryActions
                                 editableOrder={editableOrder}
                                 setEditableOrder={setEditableOrder}
@@ -733,8 +730,8 @@ const OrderViewPage = () => {
                                 token={token}
                                 isDeliveryProcessing={isDeliveryProcessing}
                                 setIsDeliveryProcessing={setIsDeliveryProcessing}
+                                fetchOrderById={fetchOrderById}
                             />
-
 
                             {/* Order Management */}
                             <div className="border border-gray-200 rounded-lg p-4">
@@ -760,8 +757,6 @@ const OrderViewPage = () => {
                         </div>
                     </div>
                 )}
-
-
             </div>
         </div>
     );

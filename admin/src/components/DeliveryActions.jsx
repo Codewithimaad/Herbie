@@ -3,7 +3,7 @@ import { FiTruck } from 'react-icons/fi';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-const DeliveryActions = ({ editableOrder, setEditableOrder, backendUrl, id, token, isDeliveryProcessing, setIsDeliveryProcessing }) => {
+const DeliveryActions = ({ editableOrder, setEditableOrder, backendUrl, id, token, isDeliveryProcessing, setIsDeliveryProcessing, fetchOrderById }) => {
     const handleDeliveryUpdate = async (isDelivered) => {
         try {
             setIsDeliveryProcessing(true);
@@ -23,6 +23,8 @@ const DeliveryActions = ({ editableOrder, setEditableOrder, backendUrl, id, toke
                 console.log('Updated editableOrder:', updatedOrder); // Debug
                 return updatedOrder;
             });
+            // Refresh orderById in context
+            await fetchOrderById(id);
             toast.success(response.data.message || 'Delivery status updated');
         } catch (err) {
             console.error('Delivery update error:', err.response?.data || err.message);
@@ -32,7 +34,7 @@ const DeliveryActions = ({ editableOrder, setEditableOrder, backendUrl, id, toke
         }
     };
 
-    // Ensure deliveryStatus and isDelivered are defined
+    // Ensure fields are defined
     const isDelivered = editableOrder?.isDelivered ?? false;
     const deliveryStatus = editableOrder?.deliveryStatus ?? 'In Transit';
     console.log('Rendering DeliveryActions:', { isDelivered, deliveryStatus, editableOrder }); // Debug
