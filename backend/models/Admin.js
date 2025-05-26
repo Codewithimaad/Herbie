@@ -6,6 +6,14 @@ const adminSchema = new mongoose.Schema({
         required: true,
         trim: true,
     },
+    address: {
+        type: String,
+        trim: true,
+    },
+    phone: {
+        type: Number,
+        trim: true,
+    },
 
     email: {
         type: String,

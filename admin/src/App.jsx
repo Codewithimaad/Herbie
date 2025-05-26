@@ -14,6 +14,7 @@ import Home from './pages/Home';
 import ProtectedRoute from './components/ProtectedRoute';
 import AllAdmins from './pages/AllAdmins';
 import FAQsPage from './pages/FaQsPage';
+import AccountPage from './pages/AccountPage';
 
 function App() {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ function App() {
             <Route path="categories" element={<Categories />} />
             <Route path="all-admins" element={<AllAdmins />} />
             <Route path="faqs" element={<FAQsPage />} />
+            <Route path="account" element={<AccountPage />} />
           </Route>
         </Routes>
       </main>

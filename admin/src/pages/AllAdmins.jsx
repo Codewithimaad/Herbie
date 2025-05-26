@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { FiEdit2, FiTrash2, FiUser, FiPlus, FiSearch, FiRefreshCw, FiEye } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAdmin } from '../context/AdminContext';
-import EditAdminModal from '../components/EditAdminModal';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import AdminDetailsModal from '../components/AdminDetailsModal';
 import AddAdminModal from '../components/AddAdminModal';
@@ -10,7 +9,6 @@ import AddAdminModal from '../components/AddAdminModal';
 const AllAdmins = () => {
     const { admins = [], loadingAdmins, adminsError, fetchAllAdmins } = useAdmin();
     const [searchTerm, setSearchTerm] = useState('');
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -28,7 +26,6 @@ const AllAdmins = () => {
 
     const handleEditClick = (admin) => {
         setSelectedAdmin(admin);
-        setIsEditModalOpen(true);
     };
 
     const handleDeleteClick = (admin) => {
@@ -150,13 +147,7 @@ const AllAdmins = () => {
                                                     >
                                                         <FiEye className="h-5 w-5" />
                                                     </button>
-                                                    <button
-                                                        onClick={() => handleEditClick(admin)}
-                                                        className="text-emerald-600 hover:text-emerald-900 transition-colors p-2 rounded-lg hover:bg-emerald-50"
-                                                        aria-label={`Edit ${admin.name || 'admin'}`}
-                                                    >
-                                                        <FiEdit2 className="h-5 w-5" />
-                                                    </button>
+
                                                     <button
                                                         onClick={() => handleDeleteClick(admin)}
                                                         className="text-red-600 hover:text-red-900 transition-colors p-2 rounded-lg hover:bg-red-50"
@@ -175,16 +166,7 @@ const AllAdmins = () => {
                 </motion.div>
             </div>
 
-            {/* Edit Admin Modal */}
-            <AnimatePresence>
-                {isEditModalOpen && (
-                    <EditAdminModal
-                        admin={selectedAdmin}
-                        onClose={() => setIsEditModalOpen(false)}
-                        onSuccess={fetchAllAdmins}
-                    />
-                )}
-            </AnimatePresence>
+
 
             {/* Delete Confirmation Modal */}
             <AnimatePresence>

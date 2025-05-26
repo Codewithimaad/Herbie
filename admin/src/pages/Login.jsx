@@ -1,14 +1,27 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Lock, Mail } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAdmin } from '../context/AdminContext'; // Adjust path if needed
+import { useEffect } from 'react';
+
 
 export default function Login() {
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();
-    const { loginAdmin, loadingAuth } = useAdmin();
+    const { loginAdmin, loadingAuth, token } = useAdmin();
+
+    useEffect(() => {
+        if (token) {
+            // Check if the user *manually navigated* to the login page while already logged in
+            if (location.pathname === '/login') {
+                toast.success('You are already logged in');
+            }
+            navigate('/');
+        }
+    }, [token]);
+
 
     const validateForm = () => {
         const newErrors = {};
@@ -69,7 +82,7 @@ export default function Login() {
                                 onChange={handleChange}
                                 className={`block w-full pl-10 pr-3 py-3 bg-white/50 border ${errors.email ? 'border-red-400' : 'border-gray-200'
                                     } rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 placeholder-gray-400 text-gray-900`}
-                                placeholder="admin@example.com"
+                                placeholder="Email"
                             />
                         </div>
                         {errors.email && (
@@ -118,12 +131,12 @@ export default function Login() {
                             </label>
                         </div>
 
-                        <a
-                            href="/admin/forgot-password"
+                        <Link
+                            to="/forgot-password"
                             className="text-sm text-indigo-600 hover:text-indigo-500 transition-colors duration-200"
                         >
                             Forgot password?
-                        </a>
+                        </Link>
                     </div>
 
                     <button

@@ -1,30 +1,35 @@
 import jwt from 'jsonwebtoken';
 import Admin from '../models/Admin.js';
+import mongoose from 'mongoose';
 
 export const adminAuth = async (req, res, next) => {
     let token;
 
-    if (
-        req.headers.authorization &&
-        req.headers.authorization.startsWith('Bearer ')
-    ) {
+    if (req.headers.authorization?.startsWith('Bearer ')) {
         try {
             token = req.headers.authorization.split(' ')[1];
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-            const admin = await Admin.findById(decoded.id).select('-password');
-            if (!admin) {
-                return res.status(401).json({ message: 'Not authorized, admin not found' });
+            if (!mongoose.Types.ObjectId.isValid(decoded.id)) {
+                return res.status(401).json({ message: 'Invalid token format' });
             }
 
-            req.admin = admin; // attach admin info to request
+            const admin = await Admin.findById(decoded.id); // ✅ Correct usage
+
+            if (!admin) {
+                return res.status(401).json({ message: 'Admin not found' });
+            }
+
+            req.admin = admin;
             next();
         } catch (error) {
-            return res.status(401).json({ message: 'Not authorized, token failed' });
+            console.error('Auth error:', error.message);
+            return res.status(401).json({
+                message: 'Not authorized',
+                error: error.message
+            });
         }
-    }
-
-    if (!token) {
-        return res.status(401).json({ message: 'Not authorized, no token' });
+    } else {
+        return res.status(401).json({ message: 'No token provided' });
     }
 };

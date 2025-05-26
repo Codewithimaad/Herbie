@@ -244,7 +244,7 @@ export const AdminProvider = ({ children }) => {
         setAdmins([]);
         localStorage.removeItem('adminToken');
         navigate('/login');
-        toast.info('Logged out');
+        toast.success('Logged out');
     };
 
     const addAdmin = async (adminData) => {
@@ -266,29 +266,7 @@ export const AdminProvider = ({ children }) => {
         }
     };
 
-    const updateAdmin = async (id, updatedData) => {
-        try {
-            setLoadingAuth(true);
-            const { data } = await axios.put(`${backendUrl}/api/admins/${id}`, updatedData, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            setAdmins((prevAdmins) =>
-                prevAdmins.map((admin) => (admin._id === id ? data.admin : admin))
-            );
-            toast.success('Admin updated successfully');
-            if (admin && admin._id === id) {
-                setAdmin(data.admin);
-            }
-            return { success: true, admin: data.admin };
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to update admin');
-            return { success: false, error: error.response?.data?.message || 'Failed to update admin' };
-        } finally {
-            setLoadingAuth(false);
-        }
-    };
+
 
     const deleteAdmin = async (id) => {
         try {
@@ -312,30 +290,27 @@ export const AdminProvider = ({ children }) => {
         }
     };
 
-    useEffect(() => {
-        const fetchAdmin = async () => {
-            if (!token) {
-                setAdmin(null);
-                return;
-            }
+    const fetchAdmin = async () => {
+        if (!token) {
+            setAdmin(null);
+            return;
+        }
 
-            try {
-                const res = await axios.get(`${backendUrl}/api/admins/get-admin`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                setAdmin(res.data.admin);
-            } catch (err) {
-                console.error('Failed to fetch admin:', err);
-                setAdmin(null);
-                localStorage.removeItem('adminToken');
-                setToken('');
-            }
-        };
+        try {
+            const res = await axios.get(`${backendUrl}/api/admins/get-admin`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setAdmin(res.data.admin);
+        } catch (err) {
+            console.error('Failed to fetch admin:', err);
+            setAdmin(null);
+            localStorage.removeItem('adminToken');
+            setToken('');
+        }
+    };
 
-        fetchAdmin();
-    }, [token, backendUrl]);
 
     return (
         <AdminContext.Provider
@@ -367,9 +342,10 @@ export const AdminProvider = ({ children }) => {
                 loginAdmin,
                 logoutAdmin,
                 addAdmin,
-                updateAdmin,
                 deleteAdmin,
                 fetchAllAdmins,
+                fetchAdmin,
+
             }}
         >
             {children}
