@@ -31,9 +31,7 @@ import usePageTracking from './pages/usePageTracking';
 
 
 // ✅ Initialize GA4 ONCE outside component
-ReactGA.initialize('G-319XJMHJ88', {
-  debug_mode: true
-});
+ReactGA.initialize(import.meta.env.VITE_GA_MEASUREMENT_ID);
 
 
 function App() {
