@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import ReactGA from 'react-ga4';
 
 
-export default function AddToCartButton({ id, quantity, size, onClick }) {
+export default function AddToCartButton({ id, quantity, name, price, size, onClick }) {
     const { addToCart } = useCart();
     const { token } = useAuth();
     const [status, setStatus] = useState('idle');
@@ -26,11 +26,16 @@ export default function AddToCartButton({ id, quantity, size, onClick }) {
 
             // ✅ GA4 Add to Cart Event
             ReactGA.event('add_to_cart', {
+                currency: 'PKR', // Or 'USD' etc.
+                value: quantity * price, // total value of added items
                 items: [{
                     item_id: id,
+                    item_name: name, // optional but helpful
+                    price: price,    // optional but helpful
                     quantity: quantity,
                 }],
             });
+
 
             setTimeout(() => setStatus('idle'), 2000);
         } catch (err) {

@@ -6,6 +6,7 @@ import { useCart } from '../context/cartContext';
 import AddToCartButton from '../components/addToCart';
 import ReviewSection from '../components/ReviewSection';
 import ReviewSmall from '../components/ReviewSmall';
+import ReactGA from 'react-ga4'
 
 export default function ProductDetails() {
     const { id } = useParams();
@@ -24,12 +25,28 @@ export default function ProductDetails() {
                 const res = await fetch(`${backendUrl}/api/products/${id}`);
                 if (!res.ok) throw new Error('Failed to fetch product');
                 const data = await res.json();
+                console.log('new data:', data);
 
                 if (isMounted) {
                     setProduct(data);
                     if (data.images?.length > 0) {
                         setMainImage(data.images[0]);
                     }
+
+                    // Send GA4 event after product is loaded
+                    ReactGA.event({
+                        category: 'Ecommerce',
+                        action: 'view_item',
+                        params: {
+                            items: [{
+                                item_id: data._id,
+                                item_name: data.name,
+                                price: data.price,
+                                currency: 'PKR', // or dynamic from your currency context
+                                // add more fields if you want, like item_category, item_brand, etc.
+                            }]
+                        }
+                    });
                 }
             } catch (error) {
                 console.error("Product fetch error:", error);

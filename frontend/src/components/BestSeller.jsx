@@ -142,6 +142,8 @@ const BestSellers = () => {
                                     <AddToCartButton
                                         id={product._id}
                                         quantity={1}
+                                        name={product.name}
+                                        price={product.price}
                                         size="small"
                                         className="w-full bg-amber-500 hover:bg-amber-600 text-white"
                                     />
