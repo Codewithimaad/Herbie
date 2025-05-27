@@ -37,7 +37,7 @@ ReactGA.initialize(import.meta.env.VITE_GA_MEASUREMENT_ID);
 function App() {
 
   // To track poge View
-  usePageTracking
+  usePageTracking();
 
   const { login } = useAuth();
   const navigate = useNavigate();
