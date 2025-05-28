@@ -2,12 +2,11 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import ProductCard from '../components/ProductCard';
 import HeadingText from '../components/HeadingText';
-import {
-    FaFilter, FaSearch, FaChevronDown,
-    FaChevronUp, FaFire, FaLeaf
-} from 'react-icons/fa';
+import { FaFilter, FaSearch, FaChevronDown, FaChevronUp, FaFire, FaLeaf } from 'react-icons/fa';
 import { useAuth } from '../context/authContext';
 import { useCart } from '../context/cartContext';
+import ReactGA from 'react-ga4';
+import { useNavigate } from 'react-router-dom';
 
 export default function Products() {
     const [products, setProducts] = useState([]);
@@ -17,22 +16,14 @@ export default function Products() {
     const [selectedCategory, setSelectedCategory] = useState('All');
     const { backendUrl } = useAuth();
     const { currency } = useCart();
+    const navigate = useNavigate();
 
-    // Fetch products from backend
+    // Fetch products
     useEffect(() => {
         const fetchProducts = async () => {
             try {
                 const res = await axios.get(`${backendUrl}/api/products`);
-                let fetchedProducts = [];
-
-                if (Array.isArray(res.data)) {
-                    fetchedProducts = res.data;
-                } else if (Array.isArray(res.data.products)) {
-                    fetchedProducts = res.data.products;
-                } else {
-                    console.warn('Expected "products" to be an array.');
-                }
-
+                let fetchedProducts = Array.isArray(res.data) ? res.data : res.data.products || [];
                 setProducts(fetchedProducts);
             } catch (err) {
                 console.error('Failed to load products:', err);
@@ -42,6 +33,17 @@ export default function Products() {
         fetchProducts();
     }, [backendUrl]);
 
+    // Handle product click with GA4 tracking
+    const handleProductClick = (product) => {
+        ReactGA.event({
+            category: 'Product Interaction',
+            action: 'click',
+            label: product.name,
+            value: product.price,
+        });
+        navigate(`/product/${product._id}`);
+    };
+
     // Extract categories
     const categories = ['All', 'New Arrivals', 'Best Sellers', ...new Set(products.map(p => p.category || 'Other'))];
 
@@ -49,7 +51,6 @@ export default function Products() {
     const filteredProducts = products.filter(product => {
         const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase());
         let matchesCategory = true;
-
         if (selectedCategory === 'Best Sellers') {
             matchesCategory = product.isBestSeller;
         } else if (selectedCategory === 'New Arrivals') {
@@ -57,14 +58,10 @@ export default function Products() {
         } else if (selectedCategory !== 'All') {
             matchesCategory = product.category === selectedCategory;
         }
-
         return matchesSearch && matchesCategory;
     });
 
     const visibleProducts = showMore ? filteredProducts : filteredProducts.slice(0, 8);
-
-
-
 
     return (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -72,7 +69,6 @@ export default function Products() {
                 title="Our Herbal Collection"
                 description="Discover premium quality herbs sourced from organic farms to enhance your health and wellness naturally."
             />
-
             {/* Search and Filters */}
             <div className="mb-12">
                 <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -95,8 +91,6 @@ export default function Products() {
                         {showFilters ? <FaChevronUp /> : <FaChevronDown />}
                     </button>
                 </div>
-
-                {/* Filter Categories */}
                 {showFilters && (
                     <div className="bg-white p-6 rounded-lg shadow-md mb-6">
                         <h3 className="font-medium text-lg mb-4">Filter by Category</h3>
@@ -105,10 +99,8 @@ export default function Products() {
                                 <button
                                     key={category}
                                     onClick={() => setSelectedCategory(category)}
-                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${selectedCategory === category
-                                        ? 'bg-green-600 text-white'
-                                        : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                                        }`}
+                                    className={`px - 4 py - 2 rounded - full text - sm font - medium transition - colors flex items - center gap - 2 ${selectedCategory === category ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                                        } `}
                                 >
                                     {category === 'Best Sellers' && <FaFire className="text-amber-500" />}
                                     {category === 'New Arrivals' && <FaLeaf className="text-green-500" />}
@@ -119,7 +111,6 @@ export default function Products() {
                     </div>
                 )}
             </div>
-
             {/* Product Grid */}
             {filteredProducts.length > 0 ? (
                 <>
@@ -133,7 +124,6 @@ export default function Products() {
                             />
                         ))}
                     </div>
-
                     {filteredProducts.length > 8 && (
                         <div className="text-center mb-16">
                             <button

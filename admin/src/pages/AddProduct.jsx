@@ -56,8 +56,8 @@ const AddProduct = () => {
             }
 
             // Validate file size (1MB max)
-            if (file.size > 1 * 1024 * 1024) {
-                setUploadError('Image size exceeds 1MB limit');
+            if (file.size > 2 * 1024 * 1024) {
+                setUploadError('Image size exceeds 2MB limit');
                 return false;
             }
 
@@ -146,7 +146,7 @@ const AddProduct = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                                     <FaMoneyBillWave className="text-gray-500" /> Price
                                 </label>
                                 <div className="relative">
@@ -166,7 +166,7 @@ const AddProduct = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                                     <FiPackage className="text-gray-500" /> Stock Quantity
                                 </label>
                                 <input
@@ -182,7 +182,7 @@ const AddProduct = () => {
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                                     <FiGrid className="text-gray-500" /> Category
                                 </label>
                                 <select
@@ -202,7 +202,7 @@ const AddProduct = () => {
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                <label className=" text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                                     <FiAlignLeft className="text-gray-500" /> Description
                                 </label>
                                 <textarea
@@ -236,7 +236,7 @@ const AddProduct = () => {
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                                <label className=" text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
                                     <FiUpload className="text-gray-500" /> Product Images
                                 </label>
                                 {previewImages.length > 0 && (
@@ -266,7 +266,7 @@ const AddProduct = () => {
                                             Drop your images here or{' '}
                                             <span className="text-emerald-600 hover:text-emerald-700">click to browse</span>
                                         </p>
-                                        <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF (Max 1MB each)</p>
+                                        <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF (Max 2MB each)</p>
                                     </div>
                                     <input
                                         type="file"

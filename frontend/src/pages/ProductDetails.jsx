@@ -34,18 +34,20 @@ export default function ProductDetails() {
                     }
 
                     // Send GA4 event after product is loaded
+                    // Track GA4 view_item event
                     ReactGA.event({
-                        category: 'Ecommerce',
                         action: 'view_item',
-                        params: {
-                            items: [{
+                        currency: currency || 'PKR',
+                        value: data.price,
+                        items: [
+                            {
                                 item_id: data._id,
                                 item_name: data.name,
+                                item_category: data.category || 'Other',
                                 price: data.price,
-                                currency: 'PKR', // or dynamic from your currency context
-                                // add more fields if you want, like item_category, item_brand, etc.
-                            }]
-                        }
+                                quantity: 1,
+                            },
+                        ],
                     });
                 }
             } catch (error) {

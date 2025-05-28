@@ -1,16 +1,27 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiLogIn } from 'react-icons/fi';
 import { FcGoogle } from 'react-icons/fc';
 import image from '../assets/images/HeroSection.jpeg';
 import { useAuth } from '../context/authContext';
+import { toast } from 'react-toastify';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
-    const { login, backendUrl } = useAuth();
+    const { login, backendUrl, token } = useAuth();
+
+    useEffect(() => {
+        if (token) {
+            // Check if the user *manually navigated* to the login page while already logged in
+            if (location.pathname === '/login') {
+                toast.warning('You are already logged in');
+            }
+            navigate('/');
+        }
+    }, [token]);
 
     const handleGoogleLogin = () => {
 

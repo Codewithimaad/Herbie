@@ -29,13 +29,42 @@ export const addToCart = async (req, res) => {
 
 export const getCart = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id).populate('cart.product');
-        res.status(200).json(user.cart);
+        // First get user with cart populated
+        const user = await User.findById(req.user._id).populate({
+            path: 'cart.product',
+            // Only match products that exist and are active
+            match: {
+                $and: [
+                    { deletedAt: { $exists: false } }, // Not soft-deleted
+                    { status: { $ne: 'archived' } }   // Not archived
+                ]
+            }
+        });
+
+        // Filter out items with null products (deleted ones)
+        const validCartItems = user.cart.filter(item => item.product !== null);
+
+        // If any items were removed, update the user's cart
+        if (validCartItems.length !== user.cart.length) {
+            user.cart = validCartItems;
+            await user.save();
+        }
+
+        // Transform the response to include deletion flags
+        const response = validCartItems.map(item => ({
+            ...item.toObject(),
+            product: {
+                ...item.product.toObject(),
+                // Add any additional transformations here
+            }
+        }));
+
+        res.status(200).json(response);
     } catch (err) {
+        console.error('Error fetching cart:', err);
         res.status(500).json({ error: 'Server error' });
     }
 };
-
 
 // Remove item from cart
 export const removeFromCart = async (req, res) => {

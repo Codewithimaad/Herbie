@@ -46,7 +46,11 @@ export const AdminProvider = ({ children }) => {
             try {
                 setLoadingOrders(true);
                 setOrdersError(null);
-                const response = await axios.get(`${backendUrl}/api/admin`);
+                const response = await axios.get(`${backendUrl}/api/admin`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
                 setOrders(response.data.orders || response.data);
             } catch (error) {
                 setOrdersError('Failed to load orders.');
@@ -62,7 +66,11 @@ export const AdminProvider = ({ children }) => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const { data } = await axios.get(`${backendUrl}/api/category`);
+                const { data } = await axios.get(`${backendUrl}/api/category`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
                 setCategories(data);
             } catch (error) {
                 toast.error('Failed to load categories');
@@ -196,7 +204,11 @@ export const AdminProvider = ({ children }) => {
         try {
             setLoadingOrderById(true);
             setOrderByIdError(null);
-            const response = await axios.get(`${backendUrl}/api/admin/${id}`);
+            const response = await axios.get(`${backendUrl}/api/admin/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             if (!response.data.items) {
                 response.data.items = [];
             }
@@ -212,7 +224,11 @@ export const AdminProvider = ({ children }) => {
 
     const deleteOrder = async (id) => {
         try {
-            await axios.delete(`${backendUrl}/api/admin/${id}`);
+            await axios.delete(`${backendUrl}/api/admin/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             setOrders((prevOrders) => prevOrders.filter((order) => order._id !== id));
             toast.success('Order deleted');
             return { success: true };

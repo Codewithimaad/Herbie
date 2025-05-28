@@ -16,6 +16,7 @@ import {
     Legend,
     Filler // Add this for better area fills
 } from 'chart.js'; import { Line } from 'react-chartjs-2';
+import Analytics from '../components/Analytics';
 
 // Register the components
 ChartJS.register(
@@ -327,6 +328,9 @@ const Home = () => {
                         </div>
                     </div>
                 </section>
+
+
+                <Analytics />
 
 
                 {/* Recent Orders */}

@@ -25,10 +25,11 @@ import MyOrdersPage from './pages/MyOrdersPage';
 import { useAuth } from './context/authContext';
 import axios from 'axios';
 import UserProfile from './pages/UserProfile';
+import ReactGA from 'react-ga4'
+import TrackPageViews from './components/TrackPageView';
 
 
-
-
+ReactGA.initialize(import.meta.env.VITE_GA_MEASUREMENT_ID);
 
 function App() {
   const { login } = useAuth();
@@ -66,6 +67,7 @@ function App() {
   return (
     <ErrorBoundary>
       <div className="flex flex-col min-h-screen bg-white">
+        <TrackPageViews />
         <HeaderText />
         <Navbar />
         <main className="flex-1 container mx-auto">
