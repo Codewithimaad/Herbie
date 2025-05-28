@@ -25,19 +25,15 @@ import MyOrdersPage from './pages/MyOrdersPage';
 import { useAuth } from './context/authContext';
 import axios from 'axios';
 import UserProfile from './pages/UserProfile';
-import ReactGA from 'react-ga4';
-import usePageTracking from './pages/usePageTracking';
 
 
 
-// ✅ Initialize GA4 ONCE outside component
-ReactGA.initialize(import.meta.env.VITE_GA_MEASUREMENT_ID);
+
 
 
 function App() {
 
-  // To track poge View
-  usePageTracking();
+
 
   const { login } = useAuth();
   const navigate = useNavigate();
