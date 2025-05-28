@@ -328,6 +328,7 @@ const Home = () => {
                         </div>
                     </div>
                 </section>
+
                 <AnalyticsPanel />
 
                 {/* Recent Orders */}
