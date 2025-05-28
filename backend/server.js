@@ -67,6 +67,7 @@ app.use('/api/faqs', faQsRoutes)
 
 
 
+
 app.get('/', (req, res) => {
     res.send('API is running...');
 });

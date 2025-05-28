@@ -23,11 +23,8 @@ export default function Products() {
         const fetchProducts = async () => {
             try {
                 const res = await axios.get(`${backendUrl}/api/products`);
-                console.log('Raw product response:', res.data);
-
                 let fetchedProducts = [];
 
-                // Handle two common response formats
                 if (Array.isArray(res.data)) {
                     fetchedProducts = res.data;
                 } else if (Array.isArray(res.data.products)) {
@@ -45,8 +42,7 @@ export default function Products() {
         fetchProducts();
     }, [backendUrl]);
 
-
-    // Extract categories from existing products
+    // Extract categories
     const categories = ['All', 'New Arrivals', 'Best Sellers', ...new Set(products.map(p => p.category || 'Other'))];
 
     // Filter products
@@ -66,6 +62,9 @@ export default function Products() {
     });
 
     const visibleProducts = showMore ? filteredProducts : filteredProducts.slice(0, 8);
+
+
+
 
     return (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -129,6 +128,7 @@ export default function Products() {
                             <ProductCard
                                 key={product._id}
                                 product={product}
+                                onClick={() => handleProductClick(product)}
                                 className="transform hover:-translate-y-2 transition-all duration-300"
                             />
                         ))}

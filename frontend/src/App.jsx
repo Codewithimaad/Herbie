@@ -30,14 +30,11 @@ import UserProfile from './pages/UserProfile';
 
 
 
-
 function App() {
-
-
-
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
 
 
 
