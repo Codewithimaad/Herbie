@@ -16,7 +16,7 @@ import {
     Legend,
     Filler // Add this for better area fills
 } from 'chart.js'; import { Line } from 'react-chartjs-2';
-import AnalyticsPanel from './AnalyticsPanel';
+import AnalyticsPanel from '../pages/AnalyticsPanel';
 
 // Register the components
 ChartJS.register(
