@@ -1,31 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { FiSearch, FiFilter, FiDownload, FiPrinter, FiX, FiCheckCircle } from 'react-icons/fi';
+import { FiSearch, FiFilter, FiDownload, FiPrinter, FiX, FiCheckCircle, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import { useAdmin } from '../context/AdminContext';
 
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
     return (
-        <div className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${isOpen
+        <div className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-all duration-300 ${isOpen
             ? 'opacity-100 pointer-events-auto'
             : 'opacity-0 pointer-events-none'
             }`}>
-            {/* Backdrop with transition */}
+            {/* Backdrop */}
             <div
-                className={`absolute inset-0 bg-black transition-opacity duration-300 ${isOpen ? 'opacity-50' : 'opacity-0'
+                className={`absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'
                     }`}
                 onClick={onClose}
             />
 
-            {/* Modal content with transition */}
+            {/* Modal content */}
             <div
-                className={`bg-white rounded-xl shadow-xl max-w-md w-full p-6 relative transform transition-all duration-300 ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+                className={`bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative transform transition-all duration-300 ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
                     }`}
             >
                 <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+                    <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-500 transition-colors"
+                        className="text-gray-400 hover:text-gray-500 transition-colors p-1 rounded-full hover:bg-gray-100"
                     >
                         <FiX size={20} />
                     </button>
@@ -34,15 +34,15 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
                 <div className="flex justify-end space-x-3">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                        className="px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 font-medium"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={onConfirm}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200"
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-medium shadow-sm"
                     >
-                        Delete
+                        Confirm Delete
                     </button>
                 </div>
             </div>
@@ -65,13 +65,9 @@ const OrdersPage = () => {
     // Filter orders based on status and search query
     const filteredOrders = (orders || []).filter((order) => {
         const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-
         const search = searchQuery.toLowerCase();
-
         const orderId = (order._id || '').toLowerCase();
         const customerName = order.shippingAddress?.name?.toLowerCase() || '';
-
-        // Check if search query matches order id or customer name
         const matchesSearch = orderId.includes(search) || customerName.includes(search);
 
         return matchesStatus && matchesSearch;
@@ -82,14 +78,10 @@ const OrdersPage = () => {
     const startIndex = (currentPage - 1) * ordersPerPage;
     const currentOrders = filteredOrders.slice(startIndex, startIndex + ordersPerPage);
 
-    // Functions to handle pagination
-    const goToPreviousPage = () => {
-        setCurrentPage((prev) => Math.max(prev - 1, 1));
-    };
-
-    const goToNextPage = () => {
-        setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-    };
+    // Pagination functions
+    const goToPreviousPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+    const goToNextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+    const goToPage = (page) => setCurrentPage(Math.max(1, Math.min(page, totalPages)));
 
     // Handle delete order
     const handleDeleteOrder = async (id) => {
@@ -121,14 +113,18 @@ const OrdersPage = () => {
     // Status badge helper
     const getStatusBadge = (status) => {
         const statusClasses = {
-            completed: 'bg-emerald-100 text-emerald-800',
-            pending: 'bg-amber-100 text-amber-800',
-            processing: 'bg-blue-100 text-blue-800',
-            cancelled: 'bg-red-100 text-red-800',
+            delivered: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
+            pending: 'bg-amber-50 text-amber-700 ring-amber-600/20',
+            processing: 'bg-blue-50 text-blue-700 ring-blue-600/20',
+            cancelled: 'bg-red-50 text-red-700 ring-red-600/20',
+            placed: 'bg-white text-gray-700 ring-gray-600/20',
+            shipped: 'bg-purple-100 text-gray-700 ring-purple-600/20',
+
+
         };
         return (
             <span
-                className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses[status] || 'bg-gray-100 text-gray-800'
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ring-1 ring-inset ${statusClasses[status] || 'bg-gray-50 text-gray-700 ring-gray-600/20'
                     }`}
             >
                 {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -143,12 +139,20 @@ const OrdersPage = () => {
 
         const timestamp = Number(dateValue);
         if (!isNaN(timestamp)) {
-            return new Date(timestamp).toLocaleDateString();
+            return new Date(timestamp).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
         }
 
         const dateObj = new Date(dateValue);
         if (!isNaN(dateObj)) {
-            return dateObj.toLocaleDateString();
+            return dateObj.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
         }
 
         return 'N/A';
@@ -163,36 +167,46 @@ const OrdersPage = () => {
     };
 
     if (loadingOrders) {
-        return <div className="p-4 text-center text-gray-600">Loading orders...</div>;
+        return (
+            <div className="flex items-center justify-center h-full min-h-[300px]">
+                <div className="animate-pulse text-gray-500">Loading orders...</div>
+            </div>
+        );
     }
 
     if (ordersError) {
-        return <div className="p-4 text-center text-red-600">Error: {ordersError}</div>;
+        return (
+            <div className="p-6 bg-red-50 rounded-xl border border-red-100 text-red-600 max-w-4xl mx-auto">
+                Error: {ordersError}
+            </div>
+        );
     }
 
     if (!orders.length) {
-        return <div className="p-4 text-center text-gray-600">No orders available.</div>;
+        return (
+            <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-gray-500">
+                <div className="text-lg mb-2">No orders available</div>
+                <div className="text-sm">Create your first order to get started</div>
+            </div>
+        );
     }
 
     return (
-        <div className="bg-gray-50 min-h-screen md:p-6 lg:ml-72">
-            <div className="max-w-7xl mx-auto">
+        <div className="min-h-screen bg-gray-50/50 p-4 md:p-6 lg:ml-72">
+            <div className="max-w-7xl mx-auto space-y-6">
                 {/* Page Header */}
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-800">Orders</h1>
-                        <p className="text-gray-600 mt-1">Manage and track customer orders</p>
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Order Management</h1>
+                        <p className="text-gray-500 mt-1">Track and manage customer orders</p>
                     </div>
                 </div>
 
                 {/* Alert Messages */}
                 {deleteError && (
-                    <div
-                        className="mb-6 flex items-center justify-between p-4 bg-red-50 border-l-4 border-red-500 rounded-lg shadow-sm"
-                        role="alert"
-                    >
-                        <div className="flex items-center">
-                            <FiX className="text-red-500 mr-3" size={20} />
+                    <div className="p-4 bg-red-50 border border-red-100 rounded-lg flex items-start justify-between">
+                        <div className="flex items-start gap-3">
+                            <FiX className="text-red-500 mt-0.5 flex-shrink-0" size={18} />
                             <div>
                                 <p className="font-medium text-red-800">Error</p>
                                 <p className="text-sm text-red-700">{deleteError}</p>
@@ -200,7 +214,7 @@ const OrdersPage = () => {
                         </div>
                         <button
                             onClick={() => setDeleteError(null)}
-                            className="text-red-500 hover:text-red-700"
+                            className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100"
                             aria-label="Dismiss error"
                         >
                             <FiX size={16} />
@@ -208,12 +222,9 @@ const OrdersPage = () => {
                     </div>
                 )}
                 {deleteSuccess && (
-                    <div
-                        className="mb-6 flex items-center justify-between p-4 bg-green-50 border-l-4 border-green-500 rounded-lg shadow-sm"
-                        role="alert"
-                    >
-                        <div className="flex items-center">
-                            <FiCheckCircle className="text-green-500 mr-3" size={20} />
+                    <div className="p-4 bg-green-50 border border-green-100 rounded-lg flex items-start justify-between">
+                        <div className="flex items-start gap-3">
+                            <FiCheckCircle className="text-green-500 mt-0.5 flex-shrink-0" size={18} />
                             <div>
                                 <p className="font-medium text-green-800">Success</p>
                                 <p className="text-sm text-green-700">{deleteSuccess}</p>
@@ -221,7 +232,7 @@ const OrdersPage = () => {
                         </div>
                         <button
                             onClick={() => setDeleteSuccess(null)}
-                            className="text-green-500 hover:text-green-700"
+                            className="text-green-500 hover:text-green-700 p-1 rounded-full hover:bg-green-100"
                             aria-label="Dismiss success"
                         >
                             <FiX size={16} />
@@ -230,29 +241,31 @@ const OrdersPage = () => {
                 )}
 
                 {/* Filters and Search */}
-                <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+                <div className="bg-white rounded-xl shadow-xs border border-gray-100 p-4">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        <div className="relative flex-1">
+                        <div className="relative flex-1 max-w-xl">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <FiSearch className="text-gray-400" />
                             </div>
                             <input
                                 type="text"
-                                className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                                placeholder="Search orders or customers..."
+                                className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all"
+                                placeholder="Search by order ID or customer name..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center gap-2">
                             <div className="relative">
                                 <select
-                                    className="appearance-none pl-3 pr-8 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+                                    className="appearance-none pl-3 pr-8 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white text-sm focus:outline-none transition-all"
                                     value={statusFilter}
                                     onChange={(e) => setStatusFilter(e.target.value)}
                                 >
-                                    <option value="all">All</option>
-                                    <option value="completed">Completed</option>
+                                    <option value="all">All Statuses</option>
+                                    <option value="delivered">Delivered</option>
+                                    <option value="shipped">Shipped</option>
+                                    <option value="placed">Placed</option>
                                     <option value="pending">Pending</option>
                                     <option value="processing">Processing</option>
                                     <option value="cancelled">Cancelled</option>
@@ -261,44 +274,33 @@ const OrdersPage = () => {
                                     <FiFilter className="text-gray-400" />
                                 </div>
                             </div>
-                            <button
-                                className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50"
-                                title="Download"
-                            >
-                                <FiDownload className="text-gray-600" />
-                            </button>
-                            <button
-                                className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50"
-                                title="Print"
-                            >
-                                <FiPrinter className="text-gray-600" />
-                            </button>
+
                         </div>
                     </div>
                 </div>
 
                 {/* Orders Table */}
-                <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Order ID
+                                    </th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Customer
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Date
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Status
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Items
-                                    </th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Amount
                                     </th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Actions
                                     </th>
                                 </tr>
@@ -306,34 +308,32 @@ const OrdersPage = () => {
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {currentOrders.length > 0 ? (
                                     currentOrders.map((order) => (
-                                        <tr key={order._id} className="hover:bg-gray-50">
+                                        <tr key={order._id} className="hover:bg-gray-50/50 transition-colors">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                #{order._id.slice(-6).toUpperCase()}
+                                            </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {order.shippingAddress?.name || 'N/A'}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {formatDate(order)}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm">{getStatusBadge(order.status)}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {order.items?.map((item) => (
-                                                    <div key={item._id || item.name} className="mb-1">
-                                                        {item.name} x {item.quantity}
-                                                    </div>
-                                                )) || 'N/A'}
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                {getStatusBadge(order.status)}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
                                                 {currency} {getAmount(order)}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
                                                 <Link
                                                     to={`/order/${order._id}`}
-                                                    className="text-emerald-600 hover:text-emerald-900 mr-3"
+                                                    className="text-emerald-600 hover:text-emerald-800 font-medium hover:underline"
                                                 >
                                                     View
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDeleteOrder(order._id)}
-                                                    className="text-red-600 hover:text-red-900"
+                                                    className="text-red-600 hover:text-red-800 font-medium hover:underline"
                                                 >
                                                     Delete
                                                 </button>
@@ -343,10 +343,14 @@ const OrdersPage = () => {
                                 ) : (
                                     <tr>
                                         <td
-                                            colSpan="7"
-                                            className="px-6 py-4 text-center text-sm text-gray-500"
+                                            colSpan="6"
+                                            className="px-6 py-8 text-center"
                                         >
-                                            No orders found matching your criteria
+                                            <div className="text-gray-500 flex flex-col items-center justify-center">
+                                                <FiSearch className="mb-2 text-gray-400" size={24} />
+                                                <p className="font-medium">No orders found</p>
+                                                <p className="text-sm mt-1">Try adjusting your search or filter criteria</p>
+                                            </div>
                                         </td>
                                     </tr>
                                 )}
@@ -355,32 +359,61 @@ const OrdersPage = () => {
                     </div>
 
                     {/* Pagination */}
-                    <div className="bg-gray-50 px-6 py-3 flex items-center justify-between border-t border-gray-200">
-                        <button
-                            onClick={goToPreviousPage}
-                            disabled={currentPage === 1}
-                            className={`px-3 py-1 rounded border ${currentPage === 1
-                                ? 'text-gray-400 border-gray-300 cursor-not-allowed'
-                                : 'text-gray-700 border-gray-500 hover:bg-gray-100'
-                                }`}
-                        >
-                            Previous
-                        </button>
+                    <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-200">
+                        <div className="text-sm text-gray-500">
+                            Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
+                            <span className="font-medium">{Math.min(startIndex + ordersPerPage, filteredOrders.length)}</span> of{' '}
+                            <span className="font-medium">{filteredOrders.length}</span> results
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <button
+                                onClick={goToPreviousPage}
+                                disabled={currentPage === 1}
+                                className={`p-2 rounded-md ${currentPage === 1
+                                    ? 'text-gray-300 cursor-not-allowed'
+                                    : 'text-gray-700 hover:bg-gray-100'
+                                    }`}
+                            >
+                                <FiChevronLeft size={18} />
+                            </button>
 
-                        <span className="text-gray-700">
-                            Page {currentPage} of {totalPages}
-                        </span>
+                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                let pageNum;
+                                if (totalPages <= 5) {
+                                    pageNum = i + 1;
+                                } else if (currentPage <= 3) {
+                                    pageNum = i + 1;
+                                } else if (currentPage >= totalPages - 2) {
+                                    pageNum = totalPages - 4 + i;
+                                } else {
+                                    pageNum = currentPage - 2 + i;
+                                }
 
-                        <button
-                            onClick={goToNextPage}
-                            disabled={currentPage === totalPages || totalPages === 0}
-                            className={`px-3 py-1 rounded border ${currentPage === totalPages || totalPages === 0
-                                ? 'text-gray-400 border-gray-300 cursor-not-allowed'
-                                : 'text-gray-700 border-gray-500 hover:bg-gray-100'
-                                }`}
-                        >
-                            Next
-                        </button>
+                                return (
+                                    <button
+                                        key={pageNum}
+                                        onClick={() => goToPage(pageNum)}
+                                        className={`w-10 h-10 rounded-md ${currentPage === pageNum
+                                            ? 'bg-emerald-600 text-white'
+                                            : 'text-gray-700 hover:bg-gray-100'
+                                            }`}
+                                    >
+                                        {pageNum}
+                                    </button>
+                                );
+                            })}
+
+                            <button
+                                onClick={goToNextPage}
+                                disabled={currentPage === totalPages || totalPages === 0}
+                                className={`p-2 rounded-md ${currentPage === totalPages || totalPages === 0
+                                    ? 'text-gray-300 cursor-not-allowed'
+                                    : 'text-gray-700 hover:bg-gray-100'
+                                    }`}
+                            >
+                                <FiChevronRight size={18} />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -389,8 +422,8 @@ const OrdersPage = () => {
                     isOpen={showDeleteModal}
                     onClose={() => setShowDeleteModal(false)}
                     onConfirm={confirmDelete}
-                    title="Delete Order"
-                    message="Are you sure you want to delete this order? This action cannot be undone."
+                    title="Confirm Order Deletion"
+                    message="This will permanently delete the order and all associated data. This action cannot be undone."
                 />
             </div>
         </div>

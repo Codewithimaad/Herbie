@@ -1,9 +1,89 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Edit, Trash2, X, Check, ChevronRight, Search } from 'lucide-react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { useAdmin } from '../context/AdminContext';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
+const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
+    const modalRef = useRef(null);
+    const [isClosing, setIsClosing] = useState(false);
+
+    // Focus trap for accessibility
+    useEffect(() => {
+        if (isOpen && modalRef.current) {
+            modalRef.current.focus();
+        }
+    }, [isOpen]);
+
+    const handleClose = () => {
+        setIsClosing(true);
+        setTimeout(() => {
+            onClose();
+            setIsClosing(false);
+        }, 300);
+    };
+
+    return (
+        <div
+            className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${isOpen && !isClosing ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                }`}
+            role="dialog"
+            aria-labelledby="modal-title"
+            aria-modal="true"
+        >
+            {/* Backdrop */}
+            <div
+                className={`absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity duration-300 ${isOpen && !isClosing ? 'opacity-100' : 'opacity-0'
+                    }`}
+                onClick={handleClose}
+            />
+
+            {/* Modal content */}
+            <div
+                ref={modalRef}
+                tabIndex={-1}
+                className={`bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative transform transition-all duration-300 ${isOpen && !isClosing ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+                    }`}
+            >
+                <div className="flex justify-between items-start mb-4">
+                    <h3 id="modal-title" className="text-xl font-semibold text-gray-900">
+                        {title}
+                    </h3>
+                    <button
+                        onClick={handleClose}
+                        className="text-gray-500 hover:text-gray-700 transition-colors duration-200 p-1 rounded-full hover:bg-gray-100"
+                        aria-label="Close modal"
+                    >
+                        <X size={20} />
+                    </button>
+                </div>
+                <p className="text-gray-600 mb-6 leading-relaxed">{message}</p>
+                <div className="flex justify-end space-x-3">
+                    <button
+                        onClick={handleClose}
+                        className="px-4 py-2 border border-gray-200 rounded-lg text-gray-700 bg-white hover:bg-gray-100 transition-colors duration-200 font-medium"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={() => {
+                            setIsClosing(true);
+                            setTimeout(() => {
+                                onConfirm();
+                                setIsClosing(false);
+                            }, 300);
+                        }}
+                        className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-200 font-medium shadow-sm"
+                    >
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const Categories = () => {
     const [categories, setCategories] = useState([]);
@@ -12,10 +92,12 @@ const Categories = () => {
     const [editValue, setEditValue] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(true);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [categoryToDelete, setCategoryToDelete] = useState(null);
+    const [deletingId, setDeletingId] = useState(null);
     const { backendUrl } = useAdmin();
 
-
-    // Fetch categories from backend
+    // Fetch categories
     useEffect(() => {
         const fetchCategories = async () => {
             try {
@@ -27,27 +109,24 @@ const Categories = () => {
                 setLoading(false);
             }
         };
-
         fetchCategories();
-    }, []);
+    }, [backendUrl]);
 
-    // Filter categories based on search
-    const filteredCategories = categories.filter(category =>
+    // Filter categories
+    const filteredCategories = categories.filter((category) =>
         category.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Add new category
+    // Add category
     const handleAddCategory = async () => {
         if (!newCategory.trim()) {
             toast.error('Category name cannot be empty');
             return;
         }
-
         try {
             const { data } = await axios.post(`${backendUrl}/api/category`, {
-                name: newCategory.trim()
+                name: newCategory.trim(),
             });
-
             setCategories([...categories, data]);
             setNewCategory('');
             toast.success('Category added successfully');
@@ -56,27 +135,29 @@ const Categories = () => {
         }
     };
 
+    // Start editing
+    const startEditing = (category) => {
+        setEditingId(category._id);
+        setEditValue(category.name);
+    };
+
     // Update category
     const handleUpdateCategory = async () => {
         if (!editValue.trim()) {
             toast.error('Category name cannot be empty');
             return;
         }
-
         try {
-            await axios.put(`/api/category/${editingId}`, {
-                name: editValue.trim()
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${localStorage.getItem('token')}`
-                }
+            await axios.put(`${backendUrl}/api/category/${editingId}`, {
+                name: editValue.trim(),
             });
-
-            setCategories(categories.map(cat =>
-                cat._id === editingId ? { ...cat, name: editValue.trim() } : cat
-            ));
+            setCategories(
+                categories.map((cat) =>
+                    cat._id === editingId ? { ...cat, name: editValue.trim() } : cat
+                )
+            );
             setEditingId(null);
+            setEditValue('');
             toast.success('Category updated successfully');
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to update category');
@@ -84,160 +165,190 @@ const Categories = () => {
     };
 
     // Delete category
-    const handleDeleteCategory = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this category?')) {
-            return;
-        }
+    const handleDeleteCategory = (id) => {
+        setCategoryToDelete(id);
+        setShowDeleteModal(true);
+    };
 
+    const confirmDelete = async () => {
+        if (!categoryToDelete) return;
         try {
-            await axios.delete(`${backendUrl}/api/category/${id}`);
+            setDeletingId(categoryToDelete);
+            await axios.delete(`${backendUrl}/api/category/${categoryToDelete}`);
 
-            setCategories(categories.filter(cat => cat._id !== id));
-            toast.success('Category deleted successfully');
+            // Wait for animation before removing from state
+            setTimeout(() => {
+                setCategories(categories.filter((cat) => cat._id !== categoryToDelete));
+                setDeletingId(null);
+                toast.success('Category deleted successfully');
+            }, 300);
         } catch (error) {
+            setDeletingId(null);
             toast.error(error.response?.data?.message || 'Failed to delete category');
         }
+        setShowDeleteModal(false);
+        setCategoryToDelete(null);
     };
 
     if (loading) {
         return (
-            <div className="bg-gray-50 min-h-screen md:p-6 lg:ml-72 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+            <div className="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8 lg:ml-72">
+                <div className="max-w-7xl mx-auto">
+                    <Skeleton height={48} width={300} className="mb-8 rounded-lg" />
+                    <Skeleton height={120} className="mb-8 rounded-xl shadow-sm" />
+                    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                        {[...Array(5)].map((_, i) => (
+                            <Skeleton key={i} height={60} className="border-b border-gray-200" />
+                        ))}
+                    </div>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="bg-gray-50 min-h-screen p-4 md:p-6 lg:ml-72">
-            {/* Header Section */}
-            <div className="mb-8">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="min-h-screen  py-12 px-4 sm:px-6 lg:px-8 lg:ml-72">
+            <div className="max-w-7xl mx-auto">
+                {/* Header Section */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Categories</h1>
-                        <p className="text-gray-500 mt-1">Manage your product categories</p>
+                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Categories</h1>
+                        <p className="text-sm text-gray-600 mt-2">Manage your product categories</p>
                     </div>
-
                     <div className="relative w-full md:w-64">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Search className="h-5 w-5 text-gray-400" />
+                            <Search className="h-5 w-5 text-gray-500" />
                         </div>
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all"
+                            className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg bg-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
                             placeholder="Search categories..."
                         />
                     </div>
                 </div>
-            </div>
 
-            {/* Add Category Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8 transition-all hover:shadow-md">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Create New Category</h2>
-                <div className="flex flex-col sm:flex-row gap-3">
-                    <input
-                        type="text"
-                        value={newCategory}
-                        onChange={(e) => setNewCategory(e.target.value)}
-                        placeholder="e.g. Sports Equipment"
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                        onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
-                    />
-                    <button
-                        onClick={handleAddCategory}
-                        className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-lg hover:from-indigo-700 hover:to-indigo-600 transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
-                    >
-                        <Plus size={18} strokeWidth={2.5} />
-                        Add Category
-                    </button>
-                </div>
-            </div>
-
-
-            {/* Categories List */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                {filteredCategories.length > 0 ? (
-                    <ul className="divide-y divide-gray-100">
-                        {filteredCategories.map((category) => (
-                            <li key={category._id} className="group hover:bg-gray-50/50 transition-colors">
-                                <div className="px-6 py-4">
-                                    {editingId === category._id ? (
-                                        <div className="flex items-center gap-3">
-                                            <input
-                                                type="text"
-                                                value={editValue}
-                                                onChange={(e) => setEditValue(e.target.value)}
-                                                className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                                                autoFocus
-                                                onKeyPress={(e) => e.key === 'Enter' && handleUpdateCategory()}
-                                            />
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={handleUpdateCategory}
-                                                    className="p-2 text-white bg-green-500 hover:bg-green-600 rounded-lg transition-colors"
-                                                    title="Save"
-                                                >
-                                                    <Check size={18} strokeWidth={2.5} />
-                                                </button>
-                                                <button
-                                                    onClick={() => setEditingId(null)}
-                                                    className="p-2 text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
-                                                    title="Cancel"
-                                                >
-                                                    <X size={18} strokeWidth={2.5} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
-                                                    <span className="font-medium text-sm">
-                                                        {category.name.charAt(0).toUpperCase()}
-                                                    </span>
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-medium text-gray-900">{category.name}</h3>
-                                                    <p className="text-sm text-gray-500">{category.productCount || 0} products</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button
-                                                        onClick={() => startEditing(category)}
-                                                        className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                                                        title="Edit"
-                                                    >
-                                                        <Edit size={18} strokeWidth={2} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteCategory(category._id)}
-                                                        className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        title="Delete"
-                                                    >
-                                                        <Trash2 size={18} strokeWidth={2} />
-                                                    </button>
-                                                </div>
-                                                <ChevronRight className="h-5 w-5 text-gray-400" />
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <div className="p-12 text-center">
-                        <div className="mx-auto h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                            <Search className="h-6 w-6 text-gray-400" />
-                        </div>
-                        <h3 className="text-lg font-medium text-gray-900">No categories found</h3>
-                        <p className="mt-1 text-sm text-gray-500">
-                            {searchQuery ? 'Try a different search term' : 'Create your first category above'}
-                        </p>
+                {/* Add Category Card */}
+                <div className="bg-white rounded-xl shadow-lg p-6 mb-8 transition-shadow hover:shadow-xl">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Create New Category</h2>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <input
+                            type="text"
+                            value={newCategory}
+                            onChange={(e) => setNewCategory(e.target.value)}
+                            placeholder="e.g. Sports Equipment"
+                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
+                            onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
+                        />
+                        <button
+                            onClick={handleAddCategory}
+                            className="w-full sm:w-auto px-5 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-lg hover:from-indigo-700 hover:to-indigo-800 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
+                        >
+                            <Plus size={18} strokeWidth={2.5} />
+                            Add Category
+                        </button>
                     </div>
-                )}
+                </div>
+
+                {/* Categories List */}
+                <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                    {filteredCategories.length > 0 ? (
+                        <ul className="divide-y divide-gray-200">
+                            {filteredCategories.map((category, index) => (
+                                <li
+                                    key={category._id}
+                                    className={`group transition-all duration-300 ${deletingId === category._id ? 'opacity-0 max-h-0 overflow-hidden' : 'opacity-100 max-h-40'}`}
+                                    style={{ transitionDelay: deletingId === category._id ? '0ms' : `${index * 50}ms` }}
+                                >
+                                    <div className="px-6 py-4">
+                                        {editingId === category._id ? (
+                                            <div className="flex items-center gap-3">
+                                                <input
+                                                    type="text"
+                                                    value={editValue}
+                                                    onChange={(e) => setEditValue(e.target.value)}
+                                                    className="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
+                                                    autoFocus
+                                                    onKeyPress={(e) => e.key === 'Enter' && handleUpdateCategory()}
+                                                />
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={handleUpdateCategory}
+                                                        className="p-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200"
+                                                        title="Save"
+                                                    >
+                                                        <Check size={18} strokeWidth={2.5} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            setEditingId(null);
+                                                            setEditValue('');
+                                                        }}
+                                                        className="p-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200"
+                                                        title="Cancel"
+                                                    >
+                                                        <X size={18} strokeWidth={2.5} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center text-indigo-700 font-medium">
+                                                        {category.name.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="font-semibold text-gray-900">{category.name}</h3>
+                                                        <p className="text-sm text-gray-600">{category.productCount || 0} products</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                                        <button
+                                                            onClick={() => startEditing(category)}
+                                                            className="p-2 text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-all duration-200"
+                                                            title="Edit"
+                                                        >
+                                                            <Edit size={18} strokeWidth={2} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteCategory(category._id)}
+                                                            className="p-2 text-gray-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
+                                                            title="Delete"
+                                                        >
+                                                            <Trash2 size={18} strokeWidth={2} />
+                                                        </button>
+                                                    </div>
+                                                    <ChevronRight className="h-5 w-5 text-gray-400" />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <div className="p-12 text-center">
+                            <div className="mx-auto h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                <Search className="h-6 w-6 text-gray-500" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900">No Categories Found</h3>
+                            <p className="mt-2 text-sm text-gray-600">
+                                {searchQuery ? 'Try a different search term' : 'Create your first category above'}
+                            </p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Delete Confirmation Modal */}
+                <ConfirmationModal
+                    isOpen={showDeleteModal}
+                    onClose={() => setShowDeleteModal(false)}
+                    onConfirm={confirmDelete}
+                    title="Delete Category"
+                    message="Are you sure you want to delete this category? This action cannot be undone."
+                />
             </div>
         </div>
     );

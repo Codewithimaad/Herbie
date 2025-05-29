@@ -219,7 +219,7 @@ const Home = () => {
     }
 
     return (
-        <main className="min-h-screen text-sm md:text-lg bg-gray-50 p-2 lg:p-8 lg:ml-64 overflow-y-auto">
+        <main className="min-h-screen text-sm md:text-lg bg-gray-50 p-4 lg:p-8 lg:ml-64 overflow-y-auto">
             <div className="max-w-6xl mx-auto space-y-8">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
