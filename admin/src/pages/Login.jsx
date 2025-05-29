@@ -46,7 +46,6 @@ export default function Login() {
         const { email, password } = formData;
         const result = await loginAdmin(email, password);
         if (result.success) {
-            toast.success('Logged in successfully!');
             navigate('/');
         } else {
             toast.error(result.error || 'Login failed');
