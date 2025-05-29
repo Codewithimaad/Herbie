@@ -7,6 +7,7 @@ const AdminContext = createContext();
 
 export const AdminProvider = ({ children }) => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    const frontendUrl = import.meta.env.VITE_FRONTEND_URL;
     const navigate = useNavigate();
 
     const [orders, setOrders] = useState([]);
@@ -332,6 +333,7 @@ export const AdminProvider = ({ children }) => {
         <AdminContext.Provider
             value={{
                 backendUrl,
+                frontendUrl,
                 orders,
                 loadingOrders,
                 ordersError,
