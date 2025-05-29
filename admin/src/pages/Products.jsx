@@ -13,7 +13,7 @@ const Products = () => {
     const productsPerPage = 8;
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const { backendUrl } = useAdmin();
+    const { backendUrl, currency } = useAdmin();
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -146,7 +146,7 @@ const Products = () => {
                                                 <div className="text-sm text-gray-700 capitalize">{product.category}</div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-700">${parseFloat(product.price).toFixed(2)}</div>
+                                                <div className="text-sm text-gray-700">{currency} {parseFloat(product.price).toFixed(2)}</div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <span
