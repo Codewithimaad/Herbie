@@ -231,7 +231,7 @@ const AnalyticsDashboard = () => {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                 <Link
-                                                    to={`${frontendUrl} /product/${product.productId} `}
+                                                    to={`${frontendUrl}/product/${product.productId}`}
                                                     className="text-indigo-600 hover:text-indigo-800 inline-flex items-center font-medium transition-colors duration-200"
                                                 >
                                                     View Product
@@ -289,7 +289,7 @@ const AnalyticsDashboard = () => {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                 <Link
-                                                    to={`${frontendUrl} /product/${product.productId} `}
+                                                    to={`${frontendUrl}/product/${product.productId}`}
                                                     className="text-indigo-600 hover:text-indigo-800 inline-flex items-center font-medium transition-colors duration-200"
                                                 >
                                                     View Product
