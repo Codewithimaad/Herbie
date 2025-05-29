@@ -15,6 +15,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AllAdmins from './pages/AllAdmins';
 import FAQsPage from './pages/FaQsPage';
 import AccountPage from './pages/AccountPage';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 
 function App() {
@@ -26,6 +28,8 @@ function App() {
       <main className="flex-1">
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
 
           <Route
             path=""

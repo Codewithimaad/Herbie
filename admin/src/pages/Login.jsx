@@ -1,119 +1,144 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Lock, Mail } from 'lucide-react';
-import { toast } from 'react-toastify';
-import { useAdmin } from '../context/AdminContext'; // Adjust path if needed
-import { useEffect } from 'react';
-
+import { Mail, Lock, Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useAdmin } from '../context/AdminContext';
 
 export default function Login() {
     const [formData, setFormData] = useState({ email: '', password: '' });
-    const [errors, setErrors] = useState({});
+    const [errors, setErrors] = useState({ email: '', password: '' });
     const navigate = useNavigate();
     const { loginAdmin, loadingAuth, token } = useAdmin();
 
     useEffect(() => {
         if (token) {
-            // Check if the user *manually navigated* to the login page while already logged in
-            if (location.pathname === '/login') {
-                toast.success('You are already logged in');
-            }
             navigate('/');
         }
-    }, [token]);
+    }, [token, navigate]);
 
-
-    const validateForm = () => {
-        const newErrors = {};
-        if (!formData.email) newErrors.email = 'Email is required';
-        if (!formData.password) newErrors.password = 'Password is required';
-        if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            newErrors.email = 'Invalid email format';
+    const validateField = (name, value) => {
+        let error = '';
+        if (name === 'email') {
+            if (!value) error = 'Email is required';
+            else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) error = 'Invalid email format';
         }
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        if (name === 'password') {
+            if (!value) error = 'Password is required';
+            else if (value.length < 6) error = 'Password must be at least 6 characters';
+        }
+        return error;
     };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
+        setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!validateForm()) return;
+        const newErrors = {
+            email: validateField('email', formData.email),
+            password: validateField('password', formData.password),
+        };
+        setErrors(newErrors);
+        if (newErrors.email || newErrors.password) return;
 
         const { email, password } = formData;
         const result = await loginAdmin(email, password);
         if (result.success) {
             navigate('/');
         } else {
-            toast.error(result.error || 'Login failed');
+            setErrors((prev) => ({ ...prev, password: result.error || 'Invalid email or password' }));
         }
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-green-100 via-purple-100 to-pink-100 flex items-center justify-center p-4">
-            <div className="w-full max-w-md md:bg-white/30 md:backdrop-blur-lg md:rounded-2xl md:shadow-xl p-8 md:border border-white/20">
+        <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-emerald-100 flex items-center justify-center p-4 font-poppins">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+                className="w-full max-w-md  bg-white/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/30 p-8"
+            >
                 <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Admin Portal</h1>
-                    <p className="text-gray-600 mt-2 text-sm">Sign in to manage your dashboard</p>
+                    <motion.h1
+                        initial={{ scale: 0.9 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 0.4 }}
+                        className="text-4xl font-bold text-gray-800 tracking-tight"
+                    >
+                        Admin Portal
+                    </motion.h1>
+                    <p className="mt-3 text-sm text-gray-500 font-medium">
+                        Sign in to manage your dashboard
+                    </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="relative">
+                        <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            className={`peer w-full px-4 py-3 bg-transparent border rounded-lg focus:ring-2 focus:border-indigo-400 transition-all duration-300 placeholder-transparent ${errors.email ? 'border-red-500 focus:ring-red-400' : 'border-gray-200 focus:ring-indigo-400'
+                                }`}
+                            placeholder="Email Address"
+                        />
                         <label
                             htmlFor="email"
-                            className={`absolute -top-2 left-2 inline-block bg-white/80 px-1 text-xs font-medium text-gray-700 transition-all duration-300 ${formData.email ? 'text-indigo-600' : ''
-                                }`}
+                            className={`absolute left-4 top-3 text-gray-500 text-sm transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-6 peer-focus:text-sm peer-focus:text-indigo-600 ${errors.email ? 'text-red-600' : ''
+                                } ${formData.email ? '-top-6 text-sm text-indigo-600' : ''}`}
                         >
                             Email Address
                         </label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Mail className="h-5 w-5 text-gray-400" />
-                            </div>
-                            <input
-                                id="email"
-                                name="email"
-                                type="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className={`block w-full pl-10 pr-3 py-3 bg-white/50 border ${errors.email ? 'border-red-400' : 'border-gray-200'
-                                    } rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 placeholder-gray-400 text-gray-900`}
-                                placeholder="Email"
-                            />
-                        </div>
+                        <Mail
+                            className={`absolute right-4 top-3.5 ${errors.email ? 'text-red-500' : 'text-gray-400'}`}
+                            size={18}
+                        />
                         {errors.email && (
-                            <p className="mt-1 text-xs text-red-500 animate-pulse">{errors.email}</p>
+                            <motion.p
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="mt-1 text-sm text-red-600 font-medium"
+                            >
+                                {errors.email}
+                            </motion.p>
                         )}
                     </div>
 
                     <div className="relative">
+                        <input
+                            id="password"
+                            name="password"
+                            type="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            className={`peer w-full px-4 py-3 bg-transparent border rounded-lg focus:ring-2 focus:border-indigo-400 transition-all duration-300 placeholder-transparent ${errors.password ? 'border-red-500 focus:ring-red-400' : 'border-gray-200 focus:ring-indigo-400'
+                                }`}
+                            placeholder="Password"
+                        />
                         <label
                             htmlFor="password"
-                            className={`absolute -top-2 left-2 inline-block bg-white/80 px-1 text-xs font-medium text-gray-700 transition-all duration-300 ${formData.password ? 'text-indigo-600' : ''
-                                }`}
+                            className={`absolute left-4 top-3 text-gray-500 text-sm transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-6 peer-focus:text-sm peer-focus:text-indigo-600 ${errors.password ? 'text-red-600' : ''
+                                } ${formData.password ? '-top-6 text-sm text-indigo-600' : ''}`}
                         >
                             Password
                         </label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Lock className="h-5 w-5 text-gray-400" />
-                            </div>
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                className={`block w-full pl-10 pr-3 py-3 bg-white/50 border ${errors.password ? 'border-red-400' : 'border-gray-200'
-                                    } rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 placeholder-gray-400 text-gray-900`}
-                                placeholder="••••••••"
-                            />
-                        </div>
+                        <Lock
+                            className={`absolute right-4 top-3.5 ${errors.password ? 'text-red-500' : 'text-gray-400'}`}
+                            size={18}
+                        />
                         {errors.password && (
-                            <p className="mt-1 text-xs text-red-500 animate-pulse">{errors.password}</p>
+                            <motion.p
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="mt-1 text-sm text-red-600 font-medium"
+                            >
+                                {errors.password}
+                            </motion.p>
                         )}
                     </div>
 
@@ -125,55 +150,38 @@ export default function Login() {
                                 type="checkbox"
                                 className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded transition-all duration-200"
                             />
-                            <label htmlFor="remember-me" className="ml-2 text-sm text-gray-600">
+                            <label htmlFor="remember-me" className="ml-2 text-sm text-gray-600 font-medium">
                                 Remember me
                             </label>
                         </div>
-
                         <Link
                             to="/forgot-password"
-                            className="text-sm text-indigo-600 hover:text-indigo-500 transition-colors duration-200"
+                            className="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200"
                         >
                             Forgot password?
                         </Link>
                     </div>
 
-                    <button
+                    <motion.button
                         type="submit"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         disabled={loadingAuth}
-                        className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 ${loadingAuth ? 'opacity-60 cursor-not-allowed' : ''
+                        className={`relative w-full flex justify-center py-3 px-4 rounded-lg font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden ${loadingAuth ? 'animate-pulse' : ''
                             }`}
                     >
                         {loadingAuth ? (
                             <>
-                                <svg
-                                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <circle
-                                        className="opacity-25"
-                                        cx="12"
-                                        cy="12"
-                                        r="10"
-                                        stroke="currentColor"
-                                        strokeWidth="4"
-                                    ></circle>
-                                    <path
-                                        className="opacity-75"
-                                        fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                    ></path>
-                                </svg>
+                                <Loader2 className="animate-spin mr-2" size={20} />
                                 Signing in...
                             </>
                         ) : (
                             'Sign in'
                         )}
-                    </button>
+                        <div className="absolute inset-0 bg-white opacity-0 hover:opacity-10 transition-opacity duration-300" />
+                    </motion.button>
                 </form>
-            </div>
+            </motion.div>
         </div>
     );
 }

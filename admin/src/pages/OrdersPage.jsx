@@ -192,11 +192,11 @@ const OrdersPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50/50 p-4 md:p-6 lg:ml-72">
-            <div className="max-w-7xl mx-auto space-y-6">
+        <div className="min-h-scree p-4 md:p-6 lg:ml-72">
+            <div className="max-w-7xl mx-auto space-y-6 rounded-md shadow-2xl">
                 {/* Page Header */}
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div>
+                    <div className='p-6'>
                         <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Order Management</h1>
                         <p className="text-gray-500 mt-1">Track and manage customer orders</p>
                     </div>

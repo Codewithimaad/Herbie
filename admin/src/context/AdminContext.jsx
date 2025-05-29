@@ -261,7 +261,6 @@ export const AdminProvider = ({ children }) => {
         setAdmins([]);
         localStorage.removeItem('adminToken');
         navigate('/login');
-        toast.success('Logged out');
     };
 
     const addAdmin = async (adminData) => {
@@ -273,7 +272,6 @@ export const AdminProvider = ({ children }) => {
                 },
             });
             setAdmins((prevAdmins) => [...prevAdmins, data.admin]);
-            toast.success('Admin added successfully');
             return { success: true, admin: data.admin };
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to add admin');
@@ -294,7 +292,6 @@ export const AdminProvider = ({ children }) => {
                 },
             });
             setAdmins((prevAdmins) => prevAdmins.filter((admin) => admin._id !== id));
-            toast.success('Admin deleted successfully');
             if (admin && admin._id === id) {
                 logoutAdmin();
             }

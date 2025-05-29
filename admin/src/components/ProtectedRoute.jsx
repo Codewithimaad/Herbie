@@ -13,7 +13,6 @@ const ProtectedRoute = ({ children }) => {
         // Delay slightly to avoid showing warning during redirect to login
         if (!token && location.pathname !== '/login') {
             const timer = setTimeout(() => {
-                toast.error('Not authorized. Please login first.');
                 navigate('/login', { replace: true });
             }, 300); // short delay
 

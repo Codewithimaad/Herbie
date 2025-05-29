@@ -41,7 +41,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
             )}
 
             <aside
-                className={`fixed inset-y-0 left-0 w-72  transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                className={`fixed inset-y-0 left-0 w-72 bg-white  transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
                     } lg:translate-x-0 transition-transform duration-300 ease-in-out z-40 shadow-xl flex flex-col`}
             >
                 {/* Header */}
