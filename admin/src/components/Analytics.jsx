@@ -182,7 +182,7 @@ const AnalyticsDashboard = () => {
                                     <UserGroupIcon className="h-6 w-6 text-indigo-600" />
                                 </div>
                                 <div className="ml-5 w-0 flex-1">
-                                    <dt className="text-sm font-medium text-gray-600 truncate">Active Users</dt>
+                                    <dt className="text-sm font-medium text-gray-600 truncate">Visited Users</dt>
                                     <dd className="flex items-baseline">
                                         <div className="text-2xl font-bold text-gray-900">
                                             {analytics.activeUsers.toLocaleString()}
