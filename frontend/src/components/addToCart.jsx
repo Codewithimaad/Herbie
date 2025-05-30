@@ -40,8 +40,8 @@ export default function AddToCartButton({ id, quantity, name, price, size = 'med
 
     // Size-specific styles
     const sizeStyles = {
-        small: 'px-2 py-2 text-xs',
-        medium: 'px-6 py-3 text-base',
+        small: 'px-3 py-3 text-sm',
+        medium: 'px-24 py-3 text-base',
         large: 'px-8 py-4 text-lg',
     };
 

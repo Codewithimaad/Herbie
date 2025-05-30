@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 import { motion } from 'framer-motion';
+import logo from '../assets/images/Logo.png'
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
@@ -54,17 +55,29 @@ const ForgotPassword = () => {
                 transition={{ duration: 0.6, ease: 'easeOut' }}
                 className="max-w-md w-full bg-white/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/30 p-8"
             >
+                <motion.div
+                    initial={{ scale: 0.9 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.4 }}
+                    className="mb-4"
+                >
+                    <img
+                        src={logo} // Replace with actual logo path or URL
+                        alt="Website Logo"
+                        className="mx-auto h-16 w-auto object-contain"
+                    />
+                </motion.div>
                 <div className="text-center">
                     <motion.h2
                         initial={{ scale: 0.9 }}
                         animate={{ scale: 1 }}
                         transition={{ duration: 0.4 }}
-                        className="text-4xl font-bold text-gray-800 flex items-center justify-center gap-3"
+                        className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center justify-center gap-3"
                     >
                         <FiMail className="text-indigo-600" size={30} />
                         Forgot Password
                     </motion.h2>
-                    <p className="mt-3 text-sm text-gray-500 font-medium">
+                    <p className="mt-5 text-sm text-gray-500 font-medium">
                         Enter your email to receive a password reset link
                     </p>
                     {status === 'success' && (
@@ -89,21 +102,24 @@ const ForgotPassword = () => {
                                 setEmail(e.target.value);
                                 if (errors.email) setErrors({ email: '' });
                             }}
-                            className={`peer w-full px-4 py-3 bg-transparent border rounded-lg focus:ring-2 focus:border-indigo-400 transition-all duration-300 placeholder-transparent ${errors.email
+                            className={`peer w-full px-4 py-3 pl-11 bg-transparent border rounded-lg focus:ring-2 focus:border-indigo-400 transition-all duration-300 ${errors.email
                                 ? 'border-red-500 focus:ring-red-400'
                                 : 'border-gray-200 focus:ring-indigo-400'
                                 }`}
-                            placeholder="Email Address"
+                            placeholder=" " // Important: Single space for floating label
                         />
                         <label
                             htmlFor="email"
-                            className={`absolute left-4 top-3 text-gray-500 text-sm transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-6 peer-focus:text-sm peer-focus:text-indigo-600 ${errors.email ? 'text-red-600' : ''
-                                } ${email ? '-top-6 text-sm text-indigo-600' : ''}`}
+                            className={`absolute left-11 transition-all duration-300 pointer-events-none ${email || errors.email
+                                ? '-top-6 text-sm text-indigo-600'
+                                : 'top-3 text-gray-500 peer-focus:-top-6 peer-focus:text-sm peer-focus:text-indigo-600'
+                                } ${errors.email ? 'text-red-600' : ''
+                                }`}
                         >
                             Email Address
                         </label>
                         <FiMail
-                            className={`absolute right-4 top-3.5 ${errors.email ? 'text-red-500' : 'text-gray-400'
+                            className={`absolute left-4 top-3.5 ${errors.email ? 'text-red-500' : 'text-gray-400'
                                 }`}
                             size={18}
                         />

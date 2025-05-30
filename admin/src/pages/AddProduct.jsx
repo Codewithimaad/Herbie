@@ -7,7 +7,6 @@ import {
 import { Loader2, Check } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 import { FaMoneyBillWave } from 'react-icons/fa';
-import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
 const AddProduct = () => {
@@ -27,10 +26,54 @@ const AddProduct = () => {
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [uploadError, setUploadError] = useState('');
     const [status, setStatus] = useState('idle');
+    const [errors, setErrors] = useState({});
+    const [formError, setFormError] = useState('');
+
+    const validateField = (name, value) => {
+        let error = '';
+
+        switch (name) {
+            case 'name':
+                if (!value.trim()) error = 'Product name is required';
+                else if (value.length > 100) error = 'Name must be less than 100 characters';
+                break;
+            case 'price':
+                if (!value) error = 'Price is required';
+                else if (isNaN(value) || parseFloat(value) <= 0) error = 'Price must be a positive number';
+                break;
+            case 'inStock':
+                if (!value) error = 'Stock quantity is required';
+                else if (isNaN(value) || parseInt(value) < 0) error = 'Stock must be a positive integer';
+                break;
+            case 'category':
+                if (!value) error = 'Category is required';
+                break;
+            case 'description':
+                if (!value.trim()) error = 'Description is required';
+                else if (value.length > 2000) error = 'Description must be less than 2000 characters';
+                break;
+            default:
+                break;
+        }
+
+        return error;
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setProduct((prev) => ({ ...prev, [name]: value }));
+
+        // Validate on change but don't show error until blur
+        if (errors[name]) {
+            const error = validateField(name, value);
+            setErrors(prev => ({ ...prev, [name]: error }));
+        }
+    };
+
+    const handleBlur = (e) => {
+        const { name, value } = e.target;
+        const error = validateField(name, value);
+        setErrors(prev => ({ ...prev, [name]: error }));
     };
 
     const handleCheckboxChange = (e) => {
@@ -41,6 +84,7 @@ const AddProduct = () => {
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
         setUploadError('');
+        setFormError('');
 
         if (files.length + selectedFiles.length > 5) {
             setUploadError('Maximum 5 images allowed');
@@ -56,9 +100,6 @@ const AddProduct = () => {
                 setUploadError('Image size exceeds 2MB limit');
                 return false;
             }
-            if (files.length + selectedFiles.length > 5) {
-                setUploadError('Maximum 5 images allowed');
-            }
             return true;
         });
 
@@ -70,15 +111,40 @@ const AddProduct = () => {
     const removeImage = (index) => {
         setPreviewImages((prev) => prev.filter((_, i) => i !== index));
         setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+        setUploadError('');
+    };
+
+    const validateForm = () => {
+        const newErrors = {};
+        let isValid = true;
+
+        // Validate all fields
+        Object.keys(product).forEach(key => {
+            if (key !== 'isOrganic' && key !== 'bestSeller' && key !== 'newArrival') {
+                const error = validateField(key, product[key]);
+                if (error) {
+                    newErrors[key] = error;
+                    isValid = false;
+                }
+            }
+        });
+
+        // Validate images
+        if (selectedFiles.length === 0) {
+            setFormError('Please upload at least one image');
+            isValid = false;
+        } else {
+            setFormError('');
+        }
+
+        setErrors(newErrors);
+        return isValid;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (selectedFiles.length === 0) {
-            toast.error('Please upload at least one image', {
-                className: 'rounded-lg shadow-lg bg-red-50 text-red-800',
-                bodyClassName: 'text-sm',
-            });
+
+        if (!validateForm()) {
             return;
         }
 
@@ -115,11 +181,18 @@ const AddProduct = () => {
             }, 2000);
         } catch (err) {
             console.error('Add product failed:', err);
-            const msg = err.response?.data?.message || 'Failed to add product';
-            toast.error(msg, {
-                className: 'rounded-lg shadow-lg bg-red-50 text-red-800',
-                bodyClassName: 'text-sm',
-            });
+
+            // Handle backend validation errors
+            if (err.response?.data?.errors) {
+                const backendErrors = {};
+                err.response.data.errors.forEach(error => {
+                    backendErrors[error.path] = error.msg;
+                });
+                setErrors(backendErrors);
+            } else {
+                setFormError(err.response?.data?.message || 'Failed to add product. Please try again.');
+            }
+
             setStatus('idle');
         }
     };
@@ -137,6 +210,12 @@ const AddProduct = () => {
                     </div>
 
                     <form onSubmit={handleSubmit} className="p-8 space-y-8">
+                        {formError && (
+                            <div className="p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
+                                {formError}
+                            </div>
+                        )}
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="md:col-span-2">
                                 <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
@@ -147,10 +226,11 @@ const AddProduct = () => {
                                     name="name"
                                     value={product.name}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition-all duration-200 placeholder-gray-500 animate-slide-in"
+                                    onBlur={handleBlur}
+                                    className={`w-full px-4 py-3 rounded-lg border ${errors.name ? 'border-red-500' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition-all duration-200 placeholder-gray-500`}
                                     placeholder="Enter product name"
-                                    required
                                 />
+                                {errors.name && <p className="text-sm text-red-600 mt-1">{errors.name}</p>}
                             </div>
 
                             <div>
@@ -164,13 +244,14 @@ const AddProduct = () => {
                                         name="price"
                                         value={product.price}
                                         onChange={handleChange}
-                                        className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition-all duration-200 placeholder-gray-500 animate-slide-in"
+                                        onBlur={handleBlur}
+                                        className={`w-full pl-12 pr-4 py-3 rounded-lg border ${errors.price ? 'border-red-500' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition-all duration-200 placeholder-gray-500`}
                                         placeholder="0.00"
                                         min="0"
                                         step="0.01"
-                                        required
                                     />
                                 </div>
+                                {errors.price && <p className="text-sm text-red-600 mt-1">{errors.price}</p>}
                             </div>
 
                             <div>
@@ -182,11 +263,12 @@ const AddProduct = () => {
                                     name="inStock"
                                     value={product.inStock}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition-all duration-200 placeholder-gray-500 animate-slide-in"
+                                    onBlur={handleBlur}
+                                    className={`w-full px-4 py-3 rounded-lg border ${errors.inStock ? 'border-red-500' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition-all duration-200 placeholder-gray-500`}
                                     placeholder="Available quantity"
                                     min="0"
-                                    required
                                 />
+                                {errors.inStock && <p className="text-sm text-red-600 mt-1">{errors.inStock}</p>}
                             </div>
 
                             <div className="md:col-span-2">
@@ -198,8 +280,8 @@ const AddProduct = () => {
                                         name="category"
                                         value={product.category || ''}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition-all duration-200 text-gray-700 placeholder-gray-500 appearance-none animate-slide-in"
-                                        required
+                                        onBlur={handleBlur}
+                                        className={`w-full px-4 py-3 rounded-lg border ${errors.category ? 'border-red-500' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition-all duration-200 text-gray-700 placeholder-gray-500 appearance-none`}
                                     >
                                         <option value="">Select a category</option>
                                         {categories?.map((category) => (
@@ -214,6 +296,7 @@ const AddProduct = () => {
                                         </svg>
                                     </div>
                                 </div>
+                                {errors.category && <p className="text-sm text-red-600 mt-1">{errors.category}</p>}
                             </div>
 
                             <div className="md:col-span-2">
@@ -224,11 +307,12 @@ const AddProduct = () => {
                                     name="description"
                                     value={product.description}
                                     onChange={handleChange}
+                                    onBlur={handleBlur}
                                     rows="5"
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition-all duration-200 placeholder-gray-500 resize-none animate-slide-in"
+                                    className={`w-full px-4 py-3 rounded-lg border ${errors.description ? 'border-red-500' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition-all duration-200 placeholder-gray-500 resize-none`}
                                     placeholder="Describe your product in detail..."
-                                    required
                                 />
+                                {errors.description && <p className="text-sm text-red-600 mt-1">{errors.description}</p>}
                             </div>
 
                             <div className="md:col-span-2 flex flex-wrap gap-6">
@@ -257,7 +341,7 @@ const AddProduct = () => {
                                 {previewImages.length > 0 && (
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6">
                                         {previewImages.map((img, index) => (
-                                            <div key={index} className="relative group rounded-lg overflow-hidden shadow-sm animate-slide-in">
+                                            <div key={index} className="relative group rounded-lg overflow-hidden shadow-sm">
                                                 <img
                                                     src={img}
                                                     alt={`Preview ${index}`}
@@ -293,7 +377,10 @@ const AddProduct = () => {
                                     />
                                 </label>
                                 {uploadError && (
-                                    <p className="text-sm text-red-600 mt-2 animate-slide-in">{uploadError}</p>
+                                    <p className="text-sm text-red-600 mt-2">{uploadError}</p>
+                                )}
+                                {formError && selectedFiles.length === 0 && (
+                                    <p className="text-sm text-red-600 mt-2">{formError}</p>
                                 )}
                             </div>
                         </div>

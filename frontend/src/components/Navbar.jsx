@@ -358,16 +358,19 @@ const Navbar = () => {
                         )}
 
                         <Link
-                            to='/cart'
-                            className="relative flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white p-2 px-4 py-3 rounded-lg transition-all"
+                            to="/cart"
+                            className="flex items-center text-gray-700 py-3 rounded-lg transition-all hover:bg-gray-100"
                         >
-                            <FiShoppingCart size={15} />
-                            {cartProductCount > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                                    {cartProductCount}
-                                </span>
-                            )}
+                            <div className="relative">
+                                <FiShoppingCart size={28} />
+                                {cartProductCount > 0 && (
+                                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                        {cartProductCount}
+                                    </span>
+                                )}
+                            </div>
                         </Link>
+
 
                         <button
                             className="lg:hidden text-green-800 p-2"

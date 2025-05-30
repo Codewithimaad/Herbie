@@ -18,6 +18,7 @@ import categoryRoutes from './routes/categoryRoutes.js'
 import adminLoginRoutes from './routes/adminLoginRoutes.js'
 import faQsRoutes from './routes/faQsRoutes.js'
 import analyticsRoutes from './routes/analyticsRoutes.js'
+import contactRoutes from './routes/contactRoute.js'
 import { notFound, errorHandler } from './middlewares/errorMiddlewares.js';
 
 // Load environment variables FIRST
@@ -65,6 +66,7 @@ app.use('/api/category', categoryRoutes)
 app.use('/api/admins', adminLoginRoutes);
 app.use('/api/faqs', faQsRoutes)
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/contact', contactRoutes);
 
 
 

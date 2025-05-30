@@ -12,7 +12,7 @@ const NewArrivals = () => {
 
     // Filter and get the 8 newest products (sorted by createdAt date)
     const newArrivals = products
-        .filter(product => product.isNew)
+        .filter(product => product.isNewArrival)
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 8);
 

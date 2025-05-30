@@ -157,12 +157,12 @@ export default function Cart() {
     }
 
     return (
-        <section className="max-w-7xl mx-auto px-0 sm:px-6 py-12">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
             <motion.h2
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.3 }}
-                className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-8 sm:mb-10 tracking-tight"
+                className="text-2xl md:text-3xl text-center font-extrabold text-green-700 mb-8 sm:mb-10 tracking-tight"
             >
                 Your Shopping Cart
             </motion.h2>

@@ -1,21 +1,36 @@
 import { useState } from 'react';
+import axios from 'axios';
 import HeadingText from '../components/HeadingText';
+import { useAuth } from '../context/authContext'
 
 export default function Contact() {
+    const { backendUrl } = useAuth();
     const [form, setForm] = useState({
         name: '',
         email: '',
         subject: '',
         message: '',
     });
+    const [status, setStatus] = useState('idle');
+    const [error, setError] = useState('');
 
     const handleChange = (e) =>
         setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        alert(`Thank you, ${form.name}! Your message has been received.`);
-        setForm({ name: '', email: '', subject: '', message: '' });
+        setStatus('loading');
+        setError('');
+
+        try {
+            await axios.post(`${backendUrl}/api/contact`, form);
+            setStatus('success');
+            setForm({ name: '', email: '', subject: '', message: '' });
+            setTimeout(() => setStatus('idle'), 3000);
+        } catch (err) {
+            setStatus('idle');
+            setError(err.response?.data?.message || 'Failed to send message. Please try again.');
+        }
     };
 
     return (
@@ -106,11 +121,22 @@ export default function Contact() {
                         ></textarea>
                     </div>
 
+                    {error && (
+                        <p className="text-sm text-red-600 mb-4">{error}</p>
+                    )}
+                    {status === 'success' && (
+                        <p className="text-sm text-green-600 mb-4">
+                            Thank you, {form.name}! Your message has been sent.
+                        </p>
+                    )}
+
                     <button
                         type="submit"
-                        className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-[1.01] focus:ring-4 focus:ring-green-200"
+                        disabled={status === 'loading'}
+                        className={`w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-[1.01] focus:ring-4 focus:ring-green-200 ${status === 'loading' ? 'opacity-60 cursor-not-allowed' : ''
+                            }`}
                     >
-                        Send Message
+                        {status === 'loading' ? 'Sending...' : 'Send Message'}
                     </button>
                 </form>
 
@@ -123,11 +149,7 @@ export default function Contact() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                             </svg>
                             <span>
-                                <strong>Phone:</strong> <br />
-                                <a href="tel:+1234567890" className="text-green-600 hover:underline">
-                                    +1 (234) 567-890
-                                </a>
-                                <br />
+                                <strong>Phone:</strong><br />
                                 <a href="tel:+923305245401" className="text-green-600 hover:underline">
                                     +92 330 5245401
                                 </a>

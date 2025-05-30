@@ -18,6 +18,7 @@ export const EditProduct = () => {
     const [product, setProduct] = useState({
         name: '',
         price: '',
+        originalPrice: '', // Added originalPrice field
         description: '',
         category: '',
         inStock: '',
@@ -38,6 +39,7 @@ export const EditProduct = () => {
                 const data = res.data;
                 setProduct({
                     ...data,
+                    originalPrice: data.originalPrice || '', // Initialize originalPrice
                     existingImages: data.images || [],
                 });
                 setPreviewImages(data.images || []);
@@ -67,14 +69,12 @@ export const EditProduct = () => {
 
         if (files.length + previewImages.length > 5) {
             setUploadError('Maximum 5 images allowed');
-
             return;
         }
 
         const validFiles = files.filter((file) => {
             if (!file.type.match('image.*')) {
                 setUploadError('Only image files are allowed');
-
                 return false;
             }
             if (file.size > 2 * 1024 * 1024) {
@@ -116,7 +116,12 @@ export const EditProduct = () => {
         const formData = new FormData();
         Object.entries(product).forEach(([key, value]) => {
             if (key !== 'existingImages') {
-                formData.append(key, value);
+                // Handle originalPrice: send null if empty
+                if (key === 'originalPrice' && value === '') {
+                    formData.append(key, '');
+                } else {
+                    formData.append(key, value);
+                }
             }
         });
         formData.append('existingImages', JSON.stringify(product.existingImages));
@@ -146,7 +151,7 @@ export const EditProduct = () => {
     };
 
     return (
-        <div className="min-h-screen  py-12 px-4 sm:px-6 lg:px-8 lg:ml-72">
+        <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 lg:ml-72">
             <div className="mx-auto">
                 <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
                     <div className="p-8 border-b border-gray-200">
@@ -176,7 +181,7 @@ export const EditProduct = () => {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                                    <FaMoneyBillWave className="text-gray-500" size={18} /> Price
+                                    <FaMoneyBillWave className="text-gray-500" size={18} /> New Price
                                 </label>
                                 <div className="relative">
                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">Rs</span>
@@ -190,6 +195,25 @@ export const EditProduct = () => {
                                         min="0"
                                         step="0.01"
                                         required
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                    <FaMoneyBillWave className="text-gray-500" size={18} /> Original Price
+                                </label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">Rs</span>
+                                    <input
+                                        type="number"
+                                        name="originalPrice"
+                                        value={product.originalPrice}
+                                        onChange={handleChange}
+                                        className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition-all duration-200 placeholder-gray-500 animate-slide-in"
+                                        placeholder="0.00"
+                                        min="0"
+                                        step="0.01"
                                     />
                                 </div>
                             </div>
@@ -255,8 +279,8 @@ export const EditProduct = () => {
                             <div className="md:col-span-2 flex flex-wrap gap-6">
                                 {[
                                     { label: 'Organic', name: 'isOrganic' },
-                                    { label: 'Best Seller', name: 'bestSeller' },
-                                    { label: 'New Arrival', name: 'newArrival' },
+                                    { label: 'Best Seller', name: 'isBestSeller' },
+                                    { label: 'New Arrival', name: 'isNewArrival' },
                                 ].map(({ label, name }) => (
                                     <label key={name} className="flex items-center gap-3 text-sm font-medium text-gray-700">
                                         <input
@@ -281,14 +305,14 @@ export const EditProduct = () => {
                                             <div key={index} className="relative group rounded-lg overflow-hidden shadow-sm animate-slide-in">
                                                 <img
                                                     src={img}
-                                                    alt={`Preview ${index} `}
+                                                    alt={`Preview ${index}`}
                                                     className="h-32 w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                                 />
                                                 <button
                                                     type="button"
                                                     onClick={() => removeImage(index)}
                                                     className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-red-700"
-                                                    aria-label={`Remove image ${index + 1} `}
+                                                    aria-label={`Remove image ${index + 1}`}
                                                 >
                                                     <FiX size={16} />
                                                 </button>
@@ -330,17 +354,17 @@ export const EditProduct = () => {
                             <button
                                 type="submit"
                                 className={`
-    px-6 py-3 rounded-lg font-semibold text-white shadow-lg hover:shadow-xl 
-    transition-all duration-200 transform hover:scale-[1.02] 
-    flex items-center justify-center gap-2 
-    disabled:opacity-60 disabled:cursor-not-allowed
-    ${status === 'loading'
+                                    px-6 py-3 rounded-lg font-semibold text-white shadow-lg hover:shadow-xl 
+                                    transition-all duration-200 transform hover:scale-[1.02] 
+                                    flex items-center justify-center gap-2 
+                                    disabled:opacity-60 disabled:cursor-not-allowed
+                                    ${status === 'loading'
                                         ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 animate-pulse'
                                         : status === 'updated'
                                             ? 'bg-gradient-to-r from-emerald-600 to-emerald-700'
                                             : 'bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800'
                                     }
-  `}
+                                `}
                                 aria-label={
                                     status === 'loading' ? 'Updating product' :
                                         status === 'updated' ? 'Product updated' :

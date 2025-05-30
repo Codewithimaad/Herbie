@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAdmin } from '../context/AdminContext';
+import logo from '../assets/images/Logo.png'
 
 export default function Login() {
     const [formData, setFormData] = useState({ email: '', password: '' });
@@ -13,6 +14,9 @@ export default function Login() {
     useEffect(() => {
         if (token) {
             navigate('/');
+        }
+        else {
+
         }
     }, [token, navigate]);
 
@@ -59,14 +63,26 @@ export default function Login() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, ease: 'easeOut' }}
-                className="w-full max-w-md  bg-white/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/30 p-8"
+                className="w-full max-w-md bg-white/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/30 p-8"
             >
                 <div className="text-center mb-8">
+                    <motion.div
+                        initial={{ scale: 0.9 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 0.4 }}
+                        className="mb-4"
+                    >
+                        <img
+                            src={logo} // Replace with actual logo path or URL
+                            alt="Website Logo"
+                            className="mx-auto h-16 w-auto object-contain"
+                        />
+                    </motion.div>
                     <motion.h1
                         initial={{ scale: 0.9 }}
                         animate={{ scale: 1 }}
                         transition={{ duration: 0.4 }}
-                        className="text-4xl font-bold text-gray-800 tracking-tight"
+                        className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight"
                     >
                         Admin Portal
                     </motion.h1>
@@ -77,23 +93,29 @@ export default function Login() {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="relative">
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            className={`peer w-full px-4 py-3 bg-transparent border rounded-lg focus:ring-2 focus:border-indigo-400 transition-all duration-300 placeholder-transparent ${errors.email ? 'border-red-500 focus:ring-red-400' : 'border-gray-200 focus:ring-indigo-400'
-                                }`}
-                            placeholder="Email Address"
-                        />
-                        <label
-                            htmlFor="email"
-                            className={`absolute left-4 top-3 text-gray-500 text-sm transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-6 peer-focus:text-sm peer-focus:text-indigo-600 ${errors.email ? 'text-red-600' : ''
-                                } ${formData.email ? '-top-6 text-sm text-indigo-600' : ''}`}
-                        >
-                            Email Address
-                        </label>
+                        <div className="relative">
+                            <input
+                                id="email"
+                                name="email"
+                                type="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                className={`peer w-full px-4 py-3 bg-transparent border rounded-lg focus:ring-2 focus:border-indigo-400 transition-all duration-300 ${errors.email
+                                    ? 'border-red-500 focus:ring-red-400'
+                                    : 'border-gray-200 focus:ring-indigo-400'
+                                    }`}
+                                placeholder=" " // Single space is important for floating label to work
+                            />
+                            <label
+                                htmlFor="email"
+                                className={`absolute left-4 transition-all duration-300 pointer-events-none ${formData.email || errors.email
+                                    ? '-top-6 text-sm text-indigo-600'
+                                    : 'top-3 text-gray-500 peer-focus:-top-6 peer-focus:text-sm peer-focus:text-indigo-600'
+                                    } ${errors.email ? 'text-red-600' : ''}`}
+                            >
+                                Email Address
+                            </label>
+                        </div>
                         <Mail
                             className={`absolute right-4 top-3.5 ${errors.email ? 'text-red-500' : 'text-gray-400'}`}
                             size={18}
@@ -110,23 +132,29 @@ export default function Login() {
                     </div>
 
                     <div className="relative">
-                        <input
-                            id="password"
-                            name="password"
-                            type="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            className={`peer w-full px-4 py-3 bg-transparent border rounded-lg focus:ring-2 focus:border-indigo-400 transition-all duration-300 placeholder-transparent ${errors.password ? 'border-red-500 focus:ring-red-400' : 'border-gray-200 focus:ring-indigo-400'
-                                }`}
-                            placeholder="Password"
-                        />
-                        <label
-                            htmlFor="password"
-                            className={`absolute left-4 top-3 text-gray-500 text-sm transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-6 peer-focus:text-sm peer-focus:text-indigo-600 ${errors.password ? 'text-red-600' : ''
-                                } ${formData.password ? '-top-6 text-sm text-indigo-600' : ''}`}
-                        >
-                            Password
-                        </label>
+                        <div className="relative">
+                            <input
+                                id="password"
+                                name="password"
+                                type="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                className={`peer w-full px-4 py-3 bg-transparent border rounded-lg focus:ring-2 focus:border-indigo-400 transition-all duration-300 ${errors.password
+                                    ? 'border-red-500 focus:ring-red-400'
+                                    : 'border-gray-200 focus:ring-indigo-400'
+                                    }`}
+                                placeholder=" " // Important: Use a space here
+                            />
+                            <label
+                                htmlFor="password"
+                                className={`absolute left-4 transition-all duration-300 pointer-events-none ${formData.password || errors.password
+                                    ? '-top-6 text-sm text-indigo-600'
+                                    : 'top-3 text-gray-500 peer-focus:-top-6 peer-focus:text-sm peer-focus:text-indigo-600'
+                                    } ${errors.password ? 'text-red-600' : ''}`}
+                            >
+                                Password
+                            </label>
+                        </div>
                         <Lock
                             className={`absolute right-4 top-3.5 ${errors.password ? 'text-red-500' : 'text-gray-400'}`}
                             size={18}
@@ -143,17 +171,6 @@ export default function Login() {
                     </div>
 
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                            <input
-                                id="remember-me"
-                                name="remember-me"
-                                type="checkbox"
-                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded transition-all duration-200"
-                            />
-                            <label htmlFor="remember-me" className="ml-2 text-sm text-gray-600 font-medium">
-                                Remember me
-                            </label>
-                        </div>
                         <Link
                             to="/forgot-password"
                             className="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200"

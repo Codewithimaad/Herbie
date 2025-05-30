@@ -248,7 +248,6 @@ export const AdminProvider = ({ children }) => {
             setAdmin(data.admin);
             return { success: true };
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Login failed');
             return { success: false, error: err.response?.data?.message || 'Login failed' };
         } finally {
             setLoadingAuth(false);

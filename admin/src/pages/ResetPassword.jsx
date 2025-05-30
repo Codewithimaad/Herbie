@@ -81,7 +81,7 @@ const ResetPassword = () => {
                         initial={{ scale: 0.9 }}
                         animate={{ scale: 1 }}
                         transition={{ duration: 0.4 }}
-                        className="text-4xl font-bold text-gray-800 flex items-center justify-center gap-3"
+                        className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center justify-center gap-3"
                     >
                         <FiLock className="text-indigo-600" size={30} />
                         Reset Password
@@ -109,9 +109,9 @@ const ResetPassword = () => {
                             name="password"
                             value={password}
                             onChange={handleChange}
-                            className={`peer w-full px-4 py-3 bg-transparent border rounded-lg focus:ring-2 focus:border-indigo-400 transition-all duration-300 placeholder-transparent ${errors.password ? 'border-red-500 focus:ring-red-400' : 'border-gray-200 focus:ring-indigo-400'
+                            className={`peer w-full px-4 py-3 bg-transparent border rounded-lg focus:ring-2 focus:border-indigo-400 transition-all duration-300 ${errors.password ? 'border-red-500 focus:ring-red-400' : 'border-gray-200 focus:ring-indigo-400'
                                 }`}
-                            placeholder="New Password"
+                            placeholder=" "  // This is the key change - single space
                             required
                         />
                         <label
@@ -143,9 +143,9 @@ const ResetPassword = () => {
                             name="confirmPassword"
                             value={confirmPassword}
                             onChange={handleChange}
-                            className={`peer w-full px-4 py-3 bg-transparent border rounded-lg focus:ring-2 focus:border-indigo-400 transition-all duration-300 placeholder-transparent ${errors.confirmPassword ? 'border-red-500 focus:ring-red-400' : 'border-gray-200 focus:ring-indigo-400'
+                            className={`peer w-full px-4 py-3 bg-transparent border rounded-lg focus:ring-2 focus:border-indigo-400 transition-all duration-300 ${errors.confirmPassword ? 'border-red-500 focus:ring-red-400' : 'border-gray-200 focus:ring-indigo-400'
                                 }`}
-                            placeholder="Confirm Password"
+                            placeholder=" "  // This is the key change - single space
                             required
                         />
                         <label

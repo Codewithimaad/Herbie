@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import ProductCard from '../components/ProductCard';
 import HeadingText from '../components/HeadingText';
+import { motion } from 'framer-motion';
 import { FaFilter, FaSearch, FaChevronDown, FaChevronUp, FaFire, FaLeaf } from 'react-icons/fa';
 import { useAuth } from '../context/authContext';
 import { useCart } from '../context/cartContext';
@@ -92,23 +93,70 @@ export default function Products() {
                     </button>
                 </div>
                 {showFilters && (
-                    <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-                        <h3 className="font-medium text-lg mb-4">Filter by Category</h3>
-                        <div className="flex flex-wrap gap-3">
-                            {categories.map(category => (
-                                <button
-                                    key={category}
-                                    onClick={() => setSelectedCategory(category)}
-                                    className={`px - 4 py - 2 rounded - full text - sm font - medium transition - colors flex items - center gap - 2 ${selectedCategory === category ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                                        } `}
-                                >
-                                    {category === 'Best Sellers' && <FaFire className="text-amber-500" />}
-                                    {category === 'New Arrivals' && <FaLeaf className="text-green-500" />}
-                                    {category}
-                                </button>
-                            ))}
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6 overflow-hidden"
+                    >
+                        <div className="flex justify-between items-center mb-5">
+                            <h3 className="text-lg font-semibold text-gray-900">Filter Products</h3>
+                            <button
+                                onClick={() => setShowFilters(false)}
+                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                                aria-label="Close filters"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                </svg>
+                            </button>
                         </div>
-                    </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Categories</h4>
+                                <div className="flex flex-wrap gap-2">
+                                    {categories.map(category => (
+                                        <motion.button
+                                            key={category}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => setSelectedCategory(category)}
+                                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 border ${selectedCategory === category
+                                                ? 'bg-green-600 text-white border-green-600 shadow-md'
+                                                : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                                }`}
+                                        >
+                                            {category === 'Best Sellers'}
+                                            {category === 'New Arrivals'}
+                                            {category}
+                                        </motion.button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Additional filter sections can be added here */}
+                            {/* <div>
+                <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Price Range</h4>
+                ...
+            </div> */}
+                        </div>
+
+                        <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between">
+                            <button
+                                onClick={() => setSelectedCategory(null)}
+                                className="text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+                            >
+                                Clear all
+                            </button>
+                            <button
+                                onClick={() => setShowFilters(false)}
+                                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+                            >
+                                Apply Filters
+                            </button>
+                        </div>
+                    </motion.div>
                 )}
             </div>
             {/* Product Grid */}

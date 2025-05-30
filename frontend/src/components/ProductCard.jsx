@@ -1,187 +1,106 @@
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaStar, FaRegStar, FaFire, FaLeaf } from 'react-icons/fa';
+import { FaFire, FaLeaf } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 import AddToCartButton from './addToCart';
 import { useCart } from '../context/cartContext';
-import { useEffect, useMemo } from 'react';
 import ReviewSmall from './ReviewSmall';
 
-export default function ProductCard({ product, variant = 'vertical', compact = false }) {
+export default function ProductCard({ product }) {
     const { currency, fetchProductReviews, hasFetchedReviews } = useCart();
 
-    // Memoize product ID
-    const productId = product?._id;
-
-    // Fetch reviews
     useEffect(() => {
-        if (productId && typeof productId === 'string' && !hasFetchedReviews(productId)) {
-            console.log('Fetching reviews for productId:', productId);
-            fetchProductReviews(productId);
+        if (product?._id && typeof product._id === 'string' && !hasFetchedReviews(product._id)) {
+            fetchProductReviews(product._id);
         }
-    }, [productId, fetchProductReviews, hasFetchedReviews]);
+    }, [product?._id, fetchProductReviews, hasFetchedReviews]);
 
-    // Memoize price rendering
-    const renderPrice = useMemo(() => (
-        <div className={compact ? "mt-2" : "mt-3"}>
-            <span className={`${compact ? "text-base" : "text-lg"} font - semibold text - gray - 900`}>
-                {currency} {product.price.toFixed(2)}
-            </span>
-            {product.originalPrice && !compact && (
-                <span className="text-sm text-gray-400 line-through ml-2">
-                    {currency} {product.originalPrice.toFixed(2)}
-                </span>
-            )}
-        </div>
-    ), [compact, currency, product.price, product.originalPrice]);
-
-    // Memoize badges rendering
-    const renderBadges = useMemo(() => {
-        if (compact) return null;
-        return (
-            <div className="absolute top-3 left-3 flex flex-col gap-1">
-                {product.isBestSeller && (
-                    <span className="flex items-center gap-1 bg-amber-100 text-amber-800 text-xs font-medium px-2 py-1 rounded-full">
-                        <FaFire size={12} /> Best Seller
-                    </span>
-                )}
-                {product.isNew && (
-                    <span className="flex items-center gap-1 bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
-                        <FaLeaf size={12} /> New Arrival
-                    </span>
-                )}
-            </div>
-        );
-    }, [compact, product.isBestSeller, product.isNew]);
-
-    // Memoize description rendering
-    const renderDescription = useMemo(() => {
-        if (compact || !product.description) return null;
-        return (
-            <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                {product.description}
-            </p>
-        );
-    }, [compact, product.description]);
-
-    // Horizontal card
-    if (variant === 'horizontal') {
-        return (
-            <div className={`flex flex - col sm: flex - row bg - white rounded - xl shadow - lg hover: shadow - xl transition - all duration - 300 overflow - hidden ${compact ? "p-2" : "p-4"} `}>
-                <Link
-                    to={`/ product / ${product._id} `}
-                    className={`relative ${compact ? "w-20 h-20" : "sm:w-1/3 aspect-square"} `}
-                    aria-label={`View ${product.name} details`}
-                >
-                    <img
-                        src={product.images?.[0] || '/fallback.jpg'}
-                        alt={product.name}
-                        className="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
-                        loading="lazy"
-                    />
-                    {renderBadges}
-                </Link>
-                <div className={`flex flex - col ${compact ? "pl-3 flex-grow" : "sm:w-2/3 p-4"} `}>
-                    <Link to={`/ product / ${product._id} `} className="hover:text-indigo-700 transition-colors duration-200">
-                        <h3 className={`${compact ? "text-sm" : "text-base"} font - semibold text - gray - 900 line - clamp - 2`}>
-                            {product.name}
-                        </h3>
-                    </Link>
-                    {!compact && (
-                        <>
-                            {product.category && (
-                                <p className="text-xs text-gray-500 mt-1 capitalize">{product.category}</p>
-                            )}
-                            {renderDescription}
-                            <ReviewSmall
-                                productId={product._id}
-                                productRating={product.rating}
-                                productReviewCount={product.reviewCount}
-                            />
-                        </>
-                    )}
-                    {renderPrice}
-                    {!compact && (
-                        <div className="mt-4">
-                            <AddToCartButton
-                                id={product._id}
-                                quantity={1}
-                                name={product.name}
-                                price={product.price}
-                                size="small"
-                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg"
-                            />
-                        </div>
-                    )}
-                </div>
-            </div>
-        );
-    }
-
-    // Compact vertical card
-    if (compact) {
-        return (
-            <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col">
-                <Link
-                    to={`/ product / ${product._id} `}
-                    className="relative aspect-square"
-                    aria-label={`View ${product.name} details`}
-                >
-                    <img
-                        src={product.images?.[0] || '/fallback.jpg'}
-                        alt={product.name}
-                        className="w-full h-full object-cover rounded-t-xl transition-transform duration-300 group-hover:scale-105"
-                        loading="lazy"
-                    />
-                    {renderBadges}
-                </Link>
-                <div className="p-3 flex flex-col flex-grow">
-                    <Link to={`/ product / ${product._id} `} className="hover:text-indigo-700 transition-colors duration-200">
-                        <h3 className="text-sm font-semibold text-gray-900 line-clamp-2">{product.name}</h3>
-                    </Link>
-                    {renderPrice}
-                </div>
-            </div>
-        );
-    }
-
-    // Default vertical card
     return (
-        <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col group">
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            whileHover={{ y: -5 }}
+            className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group border border-gray-100 w-full max-w-[300px] mx-auto" // Added width constraints
+        >
             <Link
-                to={`/ product / ${product._id} `}
-                className="relative aspect-square"
+                to={`/product/${product._id}`}
+                className="relative aspect-[4/3] overflow-hidden" // Changed to 4:3 aspect ratio
                 aria-label={`View ${product.name} details`}
             >
                 <img
                     src={product.images?.[0] || '/fallback.jpg'}
                     alt={product.name}
-                    className="w-full h-full object-cover rounded-t-xl transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     loading="lazy"
                 />
-                {renderBadges}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                <div className="absolute top-3 left-3 flex flex-col gap-2">
+                    {product.isBestSeller && (
+                        <span className="flex items-center gap-1.5 bg-amber-500 text-white text-xs font-medium px-3 py-1 rounded-full shadow-sm">
+                            <FaFire size={10} /> Best Seller
+                        </span>
+                    )}
+                    {product.isNewArrival && (
+                        <span className="flex items-center gap-1.5 bg-emerald-500 text-white text-xs font-medium px-3 py-1 rounded-full shadow-sm">
+                            <FaLeaf size={10} /> New Arrival
+                        </span>
+                    )}
+                </div>
             </Link>
-            <div className="p-4 flex flex-col flex-grow">
-                <Link to={`/ product / ${product._id} `} className="hover:text-indigo-700 transition-colors duration-200">
-                    <h3 className="text-base font-semibold text-gray-900 line-clamp-2">{product.name}</h3>
-                </Link>
-                {product.category && (
-                    <p className="text-xs text-gray-500 mt-1 capitalize">{product.category}</p>
+
+            <div className="p-4 flex flex-col flex-grow"> {/* Reduced padding */}
+                <div className="mb-2">
+                    {product.category && (
+                        <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">
+                            {product.category}
+                        </p>
+                    )}
+                    <Link to={`/product/${product._id}`} className="hover:text-indigo-600 transition-colors duration-200">
+                        <h3 className="text-base font-semibold text-gray-900 line-clamp-2 leading-tight"> {/* Reduced text size */}
+                            {product.name}
+                        </h3>
+                    </Link>
+                </div>
+
+                {product.description && (
+                    <p className="text-sm text-gray-500 mt-1 line-clamp-2 mb-3 leading-tight"> {/* Tighter line height */}
+                        {product.description}
+                    </p>
                 )}
-                {renderDescription}
-                <ReviewSmall
-                    productId={product._id}
-                    productRating={product.rating}
-                    productReviewCount={product.reviewCount}
-                />
-                {renderPrice}
-                <div className="mt-auto pt-4">
-                    <AddToCartButton
-                        id={product._id}
-                        quantity={1}
-                        size="small"
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg"
+
+                <div className="mt-auto">
+                    <ReviewSmall
+                        productId={product._id}
+                        productRating={product.rating}
+                        productReviewCount={product.reviewCount}
+                        className="mb-2" // Reduced margin
                     />
+
+                    <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                            <span className="text-lg font-bold text-gray-900"> {/* Reduced text size */}
+                                {currency} {product.price.toFixed(2)}
+                            </span>
+                            {product.originalPrice && (
+                                <span className="text-xs text-gray-400 line-through"> {/* Reduced text size */}
+                                    {currency} {product.originalPrice.toFixed(2)}
+                                </span>
+                            )}
+                        </div>
+
+                        <AddToCartButton
+                            id={product._id}
+                            quantity={1}
+                            name={product.name}
+                            price={product.price}
+                            size="small"
+                            className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-lg py-2 font-medium text-sm transition-all duration-200 shadow-sm hover:shadow-md"
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 }
