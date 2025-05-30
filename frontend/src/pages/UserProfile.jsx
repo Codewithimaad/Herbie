@@ -372,14 +372,15 @@ const UserProfile = () => {
                                                     onChange={handleInputChange}
                                                     icon={<FiUser />}
                                                 />
-                                                <InputField
-                                                    label="Email"
-                                                    name="email"
-                                                    value={formData.email}
-                                                    onChange={handleInputChange}
-                                                    type="email"
-                                                    icon={<FiMail />}
-                                                />
+                                                {!userData?.isGoogleUser && (
+                                                    <InputField
+                                                        label="Email"
+                                                        name="email"
+                                                        value={formData.email}
+                                                        onChange={handleInputChange}
+                                                        type="email"
+                                                        icon={<FiMail />}
+                                                    />)}
                                             </div>
                                             <InputField
                                                 label="Location"
