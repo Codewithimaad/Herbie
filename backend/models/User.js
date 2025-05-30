@@ -5,6 +5,7 @@ const userSchema = new mongoose.Schema({
     email: { type: String, unique: true, required: true },
     password: { type: String }, // optional for Google users
     googleId: { type: String }, // used for OAuth users
+    isGoogleUser: { type: Boolean, default: false }, // flag for Google users
     avatar: { type: String, default: '' }, // URL to profile picture
     location: { type: String, default: '' },
     bio: { type: String, default: '' },

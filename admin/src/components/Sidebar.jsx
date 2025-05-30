@@ -68,7 +68,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                         </span>
 
                         <Link
-                            to="/"
+                            to="/dashboard"
                             className="flex items-center w-full px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-emerald-600 transition-colors duration-200 group"
                             onClick={() => window.innerWidth < 1024 && toggleSidebar()}
                         >

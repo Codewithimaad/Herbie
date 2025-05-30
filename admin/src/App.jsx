@@ -39,7 +39,7 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route path="/" element={<Home />} />
+            <Route path="/dashboard" element={<Home />} />
             <Route path="add-product" element={<AddProduct />} />
             <Route path="products" element={<Products />} />
             <Route path="edit-product/:id" element={<EditProduct />} />

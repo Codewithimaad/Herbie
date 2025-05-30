@@ -62,6 +62,7 @@ const Home = () => {
                     pendingOrders: metricsRes.data.pendingOrders,
                     deliveredOrders: metricsRes.data.deliveredOrders
                 });
+                console.log('order data:', ordersRes.data)
                 setRecentOrders(ordersRes.data);
                 setSalesData(salesRes.data);
             } catch (error) {
@@ -385,7 +386,7 @@ const Home = () => {
                                         filteredOrders.map((order) => (
                                             <tr key={order.id} className="hover:bg-gray-50 transition-all duration-200">
                                                 <td className="px-6 py-4 text-sm font-medium text-gray-900">{order.id}</td>
-                                                <td className="px-6 py-4 text-sm text-gray-700">{order.customer}</td>
+                                                <td className="px-6 py-4 text-sm text-gray-700">{order.shippingAddress?.name}</td>
                                                 <td className="px-6 py-4 text-sm text-gray-700">{order.date}</td>
                                                 <td className="px-6 py-4 text-sm text-gray-700">Rs {order.total.toFixed(2)}</td>
                                                 <td className="px-6 py-4 text-sm">

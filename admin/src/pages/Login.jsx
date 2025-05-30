@@ -13,11 +13,9 @@ export default function Login() {
 
     useEffect(() => {
         if (token) {
-            navigate('/');
+            navigate('/dashboard');
         }
-        else {
 
-        }
     }, [token, navigate]);
 
     const validateField = (name, value) => {
@@ -51,7 +49,7 @@ export default function Login() {
         const { email, password } = formData;
         const result = await loginAdmin(email, password);
         if (result.success) {
-            navigate('/');
+            navigate('/dashboard');
         } else {
             setErrors((prev) => ({ ...prev, password: result.error || 'Invalid email or password' }));
         }

@@ -231,7 +231,6 @@ export const AdminProvider = ({ children }) => {
                 },
             });
             setOrders((prevOrders) => prevOrders.filter((order) => order._id !== id));
-            toast.success('Order deleted');
             return { success: true };
         } catch (error) {
             console.error('Delete order error:', error.response?.data || error.message);

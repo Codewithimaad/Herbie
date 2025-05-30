@@ -215,14 +215,22 @@ export const getRecentOrders = async (req, res) => {
 
         const formattedOrders = orders.map(order => ({
             id: order._id,
-            customer: order.user.name,
             date: order.createdAt.toLocaleDateString('en-PK', {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric'
             }),
             total: order.totals.grandTotal,
-            status: order.isDelivered ? 'Delivered' : 'Pending'
+            status: order.isDelivered ? 'Delivered' : 'Pending',
+            shippingAddress: {
+                name: order.shippingAddress.name,
+                email: order.shippingAddress.email,
+                phone: order.shippingAddress.phone,
+                address: order.shippingAddress.address,
+                city: order.shippingAddress.city,
+                country: order.shippingAddress.country,
+                zip: order.shippingAddress.zip
+            }
         }));
 
         res.json(formattedOrders);

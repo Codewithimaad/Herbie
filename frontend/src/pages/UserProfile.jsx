@@ -16,7 +16,13 @@ const UserProfile = () => {
     const [activeTab, setActiveTab] = useState(0);
     const [isEditing, setIsEditing] = useState(false);
     const [userData, setUserData] = useState(null);
-    const [formData, setFormData] = useState({});
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        location: '',
+        bio: '',
+        avatar: ''
+    });
     const [passwordData, setPasswordData] = useState({
         currentPassword: '',
         newPassword: '',
@@ -44,13 +50,9 @@ const UserProfile = () => {
 
     const api = axios.create({
         baseURL: backendUrl,
-    });
-
-    api.interceptors.request.use((config) => {
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+        headers: {
+            Authorization: `Bearer ${token}`
         }
-        return config;
     });
 
     useEffect(() => {
@@ -133,8 +135,14 @@ const UserProfile = () => {
     };
 
     const handleSaveChanges = async () => {
-        if (!formData.name.trim()) return toast.error('Name is required');
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) return toast.error('Invalid email format');
+        if (!formData.name.trim()) {
+            toast.error('Name is required');
+            return;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            toast.error('Invalid email format');
+            return;
+        }
 
         try {
             setIsLoading(true);
@@ -341,14 +349,16 @@ const UserProfile = () => {
                                             <FiUser className="mr-2" /> Profile
                                         </button>
                                     </Tab>
-                                    <Tab className="focus:outline-none">
-                                        <button className={`py-3 px-4 font-medium text-sm flex items-center rounded-t-lg ${activeTab === 1
-                                            ? 'text-green-600 border-b-2 border-green-500 bg-green-50'
-                                            : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                                            }`}>
-                                            <FiSettings className="mr-2" /> Settings
-                                        </button>
-                                    </Tab>
+                                    {!userData?.isGoogleUser && (
+                                        <Tab className="focus:outline-none">
+                                            <button className={`py-3 px-4 font-medium text-sm flex items-center rounded-t-lg ${activeTab === 1
+                                                ? 'text-green-600 border-b-2 border-green-500 bg-green-50'
+                                                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                                                }`}>
+                                                <FiSettings className="mr-2" /> Settings
+                                            </button>
+                                        </Tab>
+                                    )}
                                 </TabList>
 
                                 <TabPanel>
@@ -434,100 +444,102 @@ const UserProfile = () => {
                                     )}
                                 </TabPanel>
 
-                                <TabPanel>
-                                    <div className="space-y-8">
-                                        <div className="p-4 sm:p-6 rounded-lg">
-                                            <h4 className="font-semibold text-gray-800 mb-4 flex items-center">
-                                                <FiLock className="mr-2 text-green-500" /> Change Password
-                                            </h4>
+                                {!userData?.isGoogleUser && (
+                                    <TabPanel>
+                                        <div className="space-y-8">
+                                            <div className="p-4 sm:p-6 rounded-lg">
+                                                <h4 className="font-semibold text-gray-800 mb-4 flex items-center">
+                                                    <FiLock className="mr-2 text-green-500" /> Change Password
+                                                </h4>
 
-                                            <PasswordInput
-                                                label="Current Password"
-                                                name="currentPassword"
-                                                value={passwordData.currentPassword}
-                                                onChange={handlePasswordChange}
-                                                showPassword={showPassword.current}
-                                                toggleVisibility={() => togglePasswordVisibility('current')}
-                                                error={passwordErrors.current}
-                                            />
+                                                <PasswordInput
+                                                    label="Current Password"
+                                                    name="currentPassword"
+                                                    value={passwordData.currentPassword}
+                                                    onChange={handlePasswordChange}
+                                                    showPassword={showPassword.current}
+                                                    toggleVisibility={() => togglePasswordVisibility('current')}
+                                                    error={passwordErrors.current}
+                                                />
 
-                                            <PasswordInput
-                                                label="New Password"
-                                                name="newPassword"
-                                                value={passwordData.newPassword}
-                                                onChange={handlePasswordChange}
-                                                showPassword={showPassword.new}
-                                                toggleVisibility={() => togglePasswordVisibility('new')}
-                                                error={passwordErrors.new}
-                                            />
+                                                <PasswordInput
+                                                    label="New Password"
+                                                    name="newPassword"
+                                                    value={passwordData.newPassword}
+                                                    onChange={handlePasswordChange}
+                                                    showPassword={showPassword.new}
+                                                    toggleVisibility={() => togglePasswordVisibility('new')}
+                                                    error={passwordErrors.new}
+                                                />
 
-                                            {passwordData.newPassword && (
-                                                <div className="mb-4">
-                                                    <div className="flex justify-between text-sm mb-1">
-                                                        <span className="text-gray-600">Password Strength:</span>
-                                                        <span className="font-medium">
-                                                            {['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'][passwordStrength.score]}
-                                                        </span>
+                                                {passwordData.newPassword && (
+                                                    <div className="mb-4">
+                                                        <div className="flex justify-between text-sm mb-1">
+                                                            <span className="text-gray-600">Password Strength:</span>
+                                                            <span className="font-medium">
+                                                                {['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'][passwordStrength.score]}
+                                                            </span>
+                                                        </div>
+                                                        <div className="w-full bg-gray-200 rounded-full h-2">
+                                                            <div
+                                                                className={`h-2 rounded-full ${getPasswordStrengthColor(passwordStrength.score)}`}
+                                                                style={{ width: `${(passwordStrength.score + 1) * 25}%` }}
+                                                            ></div>
+                                                        </div>
+                                                        {passwordStrength.feedback && (
+                                                            <p className="text-xs text-gray-500 mt-1">{passwordStrength.feedback}</p>
+                                                        )}
                                                     </div>
-                                                    <div className="w-full bg-gray-200 rounded-full h-2">
-                                                        <div
-                                                            className={`h-2 rounded-full ${getPasswordStrengthColor(passwordStrength.score)}`}
-                                                            style={{ width: `${(passwordStrength.score + 1) * 25}%` }}
-                                                        ></div>
-                                                    </div>
-                                                    {passwordStrength.feedback && (
-                                                        <p className="text-xs text-gray-500 mt-1">{passwordStrength.feedback}</p>
-                                                    )}
+                                                )}
+
+                                                <PasswordInput
+                                                    label="Confirm New Password"
+                                                    name="confirmPassword"
+                                                    value={passwordData.confirmPassword}
+                                                    onChange={handlePasswordChange}
+                                                    showPassword={showPassword.confirm}
+                                                    toggleVisibility={() => togglePasswordVisibility('confirm')}
+                                                    error={passwordErrors.confirm}
+                                                />
+
+                                                <div className="pt-2">
+                                                    <button
+                                                        onClick={handleUpdatePassword}
+                                                        className={`w-full py-2.5 px-4 rounded-lg transition flex items-center justify-center ${isLoading ||
+                                                            !passwordData.currentPassword ||
+                                                            !passwordData.newPassword ||
+                                                            !passwordData.confirmPassword ||
+                                                            passwordData.newPassword !== passwordData.confirmPassword ||
+                                                            passwordData.newPassword.length < 8
+                                                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                                            : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
+                                                            }`}
+                                                        disabled={
+                                                            isLoading ||
+                                                            !passwordData.currentPassword ||
+                                                            !passwordData.newPassword ||
+                                                            !passwordData.confirmPassword ||
+                                                            passwordData.newPassword !== passwordData.confirmPassword ||
+                                                            passwordData.newPassword.length < 8
+                                                        }
+                                                    >
+                                                        {isLoading ? (
+                                                            <>
+                                                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                                </svg>
+                                                                Updating...
+                                                            </>
+                                                        ) : (
+                                                            'Update Password'
+                                                        )}
+                                                    </button>
                                                 </div>
-                                            )}
-
-                                            <PasswordInput
-                                                label="Confirm New Password"
-                                                name="confirmPassword"
-                                                value={passwordData.confirmPassword}
-                                                onChange={handlePasswordChange}
-                                                showPassword={showPassword.confirm}
-                                                toggleVisibility={() => togglePasswordVisibility('confirm')}
-                                                error={passwordErrors.confirm}
-                                            />
-
-                                            <div className="pt-2">
-                                                <button
-                                                    onClick={handleUpdatePassword}
-                                                    className={`w-full py-2.5 px-4 rounded-lg transition flex items-center justify-center ${isLoading ||
-                                                        !passwordData.currentPassword ||
-                                                        !passwordData.newPassword ||
-                                                        !passwordData.confirmPassword ||
-                                                        passwordData.newPassword !== passwordData.confirmPassword ||
-                                                        passwordData.newPassword.length < 8
-                                                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                                        : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
-                                                        }`}
-                                                    disabled={
-                                                        isLoading ||
-                                                        !passwordData.currentPassword ||
-                                                        !passwordData.newPassword ||
-                                                        !passwordData.confirmPassword ||
-                                                        passwordData.newPassword !== passwordData.confirmPassword ||
-                                                        passwordData.newPassword.length < 8
-                                                    }
-                                                >
-                                                    {isLoading ? (
-                                                        <>
-                                                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                            </svg>
-                                                            Updating...
-                                                        </>
-                                                    ) : (
-                                                        'Update Password'
-                                                    )}
-                                                </button>
                                             </div>
                                         </div>
-                                    </div>
-                                </TabPanel>
+                                    </TabPanel>
+                                )}
                             </Tabs>
                         </div>
                     </div>
@@ -537,7 +549,7 @@ const UserProfile = () => {
     );
 };
 
-const PasswordInput = ({ label, name, value, onChange, showPassword, toggleVisibility, error, icon }) => (
+const PasswordInput = ({ label, name, value, onChange, showPassword, toggleVisibility, error }) => (
     <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
         <div className="relative">

@@ -13,19 +13,16 @@ const DeliveryActions = ({ editableOrder, setEditableOrder, backendUrl, id, toke
                 { isDelivered },
                 { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token} ` } }
             );
-            console.log('API Response:', response.data); // Debug
             setEditableOrder(prev => {
                 const updatedOrder = {
                     ...prev,
                     isDelivered: response.data.order?.isDelivered ?? isDelivered,
                     deliveryStatus: response.data.order?.deliveryStatus ?? (isDelivered ? 'Delivered' : 'In Transit'),
                 };
-                console.log('Updated editableOrder:', updatedOrder); // Debug
                 return updatedOrder;
             });
             // Refresh orderById in context
             await fetchOrderById(id);
-            toast.success(response.data.message || 'Delivery status updated');
         } catch (err) {
             console.error('Delivery update error:', err.response?.data || err.message);
             toast.error(err.response?.data?.message || 'Failed to update delivery status');
@@ -37,7 +34,6 @@ const DeliveryActions = ({ editableOrder, setEditableOrder, backendUrl, id, toke
     // Ensure fields are defined
     const isDelivered = editableOrder?.isDelivered ?? false;
     const deliveryStatus = editableOrder?.deliveryStatus ?? 'In Transit';
-    console.log('Rendering DeliveryActions:', { isDelivered, deliveryStatus, editableOrder }); // Debug
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">

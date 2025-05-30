@@ -13,11 +13,13 @@ passport.use(new GoogleStrategy({
     callbackURL: process.env.GOOGLE_CALLBACK_URL,
 }, async (accessToken, refreshToken, profile, done) => {
     let user = await User.findOne({ googleId: profile.id });
+
     if (!user) {
         user = await User.create({
             googleId: profile.id,
             name: profile.displayName,
             email: profile.emails[0].value,
+            isGoogleUser: true  // ✅ Add this flag
         });
     }
     return done(null, user);

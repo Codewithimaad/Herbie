@@ -26,7 +26,6 @@ const OrderTimeline = ({ order }) => {
             ? [...order.statusHistory].reverse()
             : [
                 { status: order.status, timestamp: order.updatedAt },
-                { status: 'placed', timestamp: order.createdAt },
             ];
 
     return (

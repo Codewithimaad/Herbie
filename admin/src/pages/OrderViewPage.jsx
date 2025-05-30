@@ -96,7 +96,6 @@ const OrderViewPage = () => {
             if (newStatus === 'shipped') {
                 updateData.trackingNumber = editableOrder.trackingNumber;
             }
-            console.log('Updating order status:', updateData); // Debug
             const response = await axios.put(`${backendUrl}/api/admin/${id}`, updateData, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -104,7 +103,6 @@ const OrderViewPage = () => {
             await fetchOrderById(id); // Refresh orderById
             setShowStatusModal(false);
             setError(null);
-            toast.success('Order status updated');
         } catch (err) {
             console.error('Error updating status:', err.response?.data || err.message); // Debug
             setError(err.response?.data?.message || 'Failed to update status');
@@ -134,7 +132,6 @@ const OrderViewPage = () => {
     const saveChanges = async () => {
         try {
             setIsProcessing(true);
-            console.log('Saving changes:', editableOrder); // Debug
             const response = await axios.put(
                 `${backendUrl}/api/admin/${id}`,
                 {
@@ -148,7 +145,6 @@ const OrderViewPage = () => {
             await fetchOrderById(id); // Refresh orderById
             setIsEditing(false);
             setError(null);
-            toast.success('Changes saved');
         } catch (err) {
             console.error('Error saving changes:', err.response?.data || err.message); // Debug
             setError(err.response?.data?.message || 'Failed to save changes');
@@ -166,7 +162,6 @@ const OrderViewPage = () => {
                 headers: { Authorization: `Bearer ${token}` },
             });
             navigate('/orders');
-            toast.success('Order cancelled');
         } catch (err) {
             console.error('Error cancelling order:', err.response?.data || err.message); // Debug
             setError(err.response?.data?.message || 'Failed to cancel order');

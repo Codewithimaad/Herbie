@@ -25,6 +25,13 @@ export const loginUser = async (req, res) => {
         const user = await User.findOne({ email });
         if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
+        // ❌ Block login attempt if user is a Google user
+        if (user.isGoogleUser) {
+            return res.status(403).json({
+                message: 'Please log in using Google authentication'
+            });
+        }
+
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
@@ -40,10 +47,8 @@ export const loginUser = async (req, res) => {
 export const getCurrentUser = async (req, res) => {
     try {
         const user = await User.findById(req.user.id)
-            .select('_id email name cart createdAt')
+            .select('_id email name cart createdAt isGoogleUser')
             .populate('cart.product', 'name price image'); // Optional: populate cart product details
-
-        console.log('User:', user);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -53,9 +58,10 @@ export const getCurrentUser = async (req, res) => {
         const userData = {
             _id: user._id,
             email: user.email,
-            name: user.name || '', // Fallback if name doesn't exist
+            name: user.name || '',
             createdAt: user.createdAt,
-            cart: user.cart || []
+            cart: user.cart || [],
+            isGoogleUser: user.isGoogleUser || false,
         };
 
         res.json({ user: userData });
@@ -64,7 +70,6 @@ export const getCurrentUser = async (req, res) => {
         res.status(500).json({ message: 'Error fetching user data' });
     }
 };
-
 
 // Logout controller
 export const logoutUser = async (req, res) => {
