@@ -98,7 +98,6 @@ export const AuthProvider = ({ children }) => {
             setUser(null);
             setToken(null);
             localStorage.removeItem('token');
-
             // Show success message
             toast.success('Logged out successfully');
 
@@ -107,12 +106,6 @@ export const AuthProvider = ({ children }) => {
         } catch (err) {
             console.error('Logout failed:', err);
             toast.error('Logout failed. Please try again.');
-
-            // Still ensure cleanup
-            setUser(null);
-            setToken(null);
-            localStorage.removeItem('token');
-            navigate('/login');
         }
     };
 

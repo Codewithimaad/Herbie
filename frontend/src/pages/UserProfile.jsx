@@ -69,7 +69,6 @@ const UserProfile = () => {
                     avatar: data.avatar || ''
                 });
             } catch (error) {
-                toast.error(error.response?.data?.message || 'Failed to load profile');
                 if (user) {
                     setUserData(user);
                     setFormData({
