@@ -435,9 +435,23 @@ const UserProfile = () => {
                                             <div>
                                                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Personal Information</h3>
                                                 <div className="space-y-4">
-                                                    <UserInfo label="Email" value={userData?.email} icon={<FiMail className="text-green-500" />} />
-                                                    <UserInfo label="Member Since" value={userData && new Date(userData.createdAt).toLocaleDateString()} icon={<FiCalendar className="text-green-500" />} />
-                                                    <UserInfo label="Location" value={userData?.location || 'Not provided'} icon={<FiMapPin className="text-green-500" />} />
+                                                    {!userData?.isGoogleUser && (
+                                                        <UserInfo
+                                                            label="Email"
+                                                            value={userData?.email}
+                                                            icon={<FiMail className="text-green-500" />}
+                                                        />
+                                                    )}
+                                                    <UserInfo
+                                                        label="Member Since"
+                                                        value={userData && new Date(userData.createdAt).toLocaleDateString()}
+                                                        icon={<FiCalendar className="text-green-500" />}
+                                                    />
+                                                    <UserInfo
+                                                        label="Location"
+                                                        value={userData?.location || 'Not provided'}
+                                                        icon={<FiMapPin className="text-green-500" />}
+                                                    />
                                                 </div>
                                             </div>
                                         </div>
