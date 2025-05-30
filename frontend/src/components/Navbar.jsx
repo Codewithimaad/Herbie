@@ -156,7 +156,7 @@ const Navbar = () => {
                                             <img
                                                 src={user.avatar}
                                                 alt={user.name}
-                                                className="w-10 h-10rounded-full object-cover border-2 border-white shadow-sm"
+                                                className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
                                             />
                                         ) : (
                                             <div
