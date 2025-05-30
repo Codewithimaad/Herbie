@@ -47,7 +47,7 @@ export const loginUser = async (req, res) => {
 export const getCurrentUser = async (req, res) => {
     try {
         const user = await User.findById(req.user.id)
-            .select('_id email name cart createdAt isGoogleUser')
+            .select('_id email name cart createdAt isGoogleUser avatar')
             .populate('cart.product', 'name price image'); // Optional: populate cart product details
 
         if (!user) {
@@ -62,8 +62,9 @@ export const getCurrentUser = async (req, res) => {
             createdAt: user.createdAt,
             cart: user.cart || [],
             isGoogleUser: user.isGoogleUser || false,
+            avatar: user.avatar || ''
         };
-
+        console.log('User Data Image:', userData)
         res.json({ user: userData });
     } catch (err) {
         console.error('Error fetching user:', err);

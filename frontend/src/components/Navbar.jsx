@@ -150,9 +150,21 @@ const Navbar = () => {
                                     onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
                                     className="flex items-center gap-2 text-sm text-green-800 hover:text-green-600 transition-colors"
                                 >
-                                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-green-500 to-blue-500 flex items-center justify-center text-white font-medium">
-                                        {user.name.charAt(0).toUpperCase()}
-                                    </div>
+                                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium">
+                                        {/* User Avatar with fallback to initials */}
+                                        {user.avatar ? (
+                                            <img
+                                                src={user.avatar}
+                                                alt={user.name}
+                                                className="w-10 h-10rounded-full object-cover border-2 border-white shadow-sm"
+                                            />
+                                        ) : (
+                                            <div
+                                                className="w-10 h-10 rounded-full bg-gradient-to-tr from-green-500 to-blue-500 flex items-center justify-center text-white font-medium border-2 border-white shadow-sm"
+                                            >
+                                                {user.name.charAt(0).toUpperCase()}
+                                            </div>
+                                        )}                                    </div>
                                     <span className="truncate max-w-[120px]">{user.name}</span>
                                     <motion.span
                                         animate={{ rotate: isUserDropdownOpen ? 180 : 0 }}
@@ -182,13 +194,28 @@ const Navbar = () => {
                                             {/* User Profile Header */}
                                             <div className="px-5 py-4 border-b border-gray-100/50 flex items-center gap-3 bg-gradient-to-r from-green-50/50 to-blue-50/50">
                                                 <div className="relative">
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-green-500 to-blue-500 flex items-center justify-center text-white font-medium">
-                                                        {user.name.charAt(0).toUpperCase()}
-                                                    </div>
+                                                    {/* User Avatar with fallback to initials */}
+                                                    {user.avatar ? (
+                                                        <img
+                                                            src={user.avatar}
+                                                            alt={user.name}
+                                                            className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
+                                                        />
+                                                    ) : (
+                                                        <div
+                                                            className="w-10 h-10 rounded-full bg-gradient-to-tr from-green-500 to-blue-500 flex items-center justify-center text-white font-medium border-2 border-white shadow-sm"
+                                                        >
+                                                            {user.name.charAt(0).toUpperCase()}
+                                                        </div>
+                                                    )}
+
+                                                    {/* Online status indicator */}
                                                     <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-green-400 border-2 border-white flex items-center justify-center">
                                                         <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
                                                     </div>
                                                 </div>
+
+                                                {/* User info */}
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
                                                     <p className="text-xs text-gray-500 truncate">{user.email}</p>
@@ -285,9 +312,21 @@ const Navbar = () => {
                                     onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
                                     className="flex items-center gap-1 text-sm text-green-800 hover:text-green-600 transition-colors"
                                 >
-                                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-green-500 to-blue-500 flex items-center justify-center text-white font-medium">
-                                        {user.name.charAt(0).toUpperCase()}
-                                    </div>
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-medium">
+                                        {/* User Avatar with fallback to initials */}
+                                        {user.avatar ? (
+                                            <img
+                                                src={user.avatar}
+                                                alt={user.name}
+                                                className="w-8 h-8 rounded-full object-cover shadow-sm"
+                                            />
+                                        ) : (
+                                            <div
+                                                className="w-8 h-8 rounded-full bg-gradient-to-tr from-green-500 to-blue-500 flex items-center justify-center text-white font-medium border-2 border-white shadow-sm"
+                                            >
+                                                {user.name.charAt(0).toUpperCase()}
+                                            </div>
+                                        )}                                    </div>
                                 </button>
 
                                 <AnimatePresence>
@@ -302,8 +341,20 @@ const Navbar = () => {
                                             <div className="px-5 py-4 border-b border-gray-100/50 flex items-center gap-3 bg-gradient-to-r from-green-50/50 to-blue-50/50">
                                                 <div className="relative">
                                                     <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-green-500 to-blue-500 flex items-center justify-center text-white font-medium">
-                                                        {user.name.charAt(0).toUpperCase()}
-                                                    </div>
+                                                        {/* User Avatar with fallback to initials */}
+                                                        {user.avatar ? (
+                                                            <img
+                                                                src={user.avatar}
+                                                                alt={user.name}
+                                                                className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
+                                                            />
+                                                        ) : (
+                                                            <div
+                                                                className="w-10 h-10 rounded-full bg-gradient-to-tr from-green-500 to-blue-500 flex items-center justify-center text-white font-medium border-2 border-white shadow-sm"
+                                                            >
+                                                                {user.name.charAt(0).toUpperCase()}
+                                                            </div>
+                                                        )}                                                    </div>
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
