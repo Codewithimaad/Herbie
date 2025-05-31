@@ -1,14 +1,18 @@
 import express from 'express';
 import passport from 'passport';
-import { registerUser, loginUser, getCurrentUser } from '../controllers/authController.js';
+import { registerUser, loginUser, getCurrentUser, verifyEmail, resendVerification } from '../controllers/authController.js';
 import { authUser } from '../middlewares/authUser.js';
 import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 
 router.post('/register', registerUser);
+router.get('/verify-email/:token', verifyEmail);
+router.post('/resend-verification', resendVerification);
 router.post('/login', loginUser);
 router.get('/get-user', authUser, getCurrentUser); // Protected route to get user
+
+
 
 // Google OAuth
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Edit, Trash2, X, Check, ChevronRight, Search } from 'lucide-react';
-import { toast } from 'react-toastify';
 import axios from 'axios';
 import { useAdmin } from '../context/AdminContext';
 import Skeleton from 'react-loading-skeleton';
@@ -10,7 +9,6 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
     const modalRef = useRef(null);
     const [isClosing, setIsClosing] = useState(false);
 
-    // Focus trap for accessibility
     useEffect(() => {
         if (isOpen && modalRef.current) {
             modalRef.current.focus();
@@ -33,14 +31,11 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
             aria-labelledby="modal-title"
             aria-modal="true"
         >
-            {/* Backdrop */}
             <div
                 className={`absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity duration-300 ${isOpen && !isClosing ? 'opacity-100' : 'opacity-0'
                     }`}
                 onClick={handleClose}
             />
-
-            {/* Modal content */}
             <div
                 ref={modalRef}
                 tabIndex={-1}
@@ -92,10 +87,31 @@ const Categories = () => {
     const [editValue, setEditValue] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [categoryToDelete, setCategoryToDelete] = useState(null);
     const [deletingId, setDeletingId] = useState(null);
     const { backendUrl } = useAdmin();
+
+    // Auto-dismiss error and success after 3 seconds
+    useEffect(() => {
+        if (error) {
+            const timer = setTimeout(() => {
+                setError('');
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [error]);
+
+    useEffect(() => {
+        if (success) {
+            const timer = setTimeout(() => {
+                setSuccess('');
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [success]);
 
     // Fetch categories
     useEffect(() => {
@@ -105,7 +121,7 @@ const Categories = () => {
                 setCategories(data);
                 setLoading(false);
             } catch (error) {
-                toast.error('Failed to load categories');
+                console.error('Failed to load categories');
                 setLoading(false);
             }
         };
@@ -120,7 +136,7 @@ const Categories = () => {
     // Add category
     const handleAddCategory = async () => {
         if (!newCategory.trim()) {
-            toast.error('Category name cannot be empty');
+            setError('Category name cannot be empty');
             return;
         }
         try {
@@ -129,9 +145,9 @@ const Categories = () => {
             });
             setCategories([...categories, data]);
             setNewCategory('');
-            toast.success('Category added successfully');
+            setSuccess('Category added successfully');
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to add category');
+            setError(error.response?.data?.message || 'Failed to add category');
         }
     };
 
@@ -144,7 +160,7 @@ const Categories = () => {
     // Update category
     const handleUpdateCategory = async () => {
         if (!editValue.trim()) {
-            toast.error('Category name cannot be empty');
+            setError('Category name cannot be empty');
             return;
         }
         try {
@@ -158,9 +174,9 @@ const Categories = () => {
             );
             setEditingId(null);
             setEditValue('');
-            toast.success('Category updated successfully');
+            setSuccess('Category updated successfully');
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to update category');
+            console.error(error.response?.data?.message || 'Failed to update category')
         }
     };
 
@@ -175,16 +191,14 @@ const Categories = () => {
         try {
             setDeletingId(categoryToDelete);
             await axios.delete(`${backendUrl}/api/category/${categoryToDelete}`);
-
-            // Wait for animation before removing from state
             setTimeout(() => {
                 setCategories(categories.filter((cat) => cat._id !== categoryToDelete));
                 setDeletingId(null);
-                toast.success('Category deleted successfully');
+                setSuccess('Category deleted successfully');
             }, 300);
         } catch (error) {
             setDeletingId(null);
-            toast.error(error.response?.data?.message || 'Failed to delete category');
+            setError(error.response?.data?.message || 'Failed to delete category');
         }
         setShowDeleteModal(false);
         setCategoryToDelete(null);
@@ -207,8 +221,45 @@ const Categories = () => {
     }
 
     return (
-        <div className="min-h-screen  py-12 px-4 sm:px-6 lg:px-8 lg:ml-72">
-            <div className="max-w-7xl mx-auto">
+        <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 lg:ml-72">
+            <div className="max-w-7xl mx-auto relative">
+                {/* Error Alert */}
+                {error && (
+                    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 w-1/2 max-w-md z-50 animate-slide-down">
+                        <div className="bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg shadow-lg p-2 md:p-4 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <span className="text-xs md:text-sm font-medium">{error}</span>
+                            </div>
+                            <button
+                                onClick={() => setError('')}
+                                className="p-1 rounded-full hover:bg-red-800/50 transition-colors duration-200"
+                                aria-label="Close error"
+                            >
+                                <X className="h-4 w-4 md:h-5 md:w-5 text-white" />
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Success Alert */}
+                {success && (
+                    <div className="fixed top-20 left-1/2 transform -translate-x-1/2 w-1/2 max-w-sm z-50 animate-slide-down">
+                        <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg shadow-lg p-2 md:p-4 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <Check className="h-5 w-5 text-white" />
+                                <span className="text-xs md:text-sm font-medium">{success}</span>
+                            </div>
+                            <button
+                                onClick={() => setSuccess('')}
+                                className="p-1 rounded-full hover:bg-green-700/50 transition-colors duration-200"
+                                aria-label="Close success"
+                            >
+                                <X className="h-3 w-3 md:h-5 md:w-5 text-white" />
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                     <div>
@@ -230,7 +281,7 @@ const Categories = () => {
                 </div>
 
                 {/* Add Category Card */}
-                <div className="bg-white rounded-xl shadow-lg p-6 mb-8 transition-shadow hover:shadow-xl">
+                <div className="bg-white rounded-xl shadow-lg p-6 mb-8 transition-shadow-sm hover:shadow-lg">
                     <h2 className="text-lg font-semibold text-gray-900 mb-4">Create New Category</h2>
                     <div className="flex flex-col sm:flex-row gap-3">
                         <input
@@ -258,7 +309,8 @@ const Categories = () => {
                             {filteredCategories.map((category, index) => (
                                 <li
                                     key={category._id}
-                                    className={`group transition-all duration-300 ${deletingId === category._id ? 'opacity-0 max-h-0 overflow-hidden' : 'opacity-100 max-h-40'}`}
+                                    className={`group transition-all duration-300 ${deletingId === category._id ? 'opacity-0 max-h-0 overflow-hidden' : 'opacity-100 max-h-40'
+                                        }`}
                                     style={{ transitionDelay: deletingId === category._id ? '0ms' : `${index * 50}ms` }}
                                 >
                                     <div className="px-6 py-4">

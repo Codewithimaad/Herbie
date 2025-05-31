@@ -15,6 +15,9 @@ const userSchema = new mongoose.Schema({
     resetPasswordExpires: {
         type: Date,
     },
+    isVerified: { type: Boolean, default: false }, // New field
+    verificationToken: { type: String }, // New field
+    verificationTokenExpires: Date,
     cart: [
         {
             product: {

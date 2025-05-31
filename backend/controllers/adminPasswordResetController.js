@@ -5,9 +5,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Log to verify env variables are loaded
-console.log('EMAIL_USER:', process.env.EMAIL_USER);
-console.log('ADMIN_URL:', process.env.ADMIN_URL);
+
 
 // Configure Nodemailer transporter
 const transporter = nodemailer.createTransport({
