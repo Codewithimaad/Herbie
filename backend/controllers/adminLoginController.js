@@ -112,7 +112,7 @@ export const changePassword = async (req, res) => {
 
 // Add new admin
 export const addAdmin = async (req, res) => {
-    const { name, email, password, image, bio } = req.body;
+    const { name, email, password, bio } = req.body;
 
     try {
         // Check if admin already exists
@@ -130,7 +130,6 @@ export const addAdmin = async (req, res) => {
             name,
             email,
             password: hashedPassword,
-            image,
             bio
         });
 
