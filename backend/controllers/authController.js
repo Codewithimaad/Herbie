@@ -149,13 +149,34 @@ export const resendVerification = async (req, res) => {
         await user.save();
 
         // Send verification email
-        const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
+        const verificationUrl = `${process.env.FRONT_END_URL}/verify-email/${verificationToken}`;
 
         const mailOptions = {
-            from: `"Your App" <${process.env.EMAIL_USER}>`,
+            from: `"Herbie" <${process.env.EMAIL_USER}>`,
             to: email,
             subject: 'Verify Your Email',
-            html: `... same email template as register ...`
+            html: `
+    <div style="font-family: Arial, Helvetica, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f3f4f6; padding: 20px;">
+      <div style="background: linear-gradient(to right, #22c55e, #16a34a); padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="color: #ffffff; margin: 0; font-size: 24px;">Welcome to Herbie</h1>
+      </div>
+      <div style="background: #ffffff; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <p style="font-size: 16px; color: #1f2937; margin: 0 0 20px;">Hi ${user.name},</p>
+        <p style="font-size: 16px; color: #1f2937; margin: 0 0 20px;">
+          Thank you for signing up with Herbie! Please verify your email address to get started.
+        </p>
+        <a href="${verificationUrl}" style="display: inline-block; padding: 12px 24px; background-color: #15803d; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: 600; margin: 0 0 20px; transition: background-color 0.2s;">Verify Email</a>
+        <p style="font-size: 14px; color: #6b7280; margin: 0;">
+          If you didn’t create an account, you can safely ignore this email.
+        </p>
+      </div>
+      <div style="text-align: center; padding: 20px 0;">
+        <p style="font-size: 12px; color: #6b7280; margin: 0;">
+          &copy; ${new Date().getFullYear()} Herbie. All rights reserved.
+        </p>
+      </div>
+    </div>
+  `
         };
 
         await transporter.sendMail(mailOptions);

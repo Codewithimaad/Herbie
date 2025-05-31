@@ -16,6 +16,7 @@ export default function Register() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [showResend, setShowResend] = useState(false);
+    const [buttonState, setButtonState] = useState('idle'); // idle, registering, registered
     const { token, backendUrl } = useAuth();
     const navigate = useNavigate();
 
@@ -45,6 +46,14 @@ export default function Register() {
         }
     }, [success]);
 
+    // Reset button state to idle after showing "Registered!"
+    useEffect(() => {
+        if (buttonState === 'registered') {
+            const timer = setTimeout(() => setButtonState('idle'), 1500);
+            return () => clearTimeout(timer);
+        }
+    }, [buttonState]);
+
     const handleChange = (e) =>
         setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
@@ -53,22 +62,27 @@ export default function Register() {
         setError('');
         setSuccess('');
         setShowResend(false);
+        setButtonState('registering');
 
         // Client-side validation
         if (!form.name.trim()) {
             setError('Full name is required');
+            setButtonState('idle');
             return;
         }
         if (!/\S+@\S+\.\S+/.test(form.email)) {
             setError('Please enter a valid email address');
+            setButtonState('idle');
             return;
         }
         if (form.password.length < 6) {
             setError('Password must be at least 6 characters');
+            setButtonState('idle');
             return;
         }
         if (form.password !== form.confirmPassword) {
             setError('Passwords do not match');
+            setButtonState('idle');
             return;
         }
 
@@ -81,10 +95,12 @@ export default function Register() {
 
             if (res.status === 201) {
                 setSuccess(res.data.message || 'Registration successful. Please check your email to verify your account.');
-                setForm({ name: '', email: '', password: '', confirmPassword: '' });
+                setForm({ name: '', email: form.email, password: '', confirmPassword: '' });
+                setButtonState('registered');
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Registration failed');
+            setButtonState('idle');
         }
     };
 
@@ -114,7 +130,7 @@ export default function Register() {
 
     return (
         <div className="min-h-screen flex items-center justify-center sm:px-2 md:px-4 py-8">
-            <div className="w-full overflow-hidden grid grid-cols-1 md:grid-cols-2 rounded-2xl shadow-xl bg-white">
+            <div className="w-full  overflow-hidden grid grid-cols-1 md:grid-cols-2 rounded-2xl shadow-xl bg-white">
                 <div className="hidden md:flex items-center justify-center">
                     <img src={image} alt="Register Visual" className="w-full h-full object-cover" />
                 </div>
@@ -177,6 +193,7 @@ export default function Register() {
                                 required
                                 placeholder="Full Name"
                                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none transition-all text-sm"
+                                disabled={buttonState === 'registering'}
                             />
                         </div>
                         <div>
@@ -192,6 +209,7 @@ export default function Register() {
                                 required
                                 placeholder="Email"
                                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none transition-all text-sm"
+                                disabled={buttonState === 'registering'}
                             />
                         </div>
                         <div>
@@ -207,6 +225,7 @@ export default function Register() {
                                 required
                                 placeholder="Password"
                                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none transition-all text-sm"
+                                disabled={buttonState === 'registering'}
                             />
                         </div>
                         <div>
@@ -222,14 +241,39 @@ export default function Register() {
                                 required
                                 placeholder="Confirm Password"
                                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none transition-all text-sm"
+                                disabled={buttonState === 'registering'}
                             />
                         </div>
                         <button
                             type="submit"
-                            className="w-full bg-green-700 hover:bg-green-800 text-white font-medium py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 text-sm"
+                            disabled={buttonState !== 'idle'}
+                            className={`w-full bg-green-700 text-white font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm transition-all duration-200 ${buttonState === 'idle'
+                                ? 'hover:bg-green-800'
+                                : buttonState === 'registering'
+                                    ? 'opacity-70 cursor-not-allowed'
+                                    : 'bg-green-600'
+                                }`}
+                            aria-busy={buttonState === 'registering'}
+                            aria-label={
+                                buttonState === 'registering' ? 'Registering' : buttonState === 'registered' ? 'Registered' : 'Register'
+                            }
                         >
-                            <UserPlus size={16} />
-                            Register
+                            {buttonState === 'registering' ? (
+                                <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    Registering...
+                                </>
+                            ) : buttonState === 'registered' ? (
+                                <>
+                                    <Check size={16} />
+                                    Registered!
+                                </>
+                            ) : (
+                                <>
+                                    <UserPlus size={16} />
+                                    Register
+                                </>
+                            )}
                         </button>
                     </form>
 
