@@ -9,6 +9,12 @@ const userSchema = new mongoose.Schema({
     avatar: { type: String, default: '' }, // URL to profile picture
     location: { type: String, default: '' },
     bio: { type: String, default: '' },
+    resetPasswordToken: {
+        type: String,
+    },
+    resetPasswordExpires: {
+        type: Date,
+    },
     cart: [
         {
             product: {

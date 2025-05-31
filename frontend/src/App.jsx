@@ -27,6 +27,8 @@ import axios from 'axios';
 import UserProfile from './pages/UserProfile';
 import ReactGA from 'react-ga4'
 import TrackPageViews from './components/TrackPageView';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 
 ReactGA.initialize(import.meta.env.VITE_GA_MEASUREMENT_ID);
@@ -88,6 +90,8 @@ function App() {
             <Route path="/refund-policy" element={<RefundPolicy />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
           </Routes>
         </main>
         <Footer />

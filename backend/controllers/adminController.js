@@ -286,7 +286,6 @@ export const getSalesData = async (req, res) => {
             { $sort: { _id: 1 } }
         ]);
 
-        console.log('Raw sales data:', salesData); // Debug output
 
         res.json(salesData);
     } catch (error) {
@@ -317,7 +316,6 @@ export const updateOrderDeliveryStatus = async (req, res) => {
         order.isDelivered = isDelivered;
         order.deliveryStatus = isDelivered ? 'Delivered' : 'In Transit';
         const updatedOrder = await order.save();
-        console.log('Updated Order:', updatedOrder); // Debug
 
         res.status(200).json({
             message: `Order delivery status updated to ${isDelivered ? 'DELIVERED' : 'NOT DELIVERED'} `,

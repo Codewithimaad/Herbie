@@ -7,7 +7,6 @@ import {
 } from 'react-icons/fi';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
-import HeadingText from '../components/HeadingText';
 import { useAuth } from '../context/authContext';
 import { toast } from 'react-toastify';
 import zxcvbn from 'zxcvbn';
@@ -247,48 +246,46 @@ const UserProfile = () => {
 
     const getPasswordStrengthColor = (score) => {
         const colors = [
-            'bg-red-500', // 0 - Very weak
-            'bg-orange-500', // 1 - Weak
-            'bg-yellow-500', // 2 - Fair
-            'bg-blue-500', // 3 - Good
-            'bg-green-500' // 4 - Strong
+            'bg-red-600', // Very weak
+            'bg-orange-500', // Weak
+            'bg-yellow-500', // Fair
+            'bg-blue-500', // Good
+            'bg-green-600' // Strong
         ];
         return colors[score] || 'bg-gray-300';
     };
 
     if (isLoading && !userData) {
         return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+            <div className="flex justify-center items-center min-h-screen bg-gray-100">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen py-12 px-0 sm:px-6 lg:px-8">
-            <div className="max-w-7xl mx-auto">
+        <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-5xl mx-auto">
                 <div className="mb-8">
-                    <HeadingText
-                        title="My Profile"
-                        description="Manage your personal information and account settings"
-                    />
+                    <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
+                    <p className="text-sm text-gray-500 mt-2">Manage your personal information and account settings</p>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                    <div className="md:flex">
+                <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                    <div className="flex flex-col md:flex-row">
                         {/* Left Sidebar */}
-                        <div className="md:w-1/3 bg-gradient-to-b from-green-50 to-white p-6 border-r border-gray-100">
+                        <div className="md:w-1/3 bg-gradient-to-b from-gray-50 to-white p-8 border-r border-gray-200">
                             <div className="flex flex-col items-center">
-                                <div className="relative mb-4 group">
-                                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg relative">
+                                <div className="relative mb-6 group">
+                                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-md transition-transform transform group-hover:scale-105">
                                         <img
                                             src={avatarPreview || userData?.avatar || '/default-avatar.png'}
                                             alt="Profile"
                                             className="w-full h-full object-cover"
                                         />
                                         {isEditing && (
-                                            <label className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                                                <FiUpload className="text-white text-xl" />
+                                            <label className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer">
+                                                <FiUpload className="text-white text-2xl" />
                                                 <input
                                                     type="file"
                                                     accept="image/*"
@@ -300,13 +297,13 @@ const UserProfile = () => {
                                     </div>
                                 </div>
 
-                                <h2 className="text-xl font-bold text-gray-800">{userData?.name}</h2>
+                                <h2 className="text-xl font-semibold text-gray-900">{userData?.name}</h2>
                                 <p className="text-sm text-gray-500 mt-1">{userData?.email}</p>
 
                                 <div className="mt-8 w-full space-y-4">
                                     <div className="flex items-center justify-between py-2">
                                         <span className="text-sm font-medium text-gray-600 flex items-center">
-                                            <FiCalendar className="mr-2 text-green-500" /> Member Since
+                                            <FiCalendar className="mr-2 text-green-600" /> Member Since
                                         </span>
                                         <span className="text-sm text-gray-500">
                                             {userData && new Date(userData.createdAt).toLocaleDateString()}
@@ -314,7 +311,7 @@ const UserProfile = () => {
                                     </div>
                                     <div className="flex items-center justify-between py-2">
                                         <span className="text-sm font-medium text-gray-600 flex items-center">
-                                            <FiMapPin className="mr-2 text-green-500" /> Location
+                                            <FiMapPin className="mr-2 text-green-600" /> Location
                                         </span>
                                         <span className="text-sm text-gray-500">
                                             {userData?.location || 'Not provided'}
@@ -323,36 +320,36 @@ const UserProfile = () => {
                                 </div>
 
                                 <button
-                                    className={`mt-8 w-full py-2.5 px-4 rounded-lg transition flex items-center justify-center ${isEditing
-                                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                        : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
+                                    className={`mt-8 w-full py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center text-sm font-medium ${isEditing
+                                        ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                        : 'bg-green-600 text-white hover:bg-green-700'
                                         }`}
                                     onClick={() => setIsEditing(!isEditing)}
                                     disabled={isLoading}
                                 >
-                                    <FiEdit2 className="mr-2" size={14} />
+                                    <FiEdit2 className="mr-2" size={16} />
                                     {isEditing ? 'Cancel Editing' : 'Edit Profile'}
                                 </button>
                             </div>
                         </div>
 
                         {/* Main Content */}
-                        <div className="md:w-2/3 p-6">
+                        <div className="md:w-2/3 p-8">
                             <Tabs selectedIndex={activeTab} onSelect={index => setActiveTab(index)}>
-                                <TabList className="flex border-b border-gray-200 mb-6 space-x-1">
+                                <TabList className="flex border-b border-gray-200 mb-6 space-x-4">
                                     <Tab className="focus:outline-none">
-                                        <button className={`py-3 px-4 font-medium text-sm flex items-center rounded-t-lg ${activeTab === 0
-                                            ? 'text-green-600 border-b-2 border-green-500 bg-green-50'
-                                            : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                                        <button className={`py-3 px-4 font-medium text-sm flex items-center transition-colors duration-200 ${activeTab === 0
+                                            ? 'text-green-600 border-b-2 border-green-600'
+                                            : 'text-gray-600 hover:text-gray-800'
                                             }`}>
                                             <FiUser className="mr-2" /> Profile
                                         </button>
                                     </Tab>
                                     {!userData?.isGoogleUser && (
                                         <Tab className="focus:outline-none">
-                                            <button className={`py-3 px-4 font-medium text-sm flex items-center rounded-t-lg ${activeTab === 1
-                                                ? 'text-green-600 border-b-2 border-green-500 bg-green-50'
-                                                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                                            <button className={`py-3 px-4 font-medium text-sm flex items-center transition-colors duration-200 ${activeTab === 1
+                                                ? 'text-green-600 border-b-2 border-green-600'
+                                                : 'text-gray-600 hover:text-gray-800'
                                                 }`}>
                                                 <FiSettings className="mr-2" /> Settings
                                             </button>
@@ -379,7 +376,8 @@ const UserProfile = () => {
                                                         onChange={handleInputChange}
                                                         type="email"
                                                         icon={<FiMail />}
-                                                    />)}
+                                                    />
+                                                )}
                                             </div>
                                             <InputField
                                                 label="Location"
@@ -394,17 +392,17 @@ const UserProfile = () => {
                                                 value={formData.bio}
                                                 onChange={handleInputChange}
                                             />
-                                            <div className="flex justify-end space-x-3 pt-2">
+                                            <div className="flex justify-end space-x-4 pt-4">
                                                 <button
                                                     onClick={() => setIsEditing(false)}
-                                                    className="px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center"
+                                                    className="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-all duration-200 flex items-center text-sm font-medium"
                                                     disabled={isLoading}
                                                 >
                                                     <FiX className="mr-2" /> Cancel
                                                 </button>
                                                 <button
                                                     onClick={handleSaveChanges}
-                                                    className="px-4 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition flex items-center"
+                                                    className="px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 flex items-center text-sm font-medium"
                                                     disabled={isLoading}
                                                 >
                                                     {isLoading ? (
@@ -426,31 +424,31 @@ const UserProfile = () => {
                                     ) : (
                                         <div className="space-y-8">
                                             <div>
-                                                <h3 className="text-lg font-semibold text-gray-800 mb-4">About Me</h3>
-                                                <p className="text-gray-600 bg-gray-50 p-4 rounded-lg">
+                                                <h3 className="text-lg font-semibold text-gray-900 mb-4">About Me</h3>
+                                                <p className="text-gray-600 bg-gray-50 p-5 rounded-lg text-sm">
                                                     {userData?.bio || 'No bio provided.'}
                                                 </p>
                                             </div>
 
                                             <div>
-                                                <h3 className="text-lg font-semibold text-gray-800 mb-4">Personal Information</h3>
+                                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Personal Information</h3>
                                                 <div className="space-y-4">
                                                     {!userData?.isGoogleUser && (
                                                         <UserInfo
                                                             label="Email"
                                                             value={userData?.email}
-                                                            icon={<FiMail className="text-green-500" />}
+                                                            icon={<FiMail className="text-green-600" />}
                                                         />
                                                     )}
                                                     <UserInfo
                                                         label="Member Since"
                                                         value={userData && new Date(userData.createdAt).toLocaleDateString()}
-                                                        icon={<FiCalendar className="text-green-500" />}
+                                                        icon={<FiCalendar className="text-green-600" />}
                                                     />
                                                     <UserInfo
                                                         label="Location"
                                                         value={userData?.location || 'Not provided'}
-                                                        icon={<FiMapPin className="text-green-500" />}
+                                                        icon={<FiMapPin className="text-green-600" />}
                                                     />
                                                 </div>
                                             </div>
@@ -461,9 +459,9 @@ const UserProfile = () => {
                                 {!userData?.isGoogleUser && (
                                     <TabPanel>
                                         <div className="space-y-8">
-                                            <div className="p-4 sm:p-6 rounded-lg">
-                                                <h4 className="font-semibold text-gray-800 mb-4 flex items-center">
-                                                    <FiLock className="mr-2 text-green-500" /> Change Password
+                                            <div className="p-6 rounded-lg bg-gray-50">
+                                                <h4 className="font-semibold text-gray-900 mb-4 flex items-center text-lg">
+                                                    <FiLock className="mr-2 text-green-600" /> Change Password
                                                 </h4>
 
                                                 <PasswordInput
@@ -487,21 +485,21 @@ const UserProfile = () => {
                                                 />
 
                                                 {passwordData.newPassword && (
-                                                    <div className="mb-4">
-                                                        <div className="flex justify-between text-sm mb-1">
-                                                            <span className="text-gray-600">Password Strength:</span>
-                                                            <span className="font-medium">
+                                                    <div className="mb-6">
+                                                        <div className="flex justify-between text-sm mb-2">
+                                                            <span className="text-gray-600 font-medium">Password Strength:</span>
+                                                            <span className="font-medium text-gray-900">
                                                                 {['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'][passwordStrength.score]}
                                                             </span>
                                                         </div>
-                                                        <div className="w-full bg-gray-200 rounded-full h-2">
+                                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
                                                             <div
-                                                                className={`h-2 rounded-full ${getPasswordStrengthColor(passwordStrength.score)}`}
-                                                                style={{ width: `${(passwordStrength.score + 1) * 25}%` }}
+                                                                className={`h-2.5 rounded-full ${getPasswordStrengthColor(passwordStrength.score)} transition-all duration-300`}
+                                                                style={{ width: `${(passwordStrength.score + 1) * 20}%` }}
                                                             ></div>
                                                         </div>
                                                         {passwordStrength.feedback && (
-                                                            <p className="text-xs text-gray-500 mt-1">{passwordStrength.feedback}</p>
+                                                            <p className="text-xs text-gray-500 mt-2">{passwordStrength.feedback}</p>
                                                         )}
                                                     </div>
                                                 )}
@@ -516,17 +514,17 @@ const UserProfile = () => {
                                                     error={passwordErrors.confirm}
                                                 />
 
-                                                <div className="pt-2">
+                                                <div className="pt-4">
                                                     <button
                                                         onClick={handleUpdatePassword}
-                                                        className={`w-full py-2.5 px-4 rounded-lg transition flex items-center justify-center ${isLoading ||
+                                                        className={`w-full py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center text-sm font-medium ${isLoading ||
                                                             !passwordData.currentPassword ||
                                                             !passwordData.newPassword ||
                                                             !passwordData.confirmPassword ||
                                                             passwordData.newPassword !== passwordData.confirmPassword ||
                                                             passwordData.newPassword.length < 8
                                                             ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                                            : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
+                                                            : 'bg-green-600 text-white hover:bg-green-700'
                                                             }`}
                                                         disabled={
                                                             isLoading ||
@@ -564,32 +562,32 @@ const UserProfile = () => {
 };
 
 const PasswordInput = ({ label, name, value, onChange, showPassword, toggleVisibility, error }) => (
-    <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
         <div className="relative">
             <input
                 type={showPassword ? "text" : "password"}
                 name={name}
                 value={value}
                 onChange={onChange}
-                className={`w-full px-4 py-2.5 rounded-lg border ${error ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 pr-10`}
+                className={`w-full px-4 py-2.5 rounded-lg border ${error ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-sm pr-12`}
                 placeholder={`Enter ${label.toLowerCase()}`}
             />
             <button
                 type="button"
                 onClick={toggleVisibility}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors duration-200"
             >
                 {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
             </button>
         </div>
-        {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+        {error && <p className="mt-1.5 text-sm text-red-500">{error}</p>}
     </div>
 );
 
 const InputField = ({ label, name, value, onChange, type = "text", icon }) => (
-    <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
         <div className="relative">
             {icon && (
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
@@ -601,7 +599,7 @@ const InputField = ({ label, name, value, onChange, type = "text", icon }) => (
                 name={name}
                 value={value}
                 onChange={onChange}
-                className={`w-full ${icon ? 'pl-10' : 'pl-4'} py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500`}
+                className={`w-full ${icon ? 'pl-10' : 'pl-4'} py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-sm`}
                 placeholder={`Enter ${label.toLowerCase()}`}
             />
         </div>
@@ -609,25 +607,25 @@ const InputField = ({ label, name, value, onChange, type = "text", icon }) => (
 );
 
 const TextareaField = ({ label, name, value, onChange }) => (
-    <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
         <textarea
             name={name}
             value={value}
             onChange={onChange}
             rows="4"
-            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
+            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-sm"
             placeholder={`Enter ${label.toLowerCase()}`}
         />
     </div>
 );
 
 const UserInfo = ({ label, value, icon }) => (
-    <div className="flex items-start">
+    <div className="flex items-start py-3">
         <div className="text-gray-400 mr-3 mt-1">{icon}</div>
         <div>
             <p className="text-sm text-gray-500">{label}</p>
-            <p className="text-gray-800 font-medium">{value}</p>
+            <p className="text-gray-900 font-medium">{value}</p>
         </div>
     </div>
 );

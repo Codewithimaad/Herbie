@@ -172,7 +172,6 @@ export const getAdmin = async (req, res) => {
         // Assume your adminAuth middleware sets req.admin or req.adminId
         const adminId = req.admin._id || req.adminId;
         const admin = await Admin.findById(adminId).select('-password');
-        console.log('Admin data:', admin); // Debug log
         if (!admin) return res.status(404).json({ message: 'Admin not found' });
         if (!admin) return res.status(404).json({ message: 'Admin not found' });
 
