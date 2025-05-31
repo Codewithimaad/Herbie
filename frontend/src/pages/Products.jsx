@@ -55,7 +55,7 @@ export default function Products() {
         if (selectedCategory === 'Best Sellers') {
             matchesCategory = product.isBestSeller;
         } else if (selectedCategory === 'New Arrivals') {
-            matchesCategory = product.isNew;
+            matchesCategory = product.isNewArrival;
         } else if (selectedCategory !== 'All') {
             matchesCategory = product.category === selectedCategory;
         }

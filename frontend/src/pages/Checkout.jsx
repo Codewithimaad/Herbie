@@ -27,6 +27,26 @@ export default function Checkout() {
     const [activeSection, setActiveSection] = useState('shipping');
     const [isProcessing, setIsProcessing] = useState(false);
     const [isOrderPlaced, setIsOrderPlaced] = useState(false);
+    const [countries, setCountries] = useState([]);
+
+    // Fetch countries on component mount
+    useEffect(() => {
+        async function fetchCountries() {
+            try {
+                const response = await fetch('https://restcountries.com/v3.1/all');
+                const data = await response.json();
+                const allCountryNames = data.map(country => country.name.common);
+                const sortedCountries = allCountryNames.sort();
+                setCountries(sortedCountries); // Update state with fetched countries
+                console.log('Fetched countries:', sortedCountries);
+            } catch (error) {
+                console.error('Error fetching countries:', error);
+                toast.error('Failed to load countries');
+            }
+        }
+
+        fetchCountries();
+    }, []); // Empty dependency array ensures this runs only once on mount
 
     // Redirect to login if not authenticated
     useEffect(() => {
@@ -43,18 +63,12 @@ export default function Checkout() {
         }
     }, [cartItems, isLoading, fetchCart, token, isOrderPlaced]);
 
-    // Redirect to cart if cart is empty (skip if order was just placed)
-    useEffect(() => {
-        if (!isLoading && cartItems.length === 0 && !error && !isOrderPlaced) {
-            navigate('/cart');
-            toast.info('Your cart is empty. Please add items to proceed.');
-        }
-    }, [cartItems, isLoading, error, navigate, isOrderPlaced]);
+
 
     // Calculate totals
     const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const shippingFee = subtotal > 1399 ? 0 : 149;
-    const taxRate = 0.08;
+    const taxRate = 0.01;
     const tax = subtotal * taxRate;
     const grandTotal = subtotal + shippingFee + tax;
 
@@ -160,7 +174,13 @@ export default function Checkout() {
         }
     };
 
-    const countries = ['Pakistan', 'United States', 'United Kingdom', 'Canada', 'UAE'];
+
+
+
+
+
+
+
 
     if (!token || (isLoading && cartItems.length === 0)) {
         return (

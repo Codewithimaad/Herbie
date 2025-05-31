@@ -1,4 +1,5 @@
 import logoImage from '../assets/images/HerbalReality.png'
+import { Link } from 'react-router-dom'
 
 const HeaderText = () => {
 
@@ -6,11 +7,14 @@ const HeaderText = () => {
         <div className="hidden md:flex justify-between items-center bg-gradient-to-r from-green-100 via-white to-green-100 py-8 px-8">
             {/* Left Illustration */}
             <div>
-                <img
-                    src={logoImage}
-                    alt="Herbal Illustration"
-                    className="w-64 h-auto rounded-lg shadow-lg"
-                />
+                <Link to='/'>
+                    <img
+                        src={logoImage}
+                        alt="Herbal Illustration"
+                        className="w-64 h-auto rounded-lg shadow-lg"
+                    />
+                </Link>
+
             </div>
 
             {/* Right Text Section */}

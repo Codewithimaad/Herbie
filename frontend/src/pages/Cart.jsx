@@ -101,7 +101,7 @@ export default function Cart() {
     // Calculate cart totals
     const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const shippingFee = subtotal > 1399 ? 0 : 149;
-    const taxRate = 0.08;
+    const taxRate = 0.01;
     const tax = subtotal * taxRate;
     const grandTotal = subtotal + shippingFee + tax;
 
