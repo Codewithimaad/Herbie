@@ -15,7 +15,7 @@ export default function ProductCard({ product }) {
     }, [product?._id, fetchProductReviews, hasFetchedReviews]);
 
     return (
-        <div className="bg-white overflow-hidden transition-all duration-300 w-full max-w-[320px] mx-auto group">
+        <div className="bg-white overflow-hidden transition-all duration-300 w-full max-w-[340px] mx-auto group">
             <Link
                 to={`/product/${product._id}`}
                 className="relative aspect-[3/4] block overflow-hidden"
