@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import HeadingText from './HeadingText';
-import AddToCartButton from './addToCart';
+import AddToCartButton from './AddToCartButton';
 import { useAuth } from '../context/authContext';
 import { useCart } from '../context/cartContext'; // Import useCart for currency and reviews
 import ReviewSmall from './ReviewSmall'; // Import ReviewSmall
@@ -78,7 +78,7 @@ const NewArrivals = () => {
                         {newArrivals.map((product) => (
                             <div
                                 key={product._id}
-                                className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group border border-gray-100 hover:border-blue-50 flex flex-col h-full"
+                                className="bg-white overflow-hidden transition-all duration-300 group hover:border-blue-50 flex flex-col h-full"
                             >
                                 <Link to={`/product/${product._id}`} className="block flex-grow">
                                     {/* Product Image with New Arrival Ribbon */}

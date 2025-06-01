@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import HeadingText from './HeadingText';
-import AddToCartButton from './addToCart';
 import { useAuth } from '../context/authContext';
 import { useCart } from '../context/cartContext'; // Import useCart for currency and reviews
-import ReviewSmall from './ReviewSmall';
+import ReviewSmall from '../components/ReviewSmall';
+import AddToCartButton from './AddToCartButton';
 
 const BestSellers = () => {
     const { products, productLoading, productError } = useAuth();
@@ -77,7 +77,7 @@ const BestSellers = () => {
                         {bestSellers.map((product) => (
                             <div
                                 key={product._id}
-                                className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group border border-gray-100 hover:border-amber-50 flex flex-col h-full"
+                                className="bg-white overflow-hidden transition-all duration-300 group flex flex-col h-full"
                             >
                                 <Link to={`/product/${product._id}`} className="block flex-grow">
                                     {/* Product Image with Best Seller Highlight */}

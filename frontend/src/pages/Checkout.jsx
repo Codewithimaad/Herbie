@@ -68,7 +68,7 @@ export default function Checkout() {
     // Calculate totals
     const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const shippingFee = subtotal > 1399 ? 0 : 149;
-    const taxRate = 0.01;
+    const taxRate = 0.007;
     const tax = subtotal * taxRate;
     const grandTotal = subtotal + shippingFee + tax;
 

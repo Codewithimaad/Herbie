@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import HeadingText from './HeadingText';
-import AddToCartButton from './addToCart';
+import AddToCartButton from './AddToCartButton';
 import { useAuth } from '../context/authContext';
 import { useCart } from '../context/cartContext'; // Import useCart for currency and reviews
 import ReviewSmall from './ReviewSmall'; // Import ReviewSmall
@@ -36,7 +36,7 @@ const FeaturedProducts = () => {
                         {[...Array(4)].map((_, index) => (
                             <div
                                 key={index}
-                                className="bg-white rounded-xl overflow-hidden shadow-sm flex flex-col animate-pulse border border-gray-100"
+                                className="bg-white flex flex-col animate-pulse border border-gray-100"
                             >
                                 {/* Image placeholder */}
                                 <div className="relative pt-[100%] bg-gray-200 rounded-t-xl"></div>
@@ -75,7 +75,7 @@ const FeaturedProducts = () => {
                         {featuredProducts.map((product) => (
                             <div
                                 key={product._id}
-                                className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group border border-gray-100 hover:border-green-50 flex flex-col h-full"
+                                className="bg-white  overflow-hidden  transition-all duration-300 group flex flex-col h-full"
                             >
                                 <Link to={`/product/${product._id}`} className="block flex-grow">
                                     {/* Product Image */}

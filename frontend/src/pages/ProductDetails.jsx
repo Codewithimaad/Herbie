@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Heart, ShieldCheck, Truck } from 'lucide-react';
 import { useAuth } from '../context/authContext';
 import { useCart } from '../context/cartContext';
-import AddToCartButton from '../components/addToCart';
+import AddToCartButton from '../components/AddToCartButton';
 import ReviewSection from '../components/ReviewSection';
 import ReviewSmall from '../components/ReviewSmall';
 import ReactGA from 'react-ga4'
