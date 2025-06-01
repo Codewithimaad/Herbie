@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaBars, FaUser, FaSignOutAlt } from 'react-icons/fa';
 import { useAdmin } from '../context/AdminContext';
 import { Link } from 'react-router-dom'
+import logo from '../assets/images/Logo.png'
+
 const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
@@ -57,17 +59,20 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
                         <div className="flex items-center">
                             <button
                                 onClick={toggleSidebar}
-                                className={`p - 2 text - gray - 600 hover: text - indigo - 600 md:hidden rounded - full hover: bg - indigo - 50 transition - all duration - 300 ${isSidebarOpen ? 'text-indigo-600 bg-indigo-50' : ''} `}
+                                className={`p-2 text-gray-600 hover:text-green-600 md:hidden rounded-full hover:bg-green-50 transition-all duration-300 ${isSidebarOpen ? 'text-green-600 bg-green-50' : ''}`}
                                 aria-label="Toggle sidebar"
                             >
                                 <FaBars className="h-6 w-6 transform hover:scale-110 transition-transform" />
                             </button>
-                            <Link to="/dashboard">
+
+                            <Link to="/dashboard" className="flex items-center ml-4">
+                                <img src={logo} alt="Herbie Logo" className="h-8 w-auto" />
                                 <h1 className="ml-3 text-xl font-semibold text-green-700 tracking-tight">
                                     Herbie Admin
                                 </h1>
                             </Link>
                         </div>
+
                         <div className="relative profile-dropdown">
                             <button
                                 onClick={toggleProfileDropdown}
